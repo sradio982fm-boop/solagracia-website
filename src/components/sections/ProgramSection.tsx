@@ -40,11 +40,26 @@ export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
     <section
       id="program"
       data-surface="smoke"
-      className="section-surface-smoke relative flex min-h-[100dvh] flex-col overflow-x-hidden border-t px-4 pt-[clamp(36px,6vw,72px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className={cn(
+        "section-surface-smoke relative flex min-h-[100dvh] flex-col overflow-x-hidden border-t px-4 pt-[clamp(36px,6vw,72px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]",
+        /* Tall / 2K: center capped stage — FHD 1080p untouched */
+        "[@media(min-height:1200px)]:justify-center",
+      )}
     >
       <RadioSoulAtmosphere />
 
-      <div className="relative z-[1] mx-auto flex w-full max-w-[1120px] flex-1 flex-col">
+      {/*
+        Tall / 2K: keep show grid + vertical ad near FHD proportions
+        (avoid stretched cards + tiny partner column).
+      */}
+      <div
+        className={cn(
+          "relative z-[1] mx-auto flex w-full max-w-[1120px] flex-1 flex-col",
+          "[@media(min-height:1200px)]:flex-none",
+          "[@media(min-height:1200px)]:max-h-[min(62rem,calc(100dvh-var(--section-pad-bottom)-3.5rem))]",
+          "min-[2400px]:max-w-[1240px]",
+        )}
+      >
         <motion.header
           data-program-head
           initial={{ opacity: 0, y: 20 }}
@@ -109,7 +124,13 @@ export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
         </motion.div>
 
         {/* Ad rides the left column; show slate stays a 3-up grid */}
-        <div className="mt-8 grid min-h-0 flex-1 grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(10rem,12.5rem)_minmax(0,1fr)] xl:gap-7">
+        <div
+          className={cn(
+            "mt-8 grid min-h-0 flex-1 grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(10rem,12.5rem)_minmax(0,1fr)] xl:gap-7",
+            "[@media(min-height:1200px)]:flex-none",
+            "min-[2400px]:xl:grid-cols-[minmax(12rem,15rem)_minmax(0,1fr)]",
+          )}
+        >
           {ad ? (
             <motion.aside
               initial={{ opacity: 0, y: 16 }}
@@ -129,7 +150,10 @@ export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
               initial="hidden"
               animate="show"
               exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
-              className="order-1 grid h-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:order-2"
+              className={cn(
+                "order-1 grid h-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:order-2",
+                "[@media(min-height:1200px)]:h-auto",
+              )}
             >
               {shows.map((show) => (
                 <motion.div
@@ -155,7 +179,11 @@ function ShowCard({ show }: { show: ScheduleShow }) {
       href={show.href ?? "#program"}
       whileHover={hoverLift}
       whileTap={tapPress}
-      className="group relative block h-full min-h-[200px] overflow-hidden border border-[rgba(255,255,255,0.16)] no-underline aspect-[4/3] lg:aspect-auto lg:min-h-[220px]"
+      className={cn(
+        "group relative block h-full min-h-[200px] overflow-hidden border border-[rgba(255,255,255,0.16)] no-underline aspect-[4/3] lg:aspect-auto lg:min-h-[220px]",
+        /* Tall / 2K: lock card ratio so the grid doesn’t stretch into noodles */
+        "[@media(min-height:1200px)]:aspect-[4/3] [@media(min-height:1200px)]:h-auto [@media(min-height:1200px)]:min-h-0",
+      )}
     >
       <span data-scale-in className="absolute inset-0 block will-change-transform">
         <Image

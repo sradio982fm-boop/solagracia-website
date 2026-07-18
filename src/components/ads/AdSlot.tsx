@@ -21,7 +21,9 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const label = ad.label ?? "Partner";
   const ink = ad.tone === "ink";
   const isFullImage = ad.variant === "image" && Boolean(ad.imageSrc);
+  const isPortrait = ad.imageShape === "portrait";
   const hasThumb = Boolean(ad.imageSrc) && !isFullImage;
+  const hasCaption = Boolean(ad.sponsor || ad.line);
   const title = ad.sponsor ?? ad.imageAlt ?? label;
 
   const plateClass = cn(
@@ -89,51 +91,63 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
       <span
         className={cn(
           "relative block w-full",
-          compact
-            ? "h-[clamp(96px,15dvh,148px)]"
-            : "aspect-[16/7] sm:aspect-[21/9]",
+          isPortrait &&
+            compact &&
+            "h-[min(36dvh,17rem)]",
+          isPortrait && !compact && "aspect-[3/4]",
+          !isPortrait && "aspect-[4/1]",
         )}
       >
         <Image
           src={ad.imageSrc!}
           alt={ad.imageAlt ?? title}
           fill
-          sizes="(max-width: 768px) 100vw, min(1120px, 100vw)"
-          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
+          sizes={
+            isPortrait
+              ? "(max-width: 1280px) 100vw, 200px"
+              : "(max-width: 768px) 100vw, min(1120px, 100vw)"
+          }
+          className="object-cover object-center transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
         />
-        <span
-          className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"
-          aria-hidden
-        />
-        {(ad.sponsor || ad.line) && (
-          <span
-            className={cn(
-              "absolute right-0 bottom-0 left-0",
-              compact ? "p-3 md:p-3.5" : "p-4 md:p-5",
-            )}
-          >
-            {ad.sponsor ? (
-              <span
-                className={cn(
-                  "block font-bold tracking-tight text-white",
-                  compact ? "text-[12px] md:text-[13px]" : "text-[13px] md:text-[15px]",
-                )}
-              >
-                {ad.sponsor}
-              </span>
-            ) : null}
-            {ad.line ? (
-              <span
-                className={cn(
-                  "mt-0.5 block text-white/70",
-                  compact ? "text-[10px] md:text-[11px]" : "text-[11px] md:text-[12px]",
-                )}
-              >
-                {ad.line}
-              </span>
-            ) : null}
-          </span>
-        )}
+        {hasCaption ? (
+          <>
+            <span
+              className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"
+              aria-hidden
+            />
+            <span
+              className={cn(
+                "absolute right-0 bottom-0 left-0",
+                compact ? "p-3 md:p-3.5" : "p-4 md:p-5",
+              )}
+            >
+              {ad.sponsor ? (
+                <span
+                  className={cn(
+                    "block font-bold tracking-tight text-white",
+                    compact
+                      ? "text-[12px] md:text-[13px]"
+                      : "text-[13px] md:text-[15px]",
+                  )}
+                >
+                  {ad.sponsor}
+                </span>
+              ) : null}
+              {ad.line ? (
+                <span
+                  className={cn(
+                    "mt-0.5 block text-white/70",
+                    compact
+                      ? "text-[10px] md:text-[11px]"
+                      : "text-[11px] md:text-[12px]",
+                  )}
+                >
+                  {ad.line}
+                </span>
+              ) : null}
+            </span>
+          </>
+        ) : null}
       </span>
     </>
   ) : (
@@ -146,7 +160,8 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
             "relative shrink-0 overflow-hidden bg-[rgba(12,12,14,0.06)]",
             ad.variant === "inline" && "h-14 w-14 md:h-16 md:w-16",
             ad.variant === "strip" && "mb-4 block aspect-[16/7] w-full",
-            ad.variant === "panel" && "mb-5 block aspect-[3/4] w-full",
+            ad.variant === "panel" &&
+              "ad-panel-thumb mb-5 block aspect-[3/4] w-full",
           )}
         >
           <Image
@@ -215,7 +230,12 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
       className={cn("ad-slot w-full", className)}
       aria-label={`${label}: ${title}`}
     >
-      <div className="mb-2 flex items-center gap-3">
+      <div
+        className={cn(
+          "flex items-center gap-3",
+          isFullImage ? "mb-1.5" : "mb-2",
+        )}
+      >
         <span
           className={cn(
             "text-[9px] font-semibold tracking-[0.28em] uppercase",

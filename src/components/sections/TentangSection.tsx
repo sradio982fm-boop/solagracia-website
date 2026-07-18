@@ -88,7 +88,7 @@ export function TentangSection({ content }: TentangSectionProps) {
       <StudioAtmosphere />
 
       {/* Top-aligned stack — copy fills the stage, ad rides directly under it */}
-      <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1180px] flex-col justify-start gap-5 pt-1 lg:gap-6 lg:pt-2">
+      <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1180px] flex-col justify-start gap-2 pt-1 lg:gap-2 lg:pt-2">
         <div className="grid shrink-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12">
           <motion.div
             className="flex flex-col"
@@ -149,7 +149,7 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.div
               variants={itemVariants}
-              className="mt-7 flex flex-col items-stretch gap-0 sm:flex-row sm:flex-wrap sm:items-center"
+              className="mt-5 flex flex-col items-stretch gap-0 sm:flex-row sm:flex-wrap sm:items-center"
             >
               {content.ctas.map((cta, index) => (
                 <motion.a
@@ -275,9 +275,9 @@ export function TentangSection({ content }: TentangSectionProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewport}
             transition={{ duration: 0.55, ease: easeOut }}
-            className="w-full shrink-0"
+            className="-mt-2 w-full shrink-0"
           >
-            <AdSlot ad={ad} compact />
+            <AdSlot ad={ad} />
           </motion.div>
         ) : null}
       </div>

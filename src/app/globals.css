@@ -162,6 +162,16 @@ body {
   }
 }
 
+/*
+ * Penyiar / Program on tall / 2K viewports — keep FHD proportions.
+ * Stage max-height is set in JSX; center the shorter stage in the slide.
+ */
+@media (min-height: 1200px) {
+  #penyiar.section-slide {
+    justify-content: center;
+  }
+}
+
 /* Penyiar roster — hovered card expands, siblings ease back */
 .penyiar-expand-track .host-slot {
   flex: 1 1 0;

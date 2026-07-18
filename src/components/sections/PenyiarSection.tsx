@@ -51,14 +51,31 @@ export function PenyiarSection({ content }: PenyiarSectionProps) {
     >
       <MicRoomAtmosphere />
 
-      <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1120px] flex-col gap-4 lg:gap-5">
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(11.5rem,16rem)_minmax(0,1fr)] lg:gap-6 xl:gap-8">
+      {/*
+        Tall / 2K viewports: cap stage height so host cards + vertical ad
+        keep FHD proportions (avoid noodle-tall cards + tiny partner spot).
+        FHD 1080p is untouched (query starts at 1200px height).
+      */}
+      <div
+        className={cn(
+          "relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1120px] flex-col gap-4 lg:gap-5",
+          "[@media(min-height:1200px)]:h-auto",
+          "[@media(min-height:1200px)]:max-h-[min(62rem,calc(100dvh-var(--section-pad-bottom)-3.5rem))]",
+          "min-[2400px]:max-w-[1240px]",
+        )}
+      >
+        <div
+          className={cn(
+            "grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(11.5rem,16rem)_minmax(0,1fr)] lg:gap-6 xl:gap-8",
+            "min-[2400px]:lg:grid-cols-[minmax(13rem,18.5rem)_minmax(0,1fr)]",
+          )}
+        >
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewport}
             transition={{ duration: 0.6, ease: easeOut }}
-            className="flex shrink-0 flex-col lg:min-h-0 lg:pt-1"
+            className="flex h-full min-h-0 shrink-0 flex-col lg:pt-1"
           >
             <p className="m-0 inline-flex w-fit items-center bg-[var(--accent)] px-2.5 py-1 text-[9px] font-bold tracking-[0.2em] text-white uppercase">
               {content.eyebrow}
@@ -120,7 +137,7 @@ export function PenyiarSection({ content }: PenyiarSectionProps) {
             ) : null}
 
             {ad ? (
-              <div className="mt-auto hidden pt-5 lg:block">
+              <div className="mt-auto hidden pt-5 lg:block [@media(min-height:1200px)]:pt-6">
                 <AdSlot ad={ad} className="max-w-none" />
               </div>
             ) : null}
