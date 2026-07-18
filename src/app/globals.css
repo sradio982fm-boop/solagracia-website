@@ -19,9 +19,9 @@
   --bg-dark: #0a0a0b;
   --bg-elevated: #141418;
   --bg-smoke: #0a0a0b;
-  /* Dim plaster — cool loft concrete, not bright white / warm cream */
-  --bg-white: #c8c4ba;
-  --bg-white-raised: #d5d1c7;
+  /* Cool loft concrete — avoid warm-cream + terracotta AI cluster */
+  --bg-white: #e6e7ea;
+  --bg-white-raised: #f0f1f3;
   --text-main: #f4f4f6;
   --text-dim: rgba(244, 244, 246, 0.55);
   --line: rgba(255, 255, 255, 0.85);

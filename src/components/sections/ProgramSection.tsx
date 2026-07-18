@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { SECTION_ADS } from "@/data/ads";
@@ -14,32 +14,24 @@ import {
   viewportLoose,
 } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-import { formatShowWindow, getWeekdayId } from "@/lib/schedule";
+import { formatShowWindow } from "@/lib/schedule";
 import type { ProgramContent, ScheduleShow, WeekdayId } from "@/types/schedule";
 
 type ProgramSectionProps = {
   content: ProgramContent;
+  /** WIB weekday from the server page — keeps SSR + hydrate in sync */
+  initialDay: WeekdayId;
 };
 
 const viewport = viewportLoose;
 const listVariants = staggerContainer(0.06, 0.08);
 const cardVariants = fadeUpCard;
 
-/** SSR-safe placeholder — real weekday applied after mount (WIB). */
-const SSR_DAY: WeekdayId = "senin";
-
 /**
  * #program — weekly lineup grid with day picker + radio-soul atmosphere.
  */
-export function ProgramSection({ content }: ProgramSectionProps) {
-  const [activeDay, setActiveDay] = useState<WeekdayId>(SSR_DAY);
-
-  useEffect(() => {
-    const jakarta = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }),
-    );
-    setActiveDay(getWeekdayId(jakarta));
-  }, []);
+export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
+  const [activeDay, setActiveDay] = useState<WeekdayId>(initialDay);
 
   const shows = content.byDay[activeDay] ?? [];
   const ad = SECTION_ADS.program;
@@ -55,7 +47,6 @@ export function ProgramSection({ content }: ProgramSectionProps) {
       <div className="relative z-[1] mx-auto flex w-full max-w-[1120px] flex-1 flex-col">
         <motion.header
           data-program-head
-          data-tune
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={viewport}

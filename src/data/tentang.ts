@@ -6,7 +6,7 @@ import type { TentangContent } from "@/types/site";
 export const tentangContent: TentangContent = {
   headline: "Studio yang hidup,",
   headlineAccent: "suara yang dekat.",
-  body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+  body: "Solagracia adalah ruang dari S Radio untuk lebih jauh menumbuhkan iman kristiani.",
   stats: [
     { value: "5", label: "Program" },
     { value: "12", label: "Penyiar" },
@@ -23,7 +23,7 @@ export const tentangContent: TentangContent = {
       {
         type: "text",
         value:
-          "Lorem ipsum dolor sit amet — studio-nya hangat, host-nya nyambung, dan lagu-lagunya pas banget buat nunggu hujan. ",
+          "Studio-nya hangat, host-nya nyambung, dan lagu-lagunya pas banget buat nunggu hujan. ",
       },
       { type: "mention", value: "@solagracia" },
       {
@@ -33,12 +33,12 @@ export const tentangContent: TentangContent = {
       {
         type: "link",
         value: "solagracia.id",
-        href: "#",
+        href: "https://solagracia.id",
       },
     ],
     authorName: "Alya Putri",
     authorHandle: "@alyaputri",
     authorInitials: "AP",
-    href: "#",
+    href: "https://solagracia.id",
   },
 };

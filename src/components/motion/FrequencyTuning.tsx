@@ -2,7 +2,6 @@
 
 import { useGSAP } from "@gsap/react";
 import { useRef } from "react";
-import { SignalNeedle } from "@/components/motion/SignalNeedle";
 import {
   ensureGsap,
   prefersReducedMotion,
@@ -12,8 +11,7 @@ import {
 
 /**
  * Frequency Tuning — page-level GSAP orchestration.
- * Load + scroll: carrier lines, parallax atmospheres, section locks,
- * Program Lineup Theatre (desktop pin), image scale reveals.
+ * Carrier lines, parallax, scrubbed reveals — no section pinning.
  */
 export function FrequencyTuning() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -22,7 +20,6 @@ export function FrequencyTuning() {
     () => {
       const gsap = ensureGsap();
       const reduced = prefersReducedMotion();
-      const desktop = window.matchMedia("(min-width: 1024px)").matches;
 
       // —— Carrier ember lines on every station ——
       STATIONS.forEach((station) => {
@@ -120,59 +117,7 @@ export function FrequencyTuning() {
           });
       }
 
-      // —— Tentang body gain scrub ——
-      const tentangBody = document.querySelector<HTMLElement>(
-        "#tentang [data-signal-gain]",
-      );
-      if (tentangBody && !reduced) {
-        gsap.fromTo(
-          tentangBody,
-          { opacity: 0.22 },
-          {
-            opacity: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: tentangBody,
-              start: "top 85%",
-              end: "top 45%",
-              scrub: 0.7,
-            },
-          },
-        );
-      }
-
-      // —— Program Lineup Theatre (desktop pin only) ——
-      const program = document.getElementById("program");
-      const programCards = program?.querySelectorAll<HTMLElement>(
-        "[data-show-card]",
-      );
-      if (program && programCards && programCards.length && desktop && !reduced) {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: program,
-            start: "top top",
-            end: "+=110%",
-            scrub: 1,
-            pin: true,
-            anticipatePin: 1,
-          },
-        });
-
-        tl.from(
-          program.querySelector("[data-program-head]"),
-          { opacity: 0.35, y: 24, duration: 0.4 },
-          0,
-        ).from(
-          programCards,
-          {
-            y: 48,
-            opacity: 0,
-            stagger: 0.08,
-            duration: 0.5,
-          },
-          0.1,
-        );
-      }
+      // Tentang burn lives in TentangSection (scoped to its layers).
 
       // —— Kontak switchboard ——
       const channels = document.querySelectorAll<HTMLElement>(
@@ -193,39 +138,12 @@ export function FrequencyTuning() {
         });
       }
 
-      // —— Hero cover breath on load ——
-      const heroCover = document.querySelector<HTMLElement>(
-        "#home [data-hero-cover]",
-      );
-      if (heroCover && !reduced) {
-        gsap.fromTo(
-          heroCover,
-          { scale: 1.08 },
-          { scale: 1, duration: 1.45, ease: "power3.out" },
-        );
-      }
-
-      const heroRail = document.querySelector<HTMLElement>(
-        "#home [data-hero-rail]",
-      );
-      if (heroRail && !reduced) {
-        gsap.from(heroRail, {
-          x: 36,
-          opacity: 0,
-          duration: 0.85,
-          delay: 0.2,
-          ease: "expo.out",
-        });
-      }
+      // Hero cover + rail stay on Framer — GSAP opacity/x fights motion values.
 
       ScrollTrigger.refresh();
     },
     { scope: rootRef },
   );
 
-  return (
-    <div ref={rootRef} className="contents" aria-hidden>
-      <SignalNeedle />
-    </div>
-  );
+  return <div ref={rootRef} className="contents" aria-hidden />;
 }

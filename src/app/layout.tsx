@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { site } from "@/data/site";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -37,8 +38,27 @@ const montserrat = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Solagracia",
-  description: "Solagracia — a S Radio sub-brand.",
+  title: {
+    default: site.title,
+    template: `%s | ${site.name}`,
+  },
+  description: site.description,
+  applicationName: site.name,
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "any" }],
+  },
+  openGraph: {
+    title: site.title,
+    description: site.description,
+    siteName: site.name,
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: site.title,
+    description: site.description,
+  },
 };
 
 export const viewport: Viewport = {

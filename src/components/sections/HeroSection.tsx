@@ -79,7 +79,7 @@ export function HeroSection({
         }}
       >
         <div
-          className="pointer-events-auto absolute flex flex-col justify-center"
+          className="pointer-events-auto absolute flex flex-col justify-center border border-[var(--frame-line)] bg-black/45 backdrop-blur-[2px]"
           style={{
             left: "14.93%",
             top: "21.81%",

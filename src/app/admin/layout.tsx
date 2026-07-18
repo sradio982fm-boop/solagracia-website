@@ -3,7 +3,7 @@ import { AdminQueryProvider } from "@/lib/admin/query-provider";
 import { Toaster } from "sonner";
 
 export const metadata = {
-  title: "Admin — Solagracia",
+  title: "Admin",
 };
 
 export default function AdminRootLayout({

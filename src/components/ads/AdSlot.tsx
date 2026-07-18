@@ -90,7 +90,7 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
         className={cn(
           "relative block w-full",
           compact
-            ? "h-[clamp(72px,12dvh,120px)]"
+            ? "h-[clamp(96px,15dvh,148px)]"
             : "aspect-[16/7] sm:aspect-[21/9]",
         )}
       >

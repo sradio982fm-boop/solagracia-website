@@ -32,7 +32,8 @@ import { getOnAirShow, getUpcomingShows, getWeekdayId } from "@/lib/schedule";
  */
 export default function HomePage() {
   const now = jakartaNow();
-  const todaysShows = programContent.byDay[getWeekdayId(now)];
+  const todayId = getWeekdayId(now);
+  const todaysShows = programContent.byDay[todayId];
   const onAirShow = getOnAirShow(todaysShows, now);
   const upcomingShows = getUpcomingShows(todaysShows, 3, now);
 
@@ -53,7 +54,7 @@ export default function HomePage() {
           upcomingShows={upcomingShows}
         />
         <TentangSection content={tentangContent} />
-        <ProgramSection content={programContent} />
+        <ProgramSection content={programContent} initialDay={todayId} />
         <RadioMarquee />
         <PenyiarSection content={penyiarContent} />
         <PartnerSection content={partnerContent} />

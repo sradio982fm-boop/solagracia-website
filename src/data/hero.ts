@@ -7,7 +7,7 @@ import type { HeroContent } from "@/types/site";
 export const heroContent: HeroContent = {
   brand: "Solagracia.",
   eyebrow: "S Radio sub-brand",
-  support: "Ruang hangat untuk berkumpul dan berbagi cerita.",
+  support: "Ruang dari S Radio untuk lebih jauh menumbuhkan iman kristiani.",
   verticalTagline: "Golden state of mind",
   coverSrc: "/cover-image.png",
   coverAlt:

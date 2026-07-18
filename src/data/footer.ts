@@ -7,7 +7,7 @@ import type { FooterContent } from "@/types/site";
 export const footerContent: FooterContent = {
   brandTitle: "Golden\nState of\nMind",
   brandDescription:
-    "Solagracia — sub-brand S Radio. Ruang hangat untuk berkumpul, berbagi cerita, dan menemani frekuensi kota.",
+    "Solagracia — sub-brand S Radio. Ruang untuk lebih jauh menumbuhkan iman kristiani.",
   copyrightText: "© {year} Solagracia · S Radio 98.2 FM",
   listenHref: "#home",
   contactHref: "#kontak",

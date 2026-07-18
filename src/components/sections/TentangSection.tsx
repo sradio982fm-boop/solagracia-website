@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useGSAP } from "@gsap/react";
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { SECTION_ADS } from "@/data/ads";
+import { ensureGsap, prefersReducedMotion } from "@/lib/gsap";
 import {
   easeOut,
   fadeUp,
@@ -29,24 +32,66 @@ const METER_BARS = [28, 52, 36, 68, 44, 78, 40, 62, 34, 56, 48, 70] as const;
 
 /**
  * #tentang — viewport-locked loft about + social proof + partner spot.
- * Listen lives in the sticky player; CTAs point deeper into the site.
+ * Cool plaster burns into warm bright on scroll (matches Penyiar tone).
  */
 export function TentangSection({ content }: TentangSectionProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const ad = SECTION_ADS.tentang;
   const { testimonial } = content;
 
+  useGSAP(
+    () => {
+      const section = sectionRef.current;
+      if (!section) return;
+
+      const gsap = ensureGsap();
+      const cool = section.querySelector<HTMLElement>("[data-burn-cool]");
+      const ember = section.querySelector<HTMLElement>("[data-burn-ember]");
+      const warm = section.querySelector<HTMLElement>("[data-burn-warm]");
+      if (!cool || !ember || !warm) return;
+
+      if (prefersReducedMotion()) {
+        gsap.set(cool, { opacity: 0 });
+        gsap.set(ember, { opacity: 0 });
+        gsap.set(warm, { opacity: 1 });
+        return;
+      }
+
+      gsap.set(cool, { opacity: 1 });
+      gsap.set(ember, { opacity: 0 });
+      gsap.set(warm, { opacity: 0 });
+
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top 80%",
+            end: "top 22%",
+            scrub: 1.15,
+          },
+        })
+        .to(ember, { opacity: 0.92, ease: "none", duration: 0.35 }, 0)
+        .to(cool, { opacity: 0, ease: "none", duration: 0.5 }, 0.12)
+        .to(warm, { opacity: 1, ease: "none", duration: 0.55 }, 0.22)
+        .to(ember, { opacity: 0.08, ease: "none", duration: 0.4 }, 0.55);
+    },
+    { scope: sectionRef },
+  );
+
   return (
     <section
+      ref={sectionRef}
       id="tentang"
       data-surface="white"
-      className="section-surface-white section-slide relative flex flex-col border-t px-4 pt-[clamp(28px,4vw,48px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className="section-surface-white section-slide relative flex flex-col border-t px-4 pt-[clamp(32px,4.5vw,56px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
       <StudioAtmosphere />
 
-      <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1120px] flex-col">
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-stretch lg:gap-8">
+      {/* Top-aligned stack — copy fills the stage, ad rides directly under it */}
+      <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1180px] flex-col justify-start gap-5 pt-1 lg:gap-6 lg:pt-2">
+        <div className="grid shrink-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12">
           <motion.div
-            className="flex min-h-0 flex-col justify-center"
+            className="flex flex-col"
             variants={columnVariants}
             initial="hidden"
             whileInView="show"
@@ -54,7 +99,7 @@ export function TentangSection({ content }: TentangSectionProps) {
           >
             <motion.p
               variants={itemVariants}
-              className="m-0 flex items-center gap-3 text-[0.62rem] font-semibold tracking-[0.22em] text-[var(--section-muted)] uppercase"
+              className="m-0 flex items-center gap-3 text-[0.68rem] font-semibold tracking-[0.22em] text-[var(--section-muted)] uppercase"
             >
               <span className="relative flex h-2 w-2">
                 <span className="absolute inset-0 animate-ping rounded-full bg-[var(--accent)] opacity-40" />
@@ -65,15 +110,17 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.h2
               variants={itemVariants}
-              className="mt-3 m-0 max-w-[14ch] text-[clamp(1.85rem,3.8vw,3.25rem)] leading-[1.02] font-extrabold tracking-[-0.035em]"
+              className="mt-5 m-0 max-w-[18ch] text-[clamp(2.35rem,5vw,4rem)] leading-[1.0] font-extrabold tracking-[-0.035em] text-[var(--section-fg)]"
             >
-              <span className="text-[var(--section-fg)]">{content.headline}</span>{" "}
-              <span className="text-[var(--accent)]">{content.headlineAccent}</span>
+              <span>{content.headline}</span>{" "}
+              <span className="font-semibold tracking-[-0.03em] text-[var(--section-muted)]">
+                {content.headlineAccent}
+              </span>
             </motion.h2>
 
             <motion.p
               variants={itemVariants}
-              className="mt-3 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-[clamp(0.9rem,1.35vw,1.05rem)] font-semibold tracking-[-0.01em] text-[var(--section-fg)]"
+              className="mt-4 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-[clamp(1rem,1.5vw,1.15rem)] font-semibold tracking-[-0.01em] text-[var(--section-fg)]"
             >
               {content.stats.map((stat, index) => (
                 <span key={stat.label} className="inline-flex items-baseline gap-1">
@@ -91,15 +138,14 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.p
               variants={itemVariants}
-              data-signal-gain
-              className="mt-3 max-w-[34rem] line-clamp-3 text-[0.84rem] leading-[1.55] text-[var(--section-muted)] lg:line-clamp-4"
+              className="mt-5 max-w-[38rem] text-[1rem] leading-[1.65] text-[var(--section-muted)] lg:text-[1.08rem]"
             >
               {content.body}
             </motion.p>
 
             <motion.div
               variants={itemVariants}
-              className="mt-5 flex flex-col items-stretch gap-0 sm:flex-row sm:flex-wrap sm:items-center"
+              className="mt-7 flex flex-col items-stretch gap-0 sm:flex-row sm:flex-wrap sm:items-center"
             >
               {content.ctas.map((cta, index) => (
                 <motion.a
@@ -109,7 +155,7 @@ export function TentangSection({ content }: TentangSectionProps) {
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2, ease: easeOut }}
                   className={cn(
-                    "inline-flex h-11 items-center justify-center border border-[rgba(12,12,14,0.5)] px-4 text-[0.68rem] font-semibold tracking-[0.16em] text-[var(--section-fg)] uppercase no-underline transition-colors hover:bg-[rgba(12,12,14,0.05)] sm:h-10",
+                    "inline-flex h-11 items-center justify-center border border-[rgba(12,12,14,0.5)] px-5 text-[0.72rem] font-semibold tracking-[0.16em] text-[var(--section-fg)] uppercase no-underline transition-colors hover:bg-[rgba(12,12,14,0.05)] sm:h-11",
                     index > 0 && "border-t-0 sm:border-t sm:border-l-0",
                   )}
                 >
@@ -123,7 +169,7 @@ export function TentangSection({ content }: TentangSectionProps) {
           </motion.div>
 
           <motion.aside
-            className="flex min-h-0 flex-col justify-center max-lg:mt-2"
+            className="flex flex-col lg:pt-1"
             aria-label={content.socialLabel}
             variants={railVariants}
             initial="hidden"
@@ -132,7 +178,7 @@ export function TentangSection({ content }: TentangSectionProps) {
           >
             <motion.h3
               variants={itemVariants}
-              className="m-0 max-w-[18ch] text-[0.95rem] font-medium tracking-[-0.01em] text-[var(--section-fg)]"
+              className="m-0 max-w-[20ch] text-[1.05rem] font-medium tracking-[-0.01em] text-[var(--section-fg)] lg:text-[1.15rem]"
             >
               {content.socialLabel}
             </motion.h3>
@@ -142,7 +188,7 @@ export function TentangSection({ content }: TentangSectionProps) {
               variants={cardVariants}
               whileHover={{ y: -3 }}
               transition={{ duration: 0.3, ease: easeOut }}
-              className="relative mt-3 m-0 min-h-0 overflow-hidden border border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_88%,transparent)] px-4 py-4 backdrop-blur-[2px] sm:px-5 sm:py-5"
+              className="relative mt-4 m-0 overflow-hidden border border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_88%,transparent)] px-5 py-5 backdrop-blur-[2px] sm:px-6 sm:py-6"
             >
               <span
                 className="pointer-events-none absolute top-0 left-0 h-2 w-2 border-t border-l border-[rgba(12,12,14,0.45)]"
@@ -183,33 +229,33 @@ export function TentangSection({ content }: TentangSectionProps) {
                 </span>
               </div>
 
-              <p className="mt-3 m-0 line-clamp-4 text-[0.92rem] leading-[1.45] font-semibold tracking-[-0.015em] text-[var(--section-fg)]">
+              <p className="mt-4 m-0 text-[1rem] leading-[1.5] font-semibold tracking-[-0.015em] text-[var(--section-fg)] lg:text-[1.05rem]">
                 {testimonial.quote.map((part, index) => (
                   <QuotePart key={`${part.type}-${index}`} part={part} />
                 ))}
               </p>
 
-              <footer className="mt-3 flex items-center gap-2.5 border-t border-[rgba(12,12,14,0.1)] pt-3">
+              <footer className="mt-4 flex items-center gap-2.5 border-t border-[rgba(12,12,14,0.1)] pt-4">
                 <span
-                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[rgba(12,12,14,0.12)] bg-[rgba(12,12,14,0.04)] text-[0.62rem] font-bold tracking-[0.06em] text-[var(--section-fg)]"
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(12,12,14,0.12)] bg-[rgba(12,12,14,0.04)] text-[0.65rem] font-bold tracking-[0.06em] text-[var(--section-fg)]"
                   aria-hidden
                 >
                   {testimonial.authorInitials}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <cite className="block truncate text-[0.82rem] font-bold not-italic tracking-[-0.01em] text-[var(--section-fg)]">
+                  <cite className="block truncate text-[0.9rem] font-bold not-italic tracking-[-0.01em] text-[var(--section-fg)]">
                     {testimonial.authorName}
                   </cite>
                   <a
                     href={testimonial.href}
-                    className="mt-0.5 block truncate text-[0.72rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
+                    className="mt-0.5 block truncate text-[0.78rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
                   >
                     {testimonial.authorHandle}
                   </a>
                 </div>
                 <a
                   href={testimonial.href}
-                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)]"
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)]"
                   aria-label="Buka postingan"
                 >
                   <ArrowIcon />
@@ -225,7 +271,7 @@ export function TentangSection({ content }: TentangSectionProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewport}
             transition={{ duration: 0.55, ease: easeOut }}
-            className="mt-3 w-full shrink-0 lg:mt-4"
+            className="w-full shrink-0"
           >
             <AdSlot ad={ad} compact />
           </motion.div>
@@ -236,8 +282,8 @@ export function TentangSection({ content }: TentangSectionProps) {
 }
 
 /**
- * Broadcast loft wash — photo warmth + grain + meter + frequency watermark.
- * Keeps UI cool; atmosphere comes from the studio image.
+ * Broadcast loft wash — cool start burns into warm bright plaster (Penyiar tone).
+ * GSAP scrubs [data-burn-*] layers on scroll; see FrequencyTuning.
  */
 function StudioAtmosphere() {
   return (
@@ -256,36 +302,60 @@ function StudioAtmosphere() {
         />
       </div>
 
-      {/* Plaster veil — keep type readable, cool loft DNA */}
+      {/* Start: cool concrete (current Tentang) */}
       <div
-        className="absolute inset-0"
+        data-burn-cool
+        className="absolute inset-0 will-change-[opacity]"
         style={{
           background: `
             linear-gradient(
               115deg,
-              rgba(200, 196, 186, 0.94) 0%,
-              rgba(200, 196, 186, 0.78) 42%,
-              rgba(200, 196, 186, 0.88) 100%
+              rgba(230, 231, 234, 0.96) 0%,
+              rgba(230, 231, 234, 0.82) 42%,
+              rgba(230, 231, 234, 0.92) 100%
             )
           `,
         }}
       />
 
-      {/* Warm spill from mic/gold side of cover */}
+      {/* Mid: ember burn flare */}
       <div
-        className="absolute inset-0"
+        data-burn-ember
+        className="absolute inset-0 will-change-[opacity]"
         style={{
+          opacity: 0,
           background: `
             radial-gradient(
-              ellipse 55% 50% at 88% 18%,
-              rgba(196, 92, 38, 0.14) 0%,
-              transparent 62%
+              ellipse 70% 55% at 78% 22%,
+              rgba(196, 92, 38, 0.55) 0%,
+              rgba(196, 92, 38, 0.18) 38%,
+              transparent 68%
             ),
             radial-gradient(
-              ellipse 40% 45% at 12% 88%,
-              rgba(12, 12, 14, 0.1) 0%,
-              transparent 70%
+              ellipse 55% 50% at 18% 78%,
+              rgba(160, 60, 20, 0.28) 0%,
+              transparent 60%
+            ),
+            linear-gradient(
+              160deg,
+              rgba(40, 22, 14, 0.35) 0%,
+              rgba(196, 92, 38, 0.22) 48%,
+              rgba(40, 22, 14, 0.2) 100%
             )
+          `,
+        }}
+      />
+
+      {/* End: warm bright plaster (matches Penyiar / other light sections) */}
+      <div
+        data-burn-warm
+        className="absolute inset-0 will-change-[opacity]"
+        style={{
+          opacity: 0,
+          background: `
+            radial-gradient(ellipse 50% 45% at 85% 20%, rgba(196,92,38,0.12) 0%, transparent 55%),
+            radial-gradient(ellipse 40% 35% at 8% 80%, rgba(12,12,14,0.08) 0%, transparent 50%),
+            linear-gradient(165deg, rgba(200,196,186,0.92) 0%, rgba(200,196,186,0.82) 50%, rgba(200,196,186,0.9) 100%)
           `,
         }}
       />

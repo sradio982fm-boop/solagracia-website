@@ -9,10 +9,7 @@ type HeroTitleProps = {
   support: string;
 };
 
-/**
- * Hero brand cluster — staggered letter rise + follow-through on support.
- * Skewed slate mark behind the title leading edge (Savoir Faire accent).
- */
+/** Hero brand cluster — staggered letter rise + follow-through on support. */
 export function HeroTitle({ brand, eyebrow, support }: HeroTitleProps) {
   return (
     <>
@@ -37,18 +34,10 @@ export function HeroTitle({ brand, eyebrow, support }: HeroTitleProps) {
           },
         }}
       >
-        <motion.span
-          className="pointer-events-none absolute top-[6%] left-[-0.08em] z-0 h-[88%] w-[1.65em] origin-left bg-[#5c6370]/90"
-          aria-hidden
-          initial={{ opacity: 0, scaleX: 0.35, x: -10, skewX: -18 }}
-          animate={{ opacity: 1, scaleX: 1, x: 0, skewX: -18 }}
-          transition={{ duration: 0.7, delay: 0.05, ease: easeOut }}
-        />
-
         {brand.split("").map((char, index) => (
           <motion.span
             key={`${char}-${index}`}
-            className="relative z-10 inline-block"
+            className="relative inline-block"
             variants={{
               hidden: { opacity: 0, y: 28, scaleY: 0.92 },
               show: {
