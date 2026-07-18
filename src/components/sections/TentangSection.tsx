@@ -91,6 +91,7 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.p
               variants={itemVariants}
+              data-signal-gain
               className="mt-3 max-w-[34rem] line-clamp-3 text-[0.84rem] leading-[1.55] text-[var(--section-muted)] lg:line-clamp-4"
             >
               {content.body}
@@ -242,7 +243,10 @@ function StudioAtmosphere() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       {/* Soft studio photo plane */}
-      <div className="absolute inset-0 opacity-[0.22]">
+      <div
+        data-parallax="8"
+        className="absolute inset-0 opacity-[0.22] will-change-transform"
+      >
         <Image
           src="/cover-image.png"
           alt=""

@@ -47,7 +47,8 @@ export function HeroSection({
       className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[var(--bg-void)] text-white max-md:min-h-0 md:min-h-[640px]"
     >
       <motion.div
-        className="absolute inset-0"
+        data-hero-cover
+        className="absolute inset-0 will-change-transform"
         initial={{ scale: 1.06, opacity: 0.85 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 1.35, ease: easeOut }}
@@ -120,7 +121,8 @@ export function HeroSection({
       <HeroSocialRail tagline={verticalTagline} />
 
       <motion.div
-        className="pointer-events-none absolute z-10 hidden md:block"
+        data-hero-rail
+        className="pointer-events-none absolute z-10 hidden md:block will-change-transform"
         style={{
           top: "var(--frame-inset)",
           bottom: "var(--frame-inset)",

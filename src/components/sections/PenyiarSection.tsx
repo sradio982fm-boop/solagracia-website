@@ -288,7 +288,10 @@ function HostCard({ host }: { host: PenyiarHost }) {
 function MicRoomAtmosphere() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      <div className="absolute inset-0 opacity-[0.14]">
+      <div
+        data-parallax="9"
+        className="absolute inset-0 opacity-[0.14] will-change-transform"
+      >
         <Image
           src="/cover-image.png"
           alt=""

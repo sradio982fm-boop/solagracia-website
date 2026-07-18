@@ -199,6 +199,7 @@ export function ContactSection({ content }: ContactSectionProps) {
 function ChannelCard({ channel }: { channel: KontakChannel }) {
   return (
     <motion.a
+      data-channel
       href={channel.href}
       target={channel.external ? "_blank" : undefined}
       rel={channel.external ? "noopener noreferrer" : undefined}
@@ -341,7 +342,10 @@ function ChannelIcon({ id }: { id: KontakChannel["id"] }) {
 function CallDeskAtmosphere() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      <div className="absolute inset-0 opacity-[0.16]">
+      <div
+        data-parallax="8"
+        className="absolute inset-0 opacity-[0.16] will-change-transform"
+      >
         <Image
           src="/cover-image.png"
           alt=""

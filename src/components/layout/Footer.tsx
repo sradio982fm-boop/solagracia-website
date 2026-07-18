@@ -125,7 +125,10 @@ export function Footer({ content }: FooterProps) {
             ))}
           </ul>
 
-          <span className="text-right text-[0.68rem] font-medium tracking-[0.12em] text-[var(--text-dim)] uppercase tabular-nums">
+          <span
+            className="text-right text-[0.68rem] font-medium tracking-[0.12em] text-[var(--text-dim)] uppercase tabular-nums"
+            suppressHydrationWarning
+          >
             {copyright}
           </span>
         </motion.div>

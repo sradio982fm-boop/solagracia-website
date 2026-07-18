@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { SECTION_ADS } from "@/data/ads";
@@ -25,11 +25,22 @@ const viewport = viewportLoose;
 const listVariants = staggerContainer(0.06, 0.08);
 const cardVariants = fadeUpCard;
 
+/** SSR-safe placeholder — real weekday applied after mount (WIB). */
+const SSR_DAY: WeekdayId = "senin";
+
 /**
  * #program — weekly lineup grid with day picker + radio-soul atmosphere.
  */
 export function ProgramSection({ content }: ProgramSectionProps) {
-  const [activeDay, setActiveDay] = useState<WeekdayId>(() => getWeekdayId());
+  const [activeDay, setActiveDay] = useState<WeekdayId>(SSR_DAY);
+
+  useEffect(() => {
+    const jakarta = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }),
+    );
+    setActiveDay(getWeekdayId(jakarta));
+  }, []);
+
   const shows = content.byDay[activeDay] ?? [];
   const ad = SECTION_ADS.program;
 
@@ -43,6 +54,8 @@ export function ProgramSection({ content }: ProgramSectionProps) {
 
       <div className="relative z-[1] mx-auto flex w-full max-w-[1120px] flex-1 flex-col">
         <motion.header
+          data-program-head
+          data-tune
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={viewport}
@@ -147,18 +160,21 @@ export function ProgramSection({ content }: ProgramSectionProps) {
 function ShowCard({ show }: { show: ScheduleShow }) {
   return (
     <motion.a
+      data-show-card
       href={show.href ?? "#program"}
       whileHover={hoverLift}
       whileTap={tapPress}
       className="group relative block h-full min-h-[200px] overflow-hidden border border-[rgba(255,255,255,0.16)] no-underline aspect-[4/3] lg:aspect-auto lg:min-h-[220px]"
     >
-      <Image
-        src={show.imageSrc}
-        alt={show.imageAlt}
-        fill
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
-      />
+      <span data-scale-in className="absolute inset-0 block will-change-transform">
+        <Image
+          src={show.imageSrc}
+          alt={show.imageAlt}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+        />
+      </span>
       <span
         className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,16,0.35)_0%,rgba(8,10,16,0.55)_40%,rgba(8,10,16,0.88)_100%)]"
         aria-hidden
@@ -200,7 +216,10 @@ function ShowCard({ show }: { show: ScheduleShow }) {
 function RadioSoulAtmosphere() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      <div className="absolute inset-0 opacity-[0.18]">
+      <div
+        data-parallax="12"
+        className="absolute inset-0 opacity-[0.18] will-change-transform"
+      >
         <Image
           src="/cover-image.png"
           alt=""
