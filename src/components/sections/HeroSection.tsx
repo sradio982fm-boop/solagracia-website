@@ -152,7 +152,7 @@ export function HeroSection({
           transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
         >
           <a
-            href="#kontak"
+            href="#partner"
             className="inline-flex h-11 items-center border border-[var(--frame-line)] px-4 text-[11px] font-semibold tracking-[0.2em] uppercase"
           >
             Reservasi
