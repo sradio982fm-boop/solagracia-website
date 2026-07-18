@@ -81,7 +81,7 @@ export type TentangContent = {
   headline: string;
   /** Phrase inside headline rendered in accent ember */
   headlineAccent: string;
-  body: string;
+  body: string[];
   stats: TentangStat[];
   ctas: TentangCta[];
   /** Right-rail social proof (replaces episode list) */

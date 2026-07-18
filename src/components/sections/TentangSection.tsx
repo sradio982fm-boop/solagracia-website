@@ -136,12 +136,16 @@ export function TentangSection({ content }: TentangSectionProps) {
               ))}
             </motion.p>
 
-            <motion.p
+            <motion.div
               variants={itemVariants}
-              className="mt-5 max-w-[38rem] text-[1rem] leading-[1.65] text-[var(--section-muted)] lg:text-[1.08rem]"
+              className="mt-5 max-w-[38rem] space-y-4 text-[1rem] leading-[1.65] text-[var(--section-muted)] lg:text-[1.08rem]"
             >
-              {content.body}
-            </motion.p>
+              {content.body.map((paragraph, index) => (
+                <p key={index} className="m-0">
+                  {paragraph}
+                </p>
+              ))}
+            </motion.div>
 
             <motion.div
               variants={itemVariants}
