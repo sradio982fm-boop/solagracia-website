@@ -166,7 +166,7 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
     <>
       <audio ref={audioRef} src={audioSrc} preload="none" />
 
-      <div className="pointer-events-none fixed right-3 bottom-[calc(var(--frame-inset)+8px)] left-3 z-[45] flex justify-center md:right-[calc(var(--frame-inset)+8.5rem)] md:left-[calc(var(--frame-inset)+var(--rail)+12px)]">
+      <div className="pointer-events-none fixed right-3 bottom-[calc(var(--frame-inset-bottom)+8px)] left-3 z-[45] flex justify-center md:right-[calc(var(--frame-inset)+8.5rem)] md:left-[calc(var(--frame-inset)+var(--rail)+12px)]">
         <div className="pointer-events-auto relative w-full max-w-3xl">
           {/*
             Single video instance — docks on the bar (mini) or expands (max).
@@ -179,7 +179,7 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
                 className={cn(
                   videoMaximized
                     ? "fixed inset-[var(--frame-inset)] z-[46] flex items-center justify-center p-4 md:p-8"
-                    : "absolute right-0 bottom-full z-10 w-[min(20rem,100%)] origin-bottom-right",
+                    : "absolute right-0 bottom-full z-10 max-h-[min(40dvh,16rem)] w-[min(20rem,100%)] origin-bottom-right overflow-hidden",
                 )}
                 initial={{ opacity: 0, y: videoMaximized ? 0 : 10 }}
                 animate={{ opacity: 1, y: 0 }}

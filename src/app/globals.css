@@ -26,12 +26,22 @@
   --text-dim: rgba(244, 244, 246, 0.55);
   --line: rgba(255, 255, 255, 0.85);
   --line-soft: rgba(255, 255, 255, 0.35);
-  --frame-inset: 16px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --frame-inset: max(12px, var(--safe-left), var(--safe-right));
+  --frame-inset-top: max(12px, var(--safe-top));
+  --frame-inset-bottom: max(12px, var(--safe-bottom));
   --frame-control: 20px;
   --border: rgba(255, 255, 255, 0.22);
   --overlay: rgba(10, 10, 11, 0.45);
   --rail: 64px;
   --player-height: 52px;
+  /* Clear sticky player + home indicator on every section */
+  --section-pad-bottom: calc(
+    var(--player-height) + var(--frame-inset-bottom) + 20px
+  );
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Frame + fixed nav chrome (white on dark) */
@@ -98,13 +108,29 @@ html[data-chrome="light"] {
 html {
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg-void);
   color: var(--text-main);
+  overflow-x: clip;
+}
+
+/* Mobile: sections may grow; desktop slides stay viewport-locked */
+.section-slide {
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+@media (min-width: 1024px) {
+  .section-slide {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
 }
 
 @keyframes hero-rise {

@@ -44,7 +44,7 @@ export function HeroSection({
   return (
     <section
       id="home"
-      className="relative h-[100dvh] min-h-[640px] overflow-hidden bg-[var(--bg-void)] text-white"
+      className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[var(--bg-void)] text-white max-md:min-h-0 md:min-h-[640px]"
     >
       <motion.div
         className="absolute inset-0"
@@ -142,7 +142,7 @@ export function HeroSection({
       </motion.div>
 
       {/* Mobile fallback */}
-      <div className="relative z-10 flex h-full flex-col justify-end px-5 pt-20 pb-6 md:hidden">
+      <div className="relative z-10 flex h-full min-h-0 flex-col justify-end px-4 pt-[calc(var(--frame-inset-top)+4.5rem)] pb-[var(--section-pad-bottom)] sm:px-5 md:hidden">
         <motion.div
           className="mb-auto flex justify-end pr-12"
           initial={{ opacity: 0, y: -8 }}
@@ -157,10 +157,10 @@ export function HeroSection({
           </a>
         </motion.div>
 
-        <div>
+        <div className="shrink-0">
           <HeroTitle brand={brand} eyebrow={eyebrow} support={support} />
           <motion.div
-            className="mt-5 flex items-center"
+            className="mt-4 flex items-center"
             variants={heroCtaStagger}
             initial="hidden"
             animate="show"
@@ -187,7 +187,7 @@ export function HeroSection({
         </div>
 
         <motion.div
-          className="mt-5 max-h-[42dvh] overflow-y-auto border border-[var(--frame-line)] bg-black/45 px-3 py-4 backdrop-blur-[2px]"
+          className="mt-4 min-h-0 max-h-[min(34dvh,280px)] flex-1 overflow-y-auto border border-[var(--frame-line)] bg-black/45 px-3 py-3 backdrop-blur-[2px]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35, ease: easeOut }}

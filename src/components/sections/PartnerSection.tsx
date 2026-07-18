@@ -33,7 +33,7 @@ export function PartnerSection({ content }: PartnerSectionProps) {
     <section
       id="partner"
       data-surface="smoke"
-      className="section-surface-smoke relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden border-t px-6 pt-[clamp(32px,4.5vw,56px)] pb-[calc(var(--player-height)+var(--frame-inset)+16px)] md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className="section-surface-smoke section-slide relative flex flex-col border-t px-4 pt-[clamp(28px,4vw,48px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
       <PartnerAtmosphere />
 
@@ -112,13 +112,13 @@ export function PartnerSection({ content }: PartnerSectionProps) {
             initial="hidden"
             whileInView="show"
             viewport={viewport}
-            className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory sm:grid sm:grid-cols-3 sm:gap-3.5 sm:overflow-visible sm:pb-0 sm:snap-none lg:gap-4 [&::-webkit-scrollbar]:hidden"
+            className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-3.5 md:overflow-visible md:pb-0 md:snap-none lg:gap-4 [&::-webkit-scrollbar]:hidden"
           >
             {content.plans.map((plan) => (
               <motion.div
                 key={plan.id}
                 variants={cardVariants}
-                className="w-[min(78vw,18rem)] shrink-0 snap-center sm:w-auto sm:min-h-0"
+                className="w-[min(86vw,20rem)] shrink-0 snap-center md:w-auto md:min-h-0"
               >
                 <PlanCard
                   plan={plan}
@@ -155,7 +155,7 @@ function PlanCard({
     <motion.article
       whileHover={hoverLift}
       className={cn(
-        "relative flex h-full min-h-[280px] flex-col border px-4 py-4 sm:min-h-0 lg:px-5 lg:py-5",
+        "relative flex h-full min-h-[240px] flex-col border px-4 py-4 md:min-h-0 lg:px-5 lg:py-5",
         plan.featured
           ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_14%,rgba(10,10,11,0.92))]"
           : "border-[rgba(255,255,255,0.14)] bg-black/40",
@@ -187,7 +187,7 @@ function PlanCard({
         </span>
       </p>
 
-      <ul className="mt-3 m-0 flex min-h-0 flex-1 list-none flex-col gap-2 overflow-hidden p-0">
+      <ul className="mt-3 m-0 flex min-h-0 flex-1 list-none flex-col gap-2 overflow-y-auto p-0">
         {plan.features.map((feature) => (
           <li
             key={feature}

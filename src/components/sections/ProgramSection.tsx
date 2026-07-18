@@ -37,7 +37,7 @@ export function ProgramSection({ content }: ProgramSectionProps) {
     <section
       id="program"
       data-surface="smoke"
-      className="section-surface-smoke relative flex min-h-[100dvh] flex-col overflow-hidden border-t px-6 pt-[clamp(48px,7vw,88px)] pb-[calc(var(--player-height)+var(--frame-inset)+32px)] md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className="section-surface-smoke relative flex min-h-[100dvh] flex-col overflow-x-hidden border-t px-4 pt-[clamp(36px,6vw,72px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
       <RadioSoulAtmosphere />
 

@@ -47,7 +47,7 @@ export function PenyiarSection({ content }: PenyiarSectionProps) {
     <section
       id="penyiar"
       data-surface="white"
-      className="section-surface-white relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden border-t px-6 pt-[clamp(32px,4.5vw,56px)] pb-[calc(var(--player-height)+var(--frame-inset)+16px)] md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className="section-surface-white section-slide relative flex flex-col border-t px-4 pt-[clamp(28px,4vw,48px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
       <MicRoomAtmosphere />
 
@@ -128,15 +128,20 @@ export function PenyiarSection({ content }: PenyiarSectionProps) {
 
           {/* Mobile: swipe all hosts · Desktop: paged 3-up */}
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory sm:hidden [&::-webkit-scrollbar]:hidden">
-              {hosts.map((host) => (
-                <div
-                  key={host.id}
-                  className="w-[min(78vw,20rem)] shrink-0 snap-center"
-                >
-                  <HostCard host={host} />
-                </div>
-              ))}
+            <div className="flex min-h-0 flex-1 flex-col gap-2 sm:hidden">
+              <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory [&::-webkit-scrollbar]:hidden">
+                {hosts.map((host) => (
+                  <div
+                    key={host.id}
+                    className="w-[min(82vw,20rem)] shrink-0 snap-center"
+                  >
+                    <HostCard host={host} />
+                  </div>
+                ))}
+              </div>
+              <p className="m-0 shrink-0 text-center text-[0.62rem] tracking-[0.14em] text-[var(--section-muted)] uppercase">
+                Geser untuk penyiar lain · {hosts.length}
+              </p>
             </div>
 
             <div className="relative hidden min-h-0 flex-1 sm:block">
@@ -204,7 +209,7 @@ function HostCard({ host }: { host: PenyiarHost }) {
     <motion.article
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3, ease: easeOut }}
-      className="group/card flex h-full min-h-[280px] flex-col border border-[rgba(12,12,14,0.14)] bg-[var(--section-raised)] transition-[border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:border-[rgba(12,12,14,0.32)] sm:min-h-0"
+      className="group/card flex h-full min-h-[240px] flex-col border border-[rgba(12,12,14,0.14)] bg-[var(--section-raised)] transition-[border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:border-[rgba(12,12,14,0.32)] sm:min-h-0"
     >
       <div className="shrink-0 px-3 pt-3 pb-2 sm:px-3.5 sm:pt-3.5">
         <p className="m-0 flex items-center gap-1.5 text-[9px] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">

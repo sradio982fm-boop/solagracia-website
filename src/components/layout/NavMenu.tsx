@@ -41,8 +41,8 @@ export function NavMenu() {
         type="button"
         className="pointer-events-auto fixed z-50 flex h-11 w-11 items-center justify-center border-2 border-[var(--frame-line)] bg-[var(--chrome-bg)] text-[var(--chrome-fg)] transition-[border-color,background-color,color] duration-300 hover:bg-[var(--chrome-hover)] md:h-[var(--frame-control)] md:w-[var(--frame-control)] md:border-t-0 md:border-r-0"
         style={{
-          top: "var(--frame-inset)",
-          right: "var(--frame-inset)",
+          top: "var(--frame-inset-top)",
+          right: "max(var(--frame-inset), var(--safe-right))",
         }}
         aria-label={open ? "Tutup navigasi" : "Buka navigasi"}
         aria-expanded={open}

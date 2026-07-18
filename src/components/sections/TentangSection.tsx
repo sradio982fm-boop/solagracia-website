@@ -39,7 +39,7 @@ export function TentangSection({ content }: TentangSectionProps) {
     <section
       id="tentang"
       data-surface="white"
-      className="section-surface-white relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden border-t px-6 pt-[clamp(28px,4vw,48px)] pb-[calc(var(--player-height)+var(--frame-inset)+14px)] md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className="section-surface-white section-slide relative flex flex-col border-t px-4 pt-[clamp(28px,4vw,48px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
       <StudioAtmosphere />
 
@@ -98,7 +98,7 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.div
               variants={itemVariants}
-              className="mt-5 flex flex-wrap items-center gap-0"
+              className="mt-5 flex flex-col items-stretch gap-0 sm:flex-row sm:flex-wrap sm:items-center"
             >
               {content.ctas.map((cta, index) => (
                 <motion.a
@@ -108,8 +108,8 @@ export function TentangSection({ content }: TentangSectionProps) {
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2, ease: easeOut }}
                   className={cn(
-                    "inline-flex h-10 items-center justify-center border border-[rgba(12,12,14,0.5)] px-4 text-[0.68rem] font-semibold tracking-[0.16em] text-[var(--section-fg)] uppercase no-underline transition-colors hover:bg-[rgba(12,12,14,0.05)]",
-                    index > 0 && "border-l-0",
+                    "inline-flex h-11 items-center justify-center border border-[rgba(12,12,14,0.5)] px-4 text-[0.68rem] font-semibold tracking-[0.16em] text-[var(--section-fg)] uppercase no-underline transition-colors hover:bg-[rgba(12,12,14,0.05)] sm:h-10",
+                    index > 0 && "border-t-0 sm:border-t sm:border-l-0",
                   )}
                 >
                   {cta.label}
@@ -122,7 +122,7 @@ export function TentangSection({ content }: TentangSectionProps) {
           </motion.div>
 
           <motion.aside
-            className="flex min-h-0 max-h-[38%] flex-col justify-center lg:max-h-none"
+            className="flex min-h-0 flex-col justify-center max-lg:mt-2"
             aria-label={content.socialLabel}
             variants={railVariants}
             initial="hidden"

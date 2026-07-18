@@ -37,7 +37,7 @@ export function ContactSection({ content }: ContactSectionProps) {
     <section
       id="kontak"
       data-surface="white"
-      className="section-surface-white relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden border-t px-6 pt-[clamp(32px,4.5vw,56px)] pb-[calc(var(--player-height)+var(--frame-inset)+16px)] md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className="section-surface-white section-slide relative flex flex-col border-t px-4 pt-[clamp(28px,4vw,48px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
       <CallDeskAtmosphere />
 
@@ -74,7 +74,7 @@ export function ContactSection({ content }: ContactSectionProps) {
           >
             <motion.div
               variants={itemVariants}
-              className="grid shrink-0 grid-cols-3 gap-2 sm:gap-2.5"
+              className="grid shrink-0 grid-cols-1 gap-2 min-[400px]:grid-cols-3 min-[400px]:gap-2.5"
             >
               {content.channels.map((channel) => (
                 <ChannelCard key={channel.id} channel={channel} />
@@ -205,7 +205,7 @@ function ChannelCard({ channel }: { channel: KontakChannel }) {
       whileHover={hoverLift}
       whileTap={tapPress}
       className={cn(
-        "group flex min-h-[4.75rem] flex-col justify-between border px-2.5 py-2.5 no-underline transition-colors sm:min-h-[5.25rem] sm:px-3 sm:py-3",
+        "group flex min-h-12 flex-row items-center gap-3 border px-3 py-3 no-underline transition-colors min-[400px]:min-h-[5.25rem] min-[400px]:flex-col min-[400px]:items-stretch min-[400px]:justify-between min-[400px]:gap-0 min-[400px]:px-2.5 min-[400px]:py-2.5 sm:px-3 sm:py-3",
         channel.id === "whatsapp"
           ? "border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)]"
           : "border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_65%,transparent)] hover:border-[rgba(12,12,14,0.28)]",
@@ -279,7 +279,7 @@ function ContactForm({ content }: { content: KontakContent }) {
           onChange={(event) => setMessage(event.target.value)}
           placeholder={content.form.messagePlaceholder}
           rows={5}
-          className="min-h-[7.5rem] flex-1 resize-none border border-[rgba(12,12,14,0.16)] bg-white/70 px-3 py-2.5 text-[0.88rem] leading-relaxed text-[var(--section-fg)] outline-none transition-[border-color,box-shadow] placeholder:text-[rgba(18,18,20,0.35)] focus:border-[var(--accent)] focus:shadow-[inset_0_0_0_1px_var(--accent)]"
+          className="min-h-[5.5rem] flex-1 resize-none border border-[rgba(12,12,14,0.16)] bg-white/70 px-3 py-2.5 text-[0.88rem] leading-relaxed text-[var(--section-fg)] outline-none transition-[border-color,box-shadow] placeholder:text-[rgba(18,18,20,0.35)] focus:border-[var(--accent)] focus:shadow-[inset_0_0_0_1px_var(--accent)] lg:min-h-[7.5rem]"
         />
       </label>
 

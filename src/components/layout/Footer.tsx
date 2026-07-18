@@ -27,7 +27,7 @@ export function Footer({ content }: FooterProps) {
 
   return (
     <footer
-      className="relative overflow-hidden border-t border-[var(--line-soft)] bg-[var(--bg-void)] px-[clamp(20px,5vw,72px)] pt-[clamp(56px,8vw,96px)] pb-[calc(var(--player-height)+var(--frame-inset)+28px)] text-[var(--text-main)]"
+      className="relative overflow-hidden border-t border-[var(--line-soft)] bg-[var(--bg-void)] px-[clamp(20px,5vw,72px)] pt-[clamp(48px,7vw,88px)] pb-[calc(var(--section-pad-bottom)+12px)] text-[var(--text-main)]"
       role="contentinfo"
     >
       <div className="relative z-[1] mx-auto max-w-[1200px] md:pl-[calc(var(--rail))]">
@@ -117,7 +117,7 @@ export function Footer({ content }: FooterProps) {
               <li key={link.label}>
                 <a
                   href={link.href}
-                  className="text-[0.72rem] font-semibold tracking-[0.16em] text-[var(--text-dim)] uppercase no-underline transition-colors hover:text-[var(--text-main)]"
+                  className="inline-flex min-h-11 items-center text-[0.72rem] font-semibold tracking-[0.16em] text-[var(--text-dim)] uppercase no-underline transition-colors hover:text-[var(--text-main)]"
                 >
                   {link.label}
                 </a>
