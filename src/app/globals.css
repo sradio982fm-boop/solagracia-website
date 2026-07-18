@@ -1,24 +1,94 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-accent: #e69526;
-  --color-accent-hover: #d4850f;
-  --color-bg-dark: #0c0c0f;
+  --color-accent: #c45c26;
+  --color-accent-hover: #a84d1f;
+  --color-bg-void: #0a0a0b;
+  --color-bg-dark: #0a0a0b;
   --color-bg-elevated: #141418;
   --color-text-main: #f4f4f6;
-  --color-text-dim: #8a8a9a;
-  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text-dim: rgba(244, 244, 246, 0.55);
+  --color-border: rgba(255, 255, 255, 0.22);
   --font-sans: var(--font-montserrat);
 }
 
 :root {
-  --accent: #e69526;
-  --accent-hover: #d4850f;
-  --bg-dark: #0c0c0f;
+  --accent: #c45c26;
+  --accent-hover: #a84d1f;
+  --bg-void: #0a0a0b;
+  --bg-dark: #0a0a0b;
   --bg-elevated: #141418;
+  --bg-smoke: #0a0a0b;
+  /* Dim plaster — cool loft concrete, not bright white / warm cream */
+  --bg-white: #c8c4ba;
+  --bg-white-raised: #d5d1c7;
   --text-main: #f4f4f6;
-  --text-dim: #8a8a9a;
-  --border: rgba(255, 255, 255, 0.08);
+  --text-dim: rgba(244, 244, 246, 0.55);
+  --line: rgba(255, 255, 255, 0.85);
+  --line-soft: rgba(255, 255, 255, 0.35);
+  --frame-inset: 16px;
+  --frame-control: 20px;
+  --border: rgba(255, 255, 255, 0.22);
+  --overlay: rgba(10, 10, 11, 0.45);
+  --rail: 64px;
+  --player-height: 52px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Frame + fixed nav chrome (white on dark) */
+  --frame-line: rgba(255, 255, 255, 0.28);
+  --chrome-fg: rgba(255, 255, 255, 0.9);
+  --chrome-fg-muted: rgba(255, 255, 255, 0.55);
+  --chrome-fg-faint: rgba(255, 255, 255, 0.28);
+  --chrome-bg: rgba(0, 0, 0, 0.55);
+  --chrome-bg-soft: rgba(0, 0, 0, 0.18);
+  --chrome-hover: rgba(255, 255, 255, 0.1);
+  --chrome-mark: rgba(255, 255, 255, 0.85);
+  --chrome-on-active: #0c0c0e;
+}
+
+/* Ink chrome on white sections — high contrast, no white-on-white wash */
+html[data-chrome="light"] {
+  --frame-line: rgba(12, 12, 14, 0.78);
+  --chrome-fg: #0c0c0e;
+  --chrome-fg-muted: rgba(12, 12, 14, 0.58);
+  --chrome-fg-faint: rgba(12, 12, 14, 0.32);
+  --chrome-bg: var(--bg-white);
+  --chrome-bg-soft: transparent;
+  --chrome-hover: rgba(12, 12, 14, 0.07);
+  --chrome-mark: #0c0c0e;
+  --chrome-on-active: var(--bg-white);
+}
+
+.section-surface-white {
+  --section-fg: #121214;
+  --section-muted: rgba(18, 18, 20, 0.55);
+  --section-raised: var(--bg-white-raised);
+  background:
+    linear-gradient(
+      165deg,
+      rgba(12, 12, 14, 0.04) 0%,
+      transparent 42%,
+      rgba(12, 12, 14, 0.06) 100%
+    ),
+    var(--bg-white);
+  border-color: rgba(12, 12, 14, 0.12);
+  color: var(--section-fg);
+}
+
+.section-surface-smoke {
+  --section-fg: #f4f4f6;
+  --section-muted: rgba(244, 244, 246, 0.55);
+  background: var(--bg-smoke);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--section-fg);
+}
+
+.section-surface-dark {
+  --section-fg: var(--text-main);
+  --section-muted: var(--text-dim);
+  background: var(--bg-void);
+  border-color: var(--line-soft);
+  color: var(--section-fg);
 }
 
 * {
@@ -33,6 +103,182 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg-dark);
+  background: var(--bg-void);
   color: var(--text-main);
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes player-eq {
+  from {
+    transform: scaleY(0.45);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Penyiar roster — hovered card expands, siblings ease back */
+.penyiar-expand-track .host-slot {
+  flex: 1 1 0;
+  transition: flex 0.55s var(--ease-out);
+}
+
+.penyiar-expand-track:hover .host-slot {
+  flex: 0.72 1 0;
+}
+
+.penyiar-expand-track .host-slot:hover {
+  flex: 1.75 1 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .penyiar-expand-track .host-slot {
+    transition: none;
+  }
+}
+
+/* Station tickertape between program ↔ penyiar */
+@keyframes radio-marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes radio-marquee-bar {
+  0%,
+  100% {
+    transform: scaleY(0.45);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.radio-marquee__track {
+  animation: radio-marquee-scroll 38s linear infinite;
+  will-change: transform;
+}
+
+.radio-marquee:hover .radio-marquee__track {
+  animation-play-state: paused;
+}
+
+.radio-marquee__bar {
+  display: inline-block;
+  transform-origin: bottom;
+  animation: radio-marquee-bar 0.85s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-marquee__track {
+    animation: none;
+  }
+
+  .radio-marquee__bar {
+    animation: none;
+  }
+}
+
+/* Kontak call-desk VU meters */
+@keyframes kontak-vu {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.kontak-vu-bar {
+  transform-origin: bottom center;
+  animation: kontak-vu 1.4s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kontak-vu-bar {
+    animation: none;
+    transform: scaleY(0.7);
+  }
+}
+
+/* Partner history logo strip */
+@keyframes partner-logo-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.partner-logo-marquee__track {
+  animation: partner-logo-scroll 32s linear infinite;
+  will-change: transform;
+}
+
+.partner-logo-marquee:hover .partner-logo-marquee__track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partner-logo-marquee__track {
+    animation: none;
+  }
+}
+
+/* Radio volume slider — thin track, no native thumb chrome on WebKit */
+.player-volume {
+  --volume-fill: var(--accent);
+}
+
+.player-volume::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  margin-top: -3px;
+}
+
+.player-volume::-webkit-slider-runnable-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.player-volume::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+}
+
+.player-volume::-moz-range-track {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.22);
 }

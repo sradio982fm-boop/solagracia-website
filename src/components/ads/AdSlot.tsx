@@ -1,0 +1,229 @@
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import type { AdPlaceholder } from "@/types/ads";
+
+type AdSlotProps = {
+  ad: AdPlaceholder;
+  className?: string;
+};
+
+/**
+ * Quiet sponsored plate — blueprint frame language.
+ * Supports text-only, image+copy, or full-bleed image creatives.
+ */
+export function AdSlot({ ad, className }: AdSlotProps) {
+  const label = ad.label ?? "Partner";
+  const ink = ad.tone === "ink";
+  const isFullImage = ad.variant === "image" && Boolean(ad.imageSrc);
+  const hasThumb = Boolean(ad.imageSrc) && !isFullImage;
+  const title = ad.sponsor ?? ad.imageAlt ?? label;
+
+  const plateClass = cn(
+    "group relative block overflow-hidden transition-colors",
+    ink
+      ? "border border-[rgba(255,255,255,0.18)] bg-[var(--bg-void)] text-[var(--text-main)] hover:border-[rgba(255,255,255,0.32)]"
+      : cn(
+          "border text-[var(--section-fg)]",
+          "border-[color:color-mix(in_srgb,var(--section-fg)_16%,transparent)]",
+          "hover:border-[color:color-mix(in_srgb,var(--section-fg)_32%,transparent)]",
+        ),
+    isFullImage && "p-0",
+    !isFullImage && ad.variant === "strip" && "px-5 py-6 md:px-8 md:py-7",
+    !isFullImage && ad.variant === "panel" && "w-full px-5 py-8 md:px-6 md:py-10",
+    !isFullImage &&
+      ad.variant === "inline" &&
+      "flex items-center gap-4 px-4 py-4 md:gap-5 md:px-5",
+  );
+
+  const corner = ink
+    ? "border-[rgba(255,255,255,0.4)]"
+    : "border-[color:color-mix(in_srgb,var(--section-fg)_40%,transparent)]";
+
+  const muted = ink ? "text-[var(--text-dim)]" : "text-[var(--section-muted)]";
+  const hoverFg = ink
+    ? "group-hover:text-[var(--text-main)]"
+    : "group-hover:text-[var(--section-fg)]";
+
+  const corners = (
+    <>
+      <span
+        className={cn(
+          "pointer-events-none absolute top-0 left-0 z-[1] h-2 w-2 border-t border-l",
+          corner,
+        )}
+        aria-hidden
+      />
+      <span
+        className={cn(
+          "pointer-events-none absolute top-0 right-0 z-[1] h-2 w-2 border-t border-r",
+          corner,
+        )}
+        aria-hidden
+      />
+      <span
+        className={cn(
+          "pointer-events-none absolute bottom-0 left-0 z-[1] h-2 w-2 border-b border-l",
+          corner,
+        )}
+        aria-hidden
+      />
+      <span
+        className={cn(
+          "pointer-events-none absolute right-0 bottom-0 z-[1] h-2 w-2 border-r border-b",
+          corner,
+        )}
+        aria-hidden
+      />
+    </>
+  );
+
+  const body = isFullImage ? (
+    <>
+      {corners}
+      <span className="relative block aspect-[16/7] w-full sm:aspect-[21/9]">
+        <Image
+          src={ad.imageSrc!}
+          alt={ad.imageAlt ?? title}
+          fill
+          sizes="(max-width: 768px) 100vw, min(1120px, 100vw)"
+          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
+        />
+        <span
+          className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"
+          aria-hidden
+        />
+        {(ad.sponsor || ad.line) && (
+          <span className="absolute right-0 bottom-0 left-0 p-4 md:p-5">
+            {ad.sponsor ? (
+              <span className="block text-[13px] font-bold tracking-tight text-white md:text-[15px]">
+                {ad.sponsor}
+              </span>
+            ) : null}
+            {ad.line ? (
+              <span className="mt-0.5 block text-[11px] text-white/70 md:text-[12px]">
+                {ad.line}
+              </span>
+            ) : null}
+          </span>
+        )}
+      </span>
+    </>
+  ) : (
+    <>
+      {corners}
+
+      {hasThumb ? (
+        <span
+          className={cn(
+            "relative shrink-0 overflow-hidden bg-[rgba(12,12,14,0.06)]",
+            ad.variant === "inline" && "h-14 w-14 md:h-16 md:w-16",
+            ad.variant === "strip" && "mb-4 block aspect-[16/7] w-full",
+            ad.variant === "panel" && "mb-5 block aspect-[3/4] w-full",
+          )}
+        >
+          <Image
+            src={ad.imageSrc!}
+            alt={ad.imageAlt ?? title}
+            fill
+            sizes={ad.variant === "inline" ? "64px" : "280px"}
+            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+          />
+        </span>
+      ) : null}
+
+      {(ad.sponsor || ad.line) && (
+        <div
+          className={cn(
+            ad.variant === "inline" && "min-w-0 flex-1",
+            hasThumb && ad.variant === "strip" && "mt-0",
+          )}
+        >
+          {ad.sponsor ? (
+            <p
+              className={cn(
+                "font-bold tracking-tight",
+                ad.variant === "panel"
+                  ? "text-xl md:text-2xl"
+                  : "text-[15px] md:text-base",
+              )}
+            >
+              {ad.sponsor}
+            </p>
+          ) : null}
+          {ad.line ? (
+            <p
+              className={cn(
+                ad.sponsor && "mt-1",
+                muted,
+                ad.variant === "panel"
+                  ? "text-sm leading-relaxed"
+                  : "text-[12px] leading-snug md:text-[13px]",
+              )}
+            >
+              {ad.line}
+            </p>
+          ) : null}
+        </div>
+      )}
+
+      {ad.href && !isFullImage ? (
+        <span
+          className={cn(
+            "text-[10px] font-semibold tracking-[0.18em] uppercase transition-colors",
+            muted,
+            hoverFg,
+            ad.variant === "inline" && "shrink-0",
+            ad.variant !== "inline" && "mt-4 inline-block",
+          )}
+        >
+          Selengkapnya
+        </span>
+      ) : null}
+    </>
+  );
+
+  return (
+    <aside
+      className={cn("ad-slot w-full", className)}
+      aria-label={`${label}: ${title}`}
+    >
+      <div className="mb-2 flex items-center gap-3">
+        <span
+          className={cn(
+            "text-[9px] font-semibold tracking-[0.28em] uppercase",
+            ink ? "text-[var(--text-dim)]" : "text-[var(--section-muted)]",
+          )}
+        >
+          {label}
+        </span>
+        <span
+          className={cn(
+            "h-px flex-1 opacity-25",
+            ink ? "bg-[var(--text-main)]" : "bg-[var(--section-fg)]",
+          )}
+          aria-hidden
+        />
+        {ink ? (
+          <span
+            className="text-[9px] font-semibold tracking-[0.2em] text-[var(--accent)] uppercase"
+            aria-hidden
+          >
+            Spot
+          </span>
+        ) : null}
+      </div>
+
+      {ad.href ? (
+        <a
+          href={ad.href}
+          rel="sponsored noopener noreferrer"
+          className={plateClass}
+        >
+          {body}
+        </a>
+      ) : (
+        <div className={plateClass}>{body}</div>
+      )}
+    </aside>
+  );
+}

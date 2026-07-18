@@ -29,13 +29,13 @@ Industrial-chic architecture studio: raw materials in photography (brick, timber
 
 | Token | Value |
 |-------|--------|
-| **Asset** | [`/public/cover-image.webp`](public/cover-image.webp) |
+| **Asset** | [`/public/cover-image.png`](public/cover-image.png) |
 | **Role** | Default full-bleed hero / atmospheric plane for the public site |
-| **Subject** | Warm loft dining: brick wall, wood beams, long table, leather chairs, industrial pendants |
+| **Subject** | Studio broadcast portrait: headphones + mic, navy / golden split backdrop |
 | **Treatment** | Edge-to-edge background (or dominant photo plane). Soft dark vignette / gradient so white type stays legible. No inset cards, no floating media frames in the hero. |
 | **Do not** | Crop into a rounded card, collage, or side-panel thumbnail on the first viewport |
 
-Inner pages may use solid charcoal canvas (reference 2) with a large square photo block — still prefer `cover-image.webp` or matching loft photography.
+Inner pages may use solid charcoal canvas (reference 2) with a large square photo block — still prefer `cover-image.png` or matching studio photography.
 
 ---
 
@@ -107,12 +107,13 @@ Loaded via `next/font/local` in `src/app/layout.tsx` → CSS var `--font-montser
 └────┴─────────────────────────────────────┴──┘
 ```
 
-1. **Left letter rail** — narrow vertical strip: logo cell + square letter nav (1px white borders). Active = inverted fill. Optional vertical word label beside active cell.
-2. **Hero plane** — `cover-image.webp` full-bleed under content; left/center holds brand + headline + short support + ghost CTA group.
-3. **Right panel stack** — semi-transparent dark column with horizontal 1px dividers; each row = watermark initials + title + one-line blurb (or links to sections).
-4. **Top-right utilities** — square hamburger (1px border); optional outlined text/icon CTA.
-5. **Far-right micro rail** (optional) — thin strip for social icons.
-6. **Bottom-right chevrons** — square up/down for section paging (use for real section nav, not fake “scroll to explore” bounce).
+1. **White box frame (mandatory)** — one continuous 1px rectangle (`--frame-line`) on all four sides of the hero shell. Built as a 3-column CSS grid: left rail · open stage · right panel. Far-right tagline gutter sits *outside* the frame. Corner crosshairs (`+`) mark key intersections.
+2. **Left letter rail** — first grid column inside the frame: logo cell + square letter nav. Active = inverted fill. Optional vertical word label beside active cell.
+3. **Hero plane** — `cover-image.png` full-bleed *behind* the frame; stage (center column) holds brand + short support + ghost CTA group, bottom-left.
+4. **Right panel stack** — third grid column, **full frame height**, horizontal 1px dividers only inside this column; each row = watermark initials + title + one-line blurb.
+5. **Top-right utilities** — Reservasi + hamburger sit on the top edge of the stage (inside the frame).
+6. **Far-right micro rail** — outside the frame: vertical tagline + social icons.
+7. **Bottom-right chevrons** — docked to the panel column corner.
 
 ### 5.2 Inner / content slides (reference 2)
 
@@ -219,7 +220,7 @@ Loaded via `next/font/local` in `src/app/layout.tsx` → CSS var `--font-montser
 
 When building or changing public UI:
 
-- [ ] Hero uses `/cover-image.webp` as full-bleed (or equivalent loft photo)
+- [ ] Hero uses `/cover-image.png` as full-bleed (or equivalent studio photo)
 - [ ] Left letter rail + 1px white structural language present (or mobile equivalent)
 - [ ] Ghost outline buttons; no filled purple CTAs
 - [ ] Montserrat (or agreed geometric sans) for display + UI
@@ -234,7 +235,7 @@ When building or changing public UI:
 
 | Asset | Path | Use |
 |-------|------|-----|
-| Cover / hero | `public/cover-image.webp` | Default atmospheric plane |
+| Cover / hero | `public/cover-image.png` | Default atmospheric plane |
 | Style refs | Chat attachments (Style & Design loft UI + Savoir Faire black UI) | Layout & component DNA only — do not copy their brand names/copy |
 
 Update this file when the visual system changes; do not invent a second competing aesthetic in code.
