@@ -2,9 +2,16 @@
 
 import Image from "next/image";
 import { useEffect, useState, type ReactNode } from "react";
-import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { SECTION_ADS } from "@/data/ads";
+import {
+  easeOut,
+  fadeUpCard,
+  staggerContainer,
+  tapPress,
+  viewportOnce,
+} from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { PenyiarContent, PenyiarHost } from "@/types/penyiar";
 
@@ -15,23 +22,9 @@ type PenyiarSectionProps = {
 /** Hosts visible per desktop page — keeps the stage inside 100dvh */
 const PAGE_SIZE = 3;
 
-const easeOut = [0.16, 1, 0.3, 1] as const;
-
-const viewport = { once: true, margin: "-8% 0px", amount: 0.2 } as const;
-
-const gridVariants: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
-};
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: easeOut },
-  },
-};
+const viewport = viewportOnce;
+const gridVariants = staggerContainer(0.08, 0.04);
+const cardVariants = fadeUpCard;
 
 /**
  * #penyiar — viewport-locked host roster.
@@ -193,21 +186,26 @@ function PagerButton({
   children: ReactNode;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
+      whileTap={disabled ? undefined : tapPress}
       className="inline-flex h-9 w-9 items-center justify-center border border-[rgba(12,12,14,0.35)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)] disabled:cursor-not-allowed disabled:opacity-30"
     >
       {children}
-    </button>
+    </motion.button>
   );
 }
 
 function HostCard({ host }: { host: PenyiarHost }) {
   return (
-    <article className="group/card flex h-full min-h-[280px] flex-col border border-[rgba(12,12,14,0.14)] bg-[var(--section-raised)] transition-[border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:border-[rgba(12,12,14,0.32)] sm:min-h-0">
+    <motion.article
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.3, ease: easeOut }}
+      className="group/card flex h-full min-h-[280px] flex-col border border-[rgba(12,12,14,0.14)] bg-[var(--section-raised)] transition-[border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:border-[rgba(12,12,14,0.32)] sm:min-h-0"
+    >
       <div className="shrink-0 px-3 pt-3 pb-2 sm:px-3.5 sm:pt-3.5">
         <p className="m-0 flex items-center gap-1.5 text-[9px] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
           <MicIcon />
@@ -278,7 +276,7 @@ function HostCard({ host }: { host: PenyiarHost }) {
           </span>
         ) : null}
       </footer>
-    </article>
+    </motion.article>
   );
 }
 

@@ -2,9 +2,17 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { motion, type Variants } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { SECTION_ADS } from "@/data/ads";
+import {
+  easeOut,
+  fadeUpCard,
+  hoverLift,
+  staggerContainer,
+  tapPress,
+  viewportLoose,
+} from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { formatShowWindow, getWeekdayId } from "@/lib/schedule";
 import type { ProgramContent, ScheduleShow, WeekdayId } from "@/types/schedule";
@@ -13,23 +21,9 @@ type ProgramSectionProps = {
   content: ProgramContent;
 };
 
-const easeOut = [0.16, 1, 0.3, 1] as const;
-
-const viewport = { once: true, margin: "-10% 0px", amount: 0.15 } as const;
-
-const listVariants: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06, delayChildren: 0.08 } },
-};
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 22 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: easeOut },
-  },
-};
+const viewport = viewportLoose;
+const listVariants = staggerContainer(0.06, 0.08);
+const cardVariants = fadeUpCard;
 
 /**
  * #program — weekly lineup grid with day picker + radio-soul atmosphere.
@@ -81,22 +75,31 @@ export function ProgramSection({ content }: ProgramSectionProps) {
           {content.days.map((day, index) => {
             const active = day.id === activeDay;
             return (
-              <button
+              <motion.button
                 key={day.id}
                 type="button"
                 role="tab"
                 aria-selected={active}
                 onClick={() => setActiveDay(day.id)}
+                whileTap={tapPress}
                 className={cn(
-                  "shrink-0 border border-[rgba(255,255,255,0.28)] px-3.5 py-3 text-[0.68rem] font-semibold tracking-[0.14em] uppercase transition-colors sm:px-4",
+                  "relative shrink-0 border border-[rgba(255,255,255,0.28)] px-3.5 py-3 text-[0.68rem] font-semibold tracking-[0.14em] uppercase transition-colors sm:px-4",
                   index > 0 && "border-l-0",
                   active
-                    ? "bg-[var(--accent)] text-white border-[var(--accent)]"
+                    ? "border-[var(--accent)] text-white"
                     : "bg-transparent text-[var(--section-muted)] hover:bg-white/[0.06] hover:text-[var(--section-fg)]",
                 )}
               >
-                {day.label}
-              </button>
+                {active ? (
+                  <motion.span
+                    layoutId="program-day-pill"
+                    className="absolute inset-0 bg-[var(--accent)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    aria-hidden
+                  />
+                ) : null}
+                <span className="relative z-[1]">{day.label}</span>
+              </motion.button>
             );
           })}
         </motion.div>
@@ -104,28 +107,37 @@ export function ProgramSection({ content }: ProgramSectionProps) {
         {/* Ad rides the left column; show slate stays a 3-up grid */}
         <div className="mt-8 grid min-h-0 flex-1 grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(10rem,12.5rem)_minmax(0,1fr)] xl:gap-7">
           {ad ? (
-            <aside className="order-2 flex xl:order-1 xl:sticky xl:top-[calc(var(--frame-inset)+1.25rem)] xl:self-start">
+            <motion.aside
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={viewport}
+              transition={{ duration: 0.55, ease: easeOut }}
+              className="order-2 flex xl:order-1 xl:sticky xl:top-[calc(var(--frame-inset)+1.25rem)] xl:self-start"
+            >
               <AdSlot ad={ad} className="w-full max-w-none md:max-w-none" />
-            </aside>
+            </motion.aside>
           ) : null}
 
-          <motion.div
-            key={activeDay}
-            variants={listVariants}
-            initial="hidden"
-            animate="show"
-            className="order-1 grid h-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:order-2"
-          >
-            {shows.map((show) => (
-              <motion.div
-                key={`${activeDay}-${show.id}`}
-                variants={cardVariants}
-                className="min-h-0"
-              >
-                <ShowCard show={show} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeDay}
+              variants={listVariants}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+              className="order-1 grid h-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:order-2"
+            >
+              {shows.map((show) => (
+                <motion.div
+                  key={`${activeDay}-${show.id}`}
+                  variants={cardVariants}
+                  className="min-h-0"
+                >
+                  <ShowCard show={show} />
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
@@ -134,8 +146,10 @@ export function ProgramSection({ content }: ProgramSectionProps) {
 
 function ShowCard({ show }: { show: ScheduleShow }) {
   return (
-    <a
+    <motion.a
       href={show.href ?? "#program"}
+      whileHover={hoverLift}
+      whileTap={tapPress}
       className="group relative block h-full min-h-[200px] overflow-hidden border border-[rgba(255,255,255,0.16)] no-underline aspect-[4/3] lg:aspect-auto lg:min-h-[220px]"
     >
       <Image
@@ -175,7 +189,7 @@ function ShowCard({ show }: { show: ScheduleShow }) {
       <span className="absolute right-3 bottom-3 z-[1] bg-[var(--accent)] px-2.5 py-1.5 text-[11px] font-bold tracking-[0.04em] text-white tabular-nums">
         {formatShowWindow(show)}
       </span>
-    </a>
+    </motion.a>
   );
 }
 

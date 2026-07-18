@@ -1,3 +1,8 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { easeOut } from "@/lib/motion";
+
 type HeroSocialRailProps = {
   tagline?: string;
 };
@@ -20,12 +25,15 @@ export function HeroSocialRail({ tagline }: HeroSocialRailProps) {
       aria-hidden
     >
       <div className="flex h-full flex-col items-center justify-end">
-        <p
+        <motion.p
           className="m-0 text-[10px] font-medium tracking-[0.28em] text-white/45 uppercase"
           style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.7, ease: easeOut }}
         >
           {tagline}
-        </p>
+        </motion.p>
       </div>
     </aside>
   );

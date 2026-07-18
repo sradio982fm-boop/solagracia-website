@@ -1,17 +1,23 @@
+"use client";
+
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { hoverLift, tapPress } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { AdPlaceholder } from "@/types/ads";
 
 type AdSlotProps = {
   ad: AdPlaceholder;
   className?: string;
+  /** Shorter full-image plate for viewport-locked sections */
+  compact?: boolean;
 };
 
 /**
  * Quiet sponsored plate — blueprint frame language.
  * Supports text-only, image+copy, or full-bleed image creatives.
  */
-export function AdSlot({ ad, className }: AdSlotProps) {
+export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const label = ad.label ?? "Partner";
   const ink = ad.tone === "ink";
   const isFullImage = ad.variant === "image" && Boolean(ad.imageSrc);
@@ -80,7 +86,14 @@ export function AdSlot({ ad, className }: AdSlotProps) {
   const body = isFullImage ? (
     <>
       {corners}
-      <span className="relative block aspect-[16/7] w-full sm:aspect-[21/9]">
+      <span
+        className={cn(
+          "relative block w-full",
+          compact
+            ? "h-[clamp(72px,12dvh,120px)]"
+            : "aspect-[16/7] sm:aspect-[21/9]",
+        )}
+      >
         <Image
           src={ad.imageSrc!}
           alt={ad.imageAlt ?? title}
@@ -93,14 +106,29 @@ export function AdSlot({ ad, className }: AdSlotProps) {
           aria-hidden
         />
         {(ad.sponsor || ad.line) && (
-          <span className="absolute right-0 bottom-0 left-0 p-4 md:p-5">
+          <span
+            className={cn(
+              "absolute right-0 bottom-0 left-0",
+              compact ? "p-3 md:p-3.5" : "p-4 md:p-5",
+            )}
+          >
             {ad.sponsor ? (
-              <span className="block text-[13px] font-bold tracking-tight text-white md:text-[15px]">
+              <span
+                className={cn(
+                  "block font-bold tracking-tight text-white",
+                  compact ? "text-[12px] md:text-[13px]" : "text-[13px] md:text-[15px]",
+                )}
+              >
                 {ad.sponsor}
               </span>
             ) : null}
             {ad.line ? (
-              <span className="mt-0.5 block text-[11px] text-white/70 md:text-[12px]">
+              <span
+                className={cn(
+                  "mt-0.5 block text-white/70",
+                  compact ? "text-[10px] md:text-[11px]" : "text-[11px] md:text-[12px]",
+                )}
+              >
                 {ad.line}
               </span>
             ) : null}
@@ -214,15 +242,19 @@ export function AdSlot({ ad, className }: AdSlotProps) {
       </div>
 
       {ad.href ? (
-        <a
+        <motion.a
           href={ad.href}
           rel="sponsored noopener noreferrer"
+          whileHover={hoverLift}
+          whileTap={tapPress}
           className={plateClass}
         >
           {body}
-        </a>
+        </motion.a>
       ) : (
-        <div className={plateClass}>{body}</div>
+        <motion.div whileHover={hoverLift} className={plateClass}>
+          {body}
+        </motion.div>
       )}
     </aside>
   );

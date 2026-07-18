@@ -1,4 +1,15 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { motion } from "framer-motion";
+import {
+  easeOut,
+  fadeUpSoft,
+  hoverLift,
+  staggerContainer,
+  tapPress,
+  viewportLoose,
+} from "@/lib/motion";
 import type { FooterContent } from "@/types/site";
 
 type FooterProps = {
@@ -20,8 +31,14 @@ export function Footer({ content }: FooterProps) {
       role="contentinfo"
     >
       <div className="relative z-[1] mx-auto max-w-[1200px] md:pl-[calc(var(--rail))]">
-        <div className="grid grid-cols-1 gap-[clamp(32px,4vw,56px)] border-b border-[var(--line-soft)] pb-[clamp(40px,6vw,72px)] lg:grid-cols-[1.4fr_1fr_1fr]">
-          <div className="flex max-w-[360px] flex-col gap-5">
+        <motion.div
+          variants={staggerContainer(0.1, 0.02)}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportLoose}
+          className="grid grid-cols-1 gap-[clamp(32px,4vw,56px)] border-b border-[var(--line-soft)] pb-[clamp(40px,6vw,72px)] lg:grid-cols-[1.4fr_1fr_1fr]"
+        >
+          <motion.div variants={fadeUpSoft} className="flex max-w-[360px] flex-col gap-5">
             <h2 className="m-0 text-[clamp(2.2rem,4.5vw,3.4rem)] leading-[0.92] font-extrabold tracking-[-0.03em] uppercase">
               {titleLines.map((line, index) => (
                 <span key={line}>
@@ -34,23 +51,27 @@ export function Footer({ content }: FooterProps) {
               {content.brandDescription}
             </p>
             <div className="flex flex-wrap items-center gap-0">
-              <a
+              <motion.a
                 href={content.listenHref}
+                whileHover={hoverLift}
+                whileTap={tapPress}
                 className="inline-flex h-11 items-center gap-2.5 border border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-main)] uppercase no-underline transition-colors hover:bg-white/10"
               >
                 <PlayIcon />
                 Dengarkan
-              </a>
-              <a
+              </motion.a>
+              <motion.a
                 href={content.contactHref}
+                whileHover={hoverLift}
+                whileTap={tapPress}
                 className="inline-flex h-11 items-center border border-l-0 border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-dim)] uppercase no-underline transition-colors hover:bg-white/10 hover:text-[var(--text-main)]"
               >
                 {content.contactLabel}
-              </a>
+              </motion.a>
             </div>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={fadeUpSoft}>
             <FooterHeading>Ikuti</FooterHeading>
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
               {content.socialLinks.map((link) => (
@@ -61,9 +82,9 @@ export function Footer({ content }: FooterProps) {
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={fadeUpSoft}>
             <FooterHeading>Jelajahi</FooterHeading>
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
               {content.exploreLinks.map((link) => (
@@ -72,10 +93,16 @@ export function Footer({ content }: FooterProps) {
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 items-center gap-[clamp(20px,3vw,40px)] py-6 sm:grid-cols-[auto_1fr_auto]">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={viewportLoose}
+          transition={{ duration: 0.55, delay: 0.1, ease: easeOut }}
+          className="grid grid-cols-1 items-center gap-[clamp(20px,3vw,40px)] py-6 sm:grid-cols-[auto_1fr_auto]"
+        >
           <span className="inline-flex items-baseline gap-1.5 uppercase tracking-[0.06em]">
             <span className="text-[0.95rem] font-extrabold text-[var(--text-main)]">
               SOLAGRACIA
@@ -101,7 +128,7 @@ export function Footer({ content }: FooterProps) {
           <span className="text-right text-[0.68rem] font-medium tracking-[0.12em] text-[var(--text-dim)] uppercase tabular-nums">
             {copyright}
           </span>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );

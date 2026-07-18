@@ -1,8 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { whatsappHref } from "@/data/partner";
+import {
+  easeOut,
+  fadeUpCard,
+  hoverLift,
+  staggerContainer,
+  tapPress,
+  viewportOnce,
+} from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { PartnerContent, SponsorshipPlan } from "@/types/partner";
 
@@ -10,23 +18,9 @@ type PartnerSectionProps = {
   content: PartnerContent;
 };
 
-const easeOut = [0.16, 1, 0.3, 1] as const;
-
-const viewport = { once: true, margin: "-8% 0px", amount: 0.2 } as const;
-
-const listVariants: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
-};
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 18 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: easeOut },
-  },
-};
+const viewport = viewportOnce;
+const listVariants = staggerContainer(0.07, 0.05);
+const cardVariants = fadeUpCard;
 
 /**
  * #partner — viewport-locked partner history + sponsorship plans.
@@ -158,7 +152,8 @@ function PlanCard({
   const href = whatsappHref(whatsappNumber, plan.whatsappMessage);
 
   return (
-    <article
+    <motion.article
+      whileHover={hoverLift}
       className={cn(
         "relative flex h-full min-h-[280px] flex-col border px-4 py-4 sm:min-h-0 lg:px-5 lg:py-5",
         plan.featured
@@ -204,10 +199,11 @@ function PlanCard({
         ))}
       </ul>
 
-      <a
+      <motion.a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
+        whileTap={tapPress}
         className={cn(
           "mt-4 inline-flex h-11 shrink-0 items-center justify-center text-[0.7rem] font-bold tracking-[0.16em] uppercase no-underline transition-colors",
           plan.featured
@@ -216,8 +212,8 @@ function PlanCard({
         )}
       >
         WhatsApp
-      </a>
-    </article>
+      </motion.a>
+    </motion.article>
   );
 }
 

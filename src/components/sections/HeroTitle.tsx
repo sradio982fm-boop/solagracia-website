@@ -1,14 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { easeOut } from "@/lib/motion";
 
 type HeroTitleProps = {
   brand: string;
   eyebrow: string;
   support: string;
 };
-
-const easeOut = [0.16, 1, 0.3, 1] as const;
 
 /**
  * Hero brand cluster — staggered letter rise + follow-through on support.

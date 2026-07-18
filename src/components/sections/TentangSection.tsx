@@ -1,9 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { SECTION_ADS } from "@/data/ads";
+import {
+  easeOut,
+  fadeUp,
+  fadeUpCard,
+  staggerContainer,
+  viewportOnce,
+} from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { SocialQuotePart, TentangContent } from "@/types/site";
 
@@ -11,48 +18,17 @@ type TentangSectionProps = {
   content: TentangContent;
 };
 
-const easeOut = [0.16, 1, 0.3, 1] as const;
-
-const viewport = { once: true, margin: "-12% 0px -8% 0px", amount: 0.2 } as const;
-
-const columnVariants: Variants = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.09, delayChildren: 0.04 },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.65, ease: easeOut },
-  },
-};
-
-const railVariants: Variants = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.12, delayChildren: 0.18 },
-  },
-};
-
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 32, scale: 0.985 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.75, ease: easeOut },
-  },
-};
+const columnVariants = staggerContainer(0.09, 0.04);
+const railVariants = staggerContainer(0.12, 0.18);
+const itemVariants = fadeUp;
+const cardVariants = fadeUpCard;
+const viewport = viewportOnce;
 
 /** Soft EQ bars — studio meter language, decorative only */
 const METER_BARS = [28, 52, 36, 68, 44, 78, 40, 62, 34, 56, 48, 70] as const;
 
 /**
- * #tentang — loft-studio atmosphere + about copy + social proof rail.
+ * #tentang — viewport-locked loft about + social proof + partner spot.
  * Listen lives in the sticky player; CTAs point deeper into the site.
  */
 export function TentangSection({ content }: TentangSectionProps) {
@@ -63,14 +39,14 @@ export function TentangSection({ content }: TentangSectionProps) {
     <section
       id="tentang"
       data-surface="white"
-      className="section-surface-white relative min-h-[100dvh] overflow-hidden border-t px-6 py-[clamp(64px,10vw,120px)] md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
+      className="section-surface-white relative flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden border-t px-6 pt-[clamp(28px,4vw,48px)] pb-[calc(var(--player-height)+var(--frame-inset)+14px)] md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
       <StudioAtmosphere />
 
-      <div className="relative z-[1] mx-auto flex w-full max-w-[1120px] flex-col">
-        <div className="grid grid-cols-1 gap-[clamp(48px,8vw,96px)] lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start">
+      <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1120px] flex-col">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-stretch lg:gap-8">
           <motion.div
-            className="min-w-0"
+            className="flex min-h-0 flex-col justify-center"
             variants={columnVariants}
             initial="hidden"
             whileInView="show"
@@ -78,7 +54,7 @@ export function TentangSection({ content }: TentangSectionProps) {
           >
             <motion.p
               variants={itemVariants}
-              className="m-0 flex items-center gap-3 text-[0.65rem] font-semibold tracking-[0.22em] text-[var(--section-muted)] uppercase"
+              className="m-0 flex items-center gap-3 text-[0.62rem] font-semibold tracking-[0.22em] text-[var(--section-muted)] uppercase"
             >
               <span className="relative flex h-2 w-2">
                 <span className="absolute inset-0 animate-ping rounded-full bg-[var(--accent)] opacity-40" />
@@ -89,7 +65,7 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.h2
               variants={itemVariants}
-              className="mt-5 m-0 max-w-[14ch] text-[clamp(2.4rem,5.2vw,4.25rem)] leading-[1.02] font-extrabold tracking-[-0.035em]"
+              className="mt-3 m-0 max-w-[14ch] text-[clamp(1.85rem,3.8vw,3.25rem)] leading-[1.02] font-extrabold tracking-[-0.035em]"
             >
               <span className="text-[var(--section-fg)]">{content.headline}</span>{" "}
               <span className="text-[var(--accent)]">{content.headlineAccent}</span>
@@ -97,7 +73,7 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.p
               variants={itemVariants}
-              className="mt-7 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-[clamp(1rem,1.6vw,1.2rem)] font-semibold tracking-[-0.01em] text-[var(--section-fg)]"
+              className="mt-3 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-[clamp(0.9rem,1.35vw,1.05rem)] font-semibold tracking-[-0.01em] text-[var(--section-fg)]"
             >
               {content.stats.map((stat, index) => (
                 <span key={stat.label} className="inline-flex items-baseline gap-1">
@@ -115,21 +91,24 @@ export function TentangSection({ content }: TentangSectionProps) {
 
             <motion.p
               variants={itemVariants}
-              className="mt-6 max-w-[36rem] text-[0.95rem] leading-[1.65] text-[var(--section-muted)]"
+              className="mt-3 max-w-[34rem] line-clamp-3 text-[0.84rem] leading-[1.55] text-[var(--section-muted)] lg:line-clamp-4"
             >
               {content.body}
             </motion.p>
 
             <motion.div
               variants={itemVariants}
-              className="mt-9 flex flex-wrap items-center gap-0"
+              className="mt-5 flex flex-wrap items-center gap-0"
             >
               {content.ctas.map((cta, index) => (
-                <a
+                <motion.a
                   key={cta.label}
                   href={cta.href}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2, ease: easeOut }}
                   className={cn(
-                    "inline-flex h-12 items-center justify-center border border-[rgba(12,12,14,0.5)] px-5 text-[0.72rem] font-semibold tracking-[0.16em] text-[var(--section-fg)] uppercase no-underline transition-colors hover:bg-[rgba(12,12,14,0.05)]",
+                    "inline-flex h-10 items-center justify-center border border-[rgba(12,12,14,0.5)] px-4 text-[0.68rem] font-semibold tracking-[0.16em] text-[var(--section-fg)] uppercase no-underline transition-colors hover:bg-[rgba(12,12,14,0.05)]",
                     index > 0 && "border-l-0",
                   )}
                 >
@@ -137,13 +116,13 @@ export function TentangSection({ content }: TentangSectionProps) {
                   <span className="ml-2 opacity-50" aria-hidden>
                     →
                   </span>
-                </a>
+                </motion.a>
               ))}
             </motion.div>
           </motion.div>
 
           <motion.aside
-            className="min-w-0 lg:pt-1"
+            className="flex min-h-0 max-h-[38%] flex-col justify-center lg:max-h-none"
             aria-label={content.socialLabel}
             variants={railVariants}
             initial="hidden"
@@ -152,7 +131,7 @@ export function TentangSection({ content }: TentangSectionProps) {
           >
             <motion.h3
               variants={itemVariants}
-              className="m-0 max-w-[16ch] text-[1.05rem] font-medium tracking-[-0.01em] text-[var(--section-fg)]"
+              className="m-0 max-w-[18ch] text-[0.95rem] font-medium tracking-[-0.01em] text-[var(--section-fg)]"
             >
               {content.socialLabel}
             </motion.h3>
@@ -160,74 +139,76 @@ export function TentangSection({ content }: TentangSectionProps) {
             <motion.blockquote
               cite={testimonial.href}
               variants={cardVariants}
-              className="relative mt-6 m-0 overflow-hidden border border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_88%,transparent)] px-5 py-6 backdrop-blur-[2px] sm:px-6 sm:py-7"
+              whileHover={{ y: -3 }}
+              transition={{ duration: 0.3, ease: easeOut }}
+              className="relative mt-3 m-0 min-h-0 overflow-hidden border border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_88%,transparent)] px-4 py-4 backdrop-blur-[2px] sm:px-5 sm:py-5"
             >
               <span
-                className="pointer-events-none absolute top-0 left-0 h-2.5 w-2.5 border-t border-l border-[rgba(12,12,14,0.45)]"
+                className="pointer-events-none absolute top-0 left-0 h-2 w-2 border-t border-l border-[rgba(12,12,14,0.45)]"
                 aria-hidden
               />
               <span
-                className="pointer-events-none absolute top-0 right-0 h-2.5 w-2.5 border-t border-r border-[rgba(12,12,14,0.45)]"
+                className="pointer-events-none absolute top-0 right-0 h-2 w-2 border-t border-r border-[rgba(12,12,14,0.45)]"
                 aria-hidden
               />
               <span
-                className="pointer-events-none absolute bottom-0 left-0 h-2.5 w-2.5 border-b border-l border-[rgba(12,12,14,0.45)]"
+                className="pointer-events-none absolute bottom-0 left-0 h-2 w-2 border-b border-l border-[rgba(12,12,14,0.45)]"
                 aria-hidden
               />
               <span
-                className="pointer-events-none absolute right-0 bottom-0 h-2.5 w-2.5 border-r border-b border-[rgba(12,12,14,0.45)]"
+                className="pointer-events-none absolute right-0 bottom-0 h-2 w-2 border-r border-b border-[rgba(12,12,14,0.45)]"
                 aria-hidden
               />
 
               <span
-                className="absolute top-0 left-6 h-[2px] w-8 bg-[var(--accent)]"
+                className="absolute top-0 left-5 h-[2px] w-7 bg-[var(--accent)]"
                 aria-hidden
               />
 
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <span
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--section-fg)] text-[var(--bg-white)]"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--section-fg)] text-[var(--bg-white)]"
                     aria-hidden
                   >
                     {testimonial.platform === "x" ? <XIcon /> : <ThreadsIcon />}
                   </span>
-                  <span className="text-[0.65rem] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
+                  <span className="text-[0.6rem] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
                     {testimonial.platform === "x" ? "Post di X" : "Post di Threads"}
                   </span>
                 </div>
-                <span className="text-[0.62rem] font-medium tracking-[0.14em] text-[var(--section-muted)] uppercase tabular-nums">
+                <span className="text-[0.58rem] font-medium tracking-[0.14em] text-[var(--section-muted)] uppercase tabular-nums">
                   {testimonial.date}
                 </span>
               </div>
 
-              <p className="mt-5 m-0 text-[clamp(1rem,1.45vw,1.15rem)] leading-[1.55] font-semibold tracking-[-0.015em] text-[var(--section-fg)]">
+              <p className="mt-3 m-0 line-clamp-4 text-[0.92rem] leading-[1.45] font-semibold tracking-[-0.015em] text-[var(--section-fg)]">
                 {testimonial.quote.map((part, index) => (
                   <QuotePart key={`${part.type}-${index}`} part={part} />
                 ))}
               </p>
 
-              <footer className="mt-6 flex items-center gap-3 border-t border-[rgba(12,12,14,0.1)] pt-5">
+              <footer className="mt-3 flex items-center gap-2.5 border-t border-[rgba(12,12,14,0.1)] pt-3">
                 <span
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(12,12,14,0.12)] bg-[rgba(12,12,14,0.04)] text-[0.68rem] font-bold tracking-[0.06em] text-[var(--section-fg)]"
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[rgba(12,12,14,0.12)] bg-[rgba(12,12,14,0.04)] text-[0.62rem] font-bold tracking-[0.06em] text-[var(--section-fg)]"
                   aria-hidden
                 >
                   {testimonial.authorInitials}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <cite className="block text-[0.9rem] font-bold not-italic tracking-[-0.01em] text-[var(--section-fg)]">
+                  <cite className="block truncate text-[0.82rem] font-bold not-italic tracking-[-0.01em] text-[var(--section-fg)]">
                     {testimonial.authorName}
                   </cite>
                   <a
                     href={testimonial.href}
-                    className="mt-0.5 block text-[0.78rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
+                    className="mt-0.5 block truncate text-[0.72rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
                   >
                     {testimonial.authorHandle}
                   </a>
                 </div>
                 <a
                   href={testimonial.href}
-                  className="hidden h-9 w-9 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)] sm:inline-flex"
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)]"
                   aria-label="Buka postingan"
                 >
                   <ArrowIcon />
@@ -239,13 +220,13 @@ export function TentangSection({ content }: TentangSectionProps) {
 
         {ad ? (
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewport}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-[clamp(40px,6vw,64px)] w-full"
+            transition={{ duration: 0.55, ease: easeOut }}
+            className="mt-3 w-full shrink-0 lg:mt-4"
           >
-            <AdSlot ad={ad} />
+            <AdSlot ad={ad} compact />
           </motion.div>
         ) : null}
       </div>

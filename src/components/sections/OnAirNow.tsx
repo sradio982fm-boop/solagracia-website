@@ -1,6 +1,16 @@
+"use client";
+
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import {
+  easeOut,
+  fadeUpSoft,
+  hoverLift,
+  staggerContainer,
+  tapPress,
+} from "@/lib/motion";
 import { formatShowWindow } from "@/lib/schedule";
+import { cn } from "@/lib/utils";
 import type { OnAirContent, ScheduleShow } from "@/types/schedule";
 
 type OnAirNowProps = {
@@ -27,21 +37,29 @@ export function OnAirNow({
   const host = show?.host ?? "Solagracia";
   const windowLabel = show ? formatShowWindow(show) : "—";
   const imageSrc = show?.imageSrc ?? "/cover-image.png";
-  const imageAlt = show?.imageAlt ?? title;
   const href = show?.href ?? "#program";
 
   return (
-    <div
+    <motion.div
       className={cn(
         "flex min-h-0 flex-col",
         layout === "rail" && "h-full",
         className,
       )}
+      variants={staggerContainer(0.08, 0.12)}
+      initial="hidden"
+      animate="show"
     >
-      <ScheduleHeading label={content.label} live />
+      <motion.div variants={fadeUpSoft}>
+        <ScheduleHeading label={content.label} live />
+      </motion.div>
 
-      <a
+      <motion.a
         href={href}
+        variants={fadeUpSoft}
+        whileHover={{ scale: 1.01 }}
+        whileTap={tapPress}
+        transition={{ duration: 0.35, ease: easeOut }}
         className={cn(
           "group relative mt-3 flex flex-col items-center justify-center overflow-hidden border border-[var(--frame-line)] no-underline",
           layout === "rail"
@@ -61,7 +79,6 @@ export function OnAirNow({
             className="absolute inset-0 bg-[linear-gradient(160deg,rgba(8,10,16,0.55)_0%,rgba(8,10,16,0.72)_45%,rgba(196,92,38,0.35)_100%)]"
             aria-hidden
           />
-          {/* Soft broadcast arcs */}
           <span
             className="absolute -top-8 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full border border-white/15"
             aria-hidden
@@ -86,23 +103,28 @@ export function OnAirNow({
             {windowLabel}
           </span>
         </span>
-      </a>
+      </motion.a>
 
-      <ScheduleHeading
-        label={content.upcomingLabel}
-        className={layout === "rail" ? "mt-5" : "mt-6"}
-      />
+      <motion.div variants={fadeUpSoft}>
+        <ScheduleHeading
+          label={content.upcomingLabel}
+          className={layout === "rail" ? "mt-5" : "mt-6"}
+        />
+      </motion.div>
 
-      <ul
+      <motion.ul
+        variants={staggerContainer(0.06, 0)}
         className={cn(
           "mt-3 m-0 flex list-none flex-col gap-2.5 p-0",
           layout === "rail" && "min-h-0 flex-1 overflow-y-auto pr-0.5",
         )}
       >
         {upcoming.map((item) => (
-          <li key={item.id}>
-            <a
+          <motion.li key={item.id} variants={fadeUpSoft}>
+            <motion.a
               href={item.href ?? "#program"}
+              whileHover={hoverLift}
+              whileTap={tapPress}
               className="group grid grid-cols-[56px_1fr] items-center gap-3 border border-[var(--frame-line)] bg-black/35 px-2.5 py-2.5 no-underline transition-colors hover:bg-black/50 sm:grid-cols-[64px_1fr]"
             >
               <span className="relative aspect-square overflow-hidden bg-white/10">
@@ -125,11 +147,11 @@ export function OnAirNow({
                   {formatShowWindow(item)}
                 </span>
               </span>
-            </a>
-          </li>
+            </motion.a>
+          </motion.li>
         ))}
-      </ul>
-    </div>
+      </motion.ul>
+    </motion.div>
   );
 }
 

@@ -1,5 +1,9 @@
-import type { SocialLink } from "@/types/site";
+"use client";
+
+import { motion } from "framer-motion";
+import { hoverIcon, tapPress } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import type { SocialLink } from "@/types/site";
 
 type HeroSocialIconsProps = {
   links: readonly SocialLink[];
@@ -23,18 +27,25 @@ export function HeroSocialIcons({
     >
       {links.map((link, index) => (
         <li key={link.label}>
-          <a
+          <motion.a
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={link.label}
+            whileHover="hover"
+            whileTap={tapPress}
             className={cn(
               "inline-flex h-11 w-11 items-center justify-center border border-[var(--frame-line)] text-white/85 transition-colors hover:bg-white/10 hover:text-white",
               joined && index > 0 && "border-l-0",
             )}
           >
-            <SocialIcon icon={link.icon} />
-          </a>
+            <motion.span
+              className="inline-flex"
+              variants={{ hover: hoverIcon }}
+            >
+              <SocialIcon icon={link.icon} />
+            </motion.span>
+          </motion.a>
         </li>
       ))}
     </ul>

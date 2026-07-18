@@ -2,9 +2,17 @@
 
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
-import { motion, type Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { SocialIcon } from "@/components/sections/HeroSocialIcons";
 import { buildKontakWhatsAppHref } from "@/data/kontak";
+import {
+  easeOut,
+  fadeUpSoft,
+  hoverLift,
+  staggerContainer,
+  tapPress,
+  viewportOnce,
+} from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { KontakChannel, KontakContent } from "@/types/kontak";
 
@@ -12,23 +20,9 @@ type ContactSectionProps = {
   content: KontakContent;
 };
 
-const easeOut = [0.16, 1, 0.3, 1] as const;
-
-const viewport = { once: true, margin: "-8% 0px", amount: 0.2 } as const;
-
-const listVariants: Variants = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: easeOut },
-  },
-};
+const viewport = viewportOnce;
+const listVariants = staggerContainer(0.07, 0.04);
+const itemVariants = fadeUpSoft;
 
 const VU_HEIGHTS = [38, 62, 44, 78, 52, 70, 40, 86, 48, 66, 42, 74] as const;
 
@@ -204,10 +198,12 @@ export function ContactSection({ content }: ContactSectionProps) {
 
 function ChannelCard({ channel }: { channel: KontakChannel }) {
   return (
-    <a
+    <motion.a
       href={channel.href}
       target={channel.external ? "_blank" : undefined}
       rel={channel.external ? "noopener noreferrer" : undefined}
+      whileHover={hoverLift}
+      whileTap={tapPress}
       className={cn(
         "group flex min-h-[4.75rem] flex-col justify-between border px-2.5 py-2.5 no-underline transition-colors sm:min-h-[5.25rem] sm:px-3 sm:py-3",
         channel.id === "whatsapp"
@@ -234,7 +230,7 @@ function ChannelCard({ channel }: { channel: KontakChannel }) {
           {channel.detail}
         </span>
       </span>
-    </a>
+    </motion.a>
   );
 }
 
@@ -287,13 +283,15 @@ function ContactForm({ content }: { content: KontakContent }) {
         />
       </label>
 
-      <button
+      <motion.button
         type="submit"
+        whileHover={{ y: -2 }}
+        whileTap={tapPress}
         className="inline-flex h-12 shrink-0 items-center justify-center gap-2 bg-[var(--accent)] px-5 text-[0.72rem] font-bold tracking-[0.16em] text-white uppercase transition-colors hover:bg-[var(--accent-hover)]"
       >
         <SocialIcon icon="whatsapp" />
         {content.form.submitLabel}
-      </button>
+      </motion.button>
     </form>
   );
 }

@@ -1,8 +1,18 @@
+"use client";
+
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { HeroSocialIcons } from "@/components/sections/HeroSocialIcons";
 import { HeroSocialRail } from "@/components/sections/HeroSocialRail";
 import { HeroTitle } from "@/components/sections/HeroTitle";
 import { OnAirNow } from "@/components/sections/OnAirNow";
+import {
+  easeOut,
+  heroCtaItem,
+  heroCtaStagger,
+  hoverLift,
+  tapPress,
+} from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { HeroContent } from "@/types/site";
 import type { OnAirContent, ScheduleShow } from "@/types/schedule";
@@ -36,7 +46,12 @@ export function HeroSection({
       id="home"
       className="relative h-[100dvh] min-h-[640px] overflow-hidden bg-[var(--bg-void)] text-white"
     >
-      <div className="absolute inset-0">
+      <motion.div
+        className="absolute inset-0"
+        initial={{ scale: 1.06, opacity: 0.85 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 1.35, ease: easeOut }}
+      >
         <Image
           src={coverSrc}
           alt={coverAlt}
@@ -53,7 +68,7 @@ export function HeroSection({
           className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,16,0.34)_0%,transparent_30%,transparent_60%,rgba(8,10,16,0.62)_100%)]"
           aria-hidden
         />
-      </div>
+      </motion.div>
 
       <div
         className="pointer-events-none absolute top-1/2 left-1/2 z-[11] hidden -translate-x-1/2 -translate-y-1/2 md:block"
@@ -74,27 +89,37 @@ export function HeroSection({
         >
           <HeroTitle brand={brand} eyebrow={eyebrow} support={support} />
 
-          <div className="mt-7 flex items-center">
-            <HeroSocialIcons links={socialLinks} joined />
+          <motion.div
+            className="mt-7 flex items-center"
+            variants={heroCtaStagger}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div variants={heroCtaItem}>
+              <HeroSocialIcons links={socialLinks} joined />
+            </motion.div>
             {ctas.map((cta) => (
-              <a
+              <motion.a
                 key={cta.label}
                 href={cta.href}
+                variants={heroCtaItem}
+                whileHover={hoverLift}
+                whileTap={tapPress}
                 className="inline-flex h-11 items-center justify-center gap-2.5 border border-l-0 border-[var(--frame-line)] px-4 text-[13px] font-semibold transition-colors hover:bg-white/10"
               >
                 <span aria-hidden className="tracking-[0.15em]">
                   {">>"}
                 </span>
                 <span>{cta.label}</span>
-              </a>
+              </motion.a>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
 
       <HeroSocialRail tagline={verticalTagline} />
 
-      <div
+      <motion.div
         className="pointer-events-none absolute z-10 hidden md:block"
         style={{
           top: "var(--frame-inset)",
@@ -102,8 +127,11 @@ export function HeroSection({
           right: "var(--frame-inset)",
           width: "min(32%, 24rem)",
         }}
+        initial={{ opacity: 0, x: 28 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.75, delay: 0.25, ease: easeOut }}
       >
-        <div className="pointer-events-auto flex h-full min-h-0 flex-col border-l border-[var(--frame-line)] bg-black/30 px-4 py-5 backdrop-blur-[2px] animate-[hero-fade_1s_var(--ease-out)_0.1s_both] lg:px-5 lg:py-6">
+        <div className="pointer-events-auto flex h-full min-h-0 flex-col border-l border-[var(--frame-line)] bg-black/30 px-4 py-5 backdrop-blur-[2px] lg:px-5 lg:py-6">
           <OnAirNow
             content={onAir}
             show={onAirShow}
@@ -111,46 +139,66 @@ export function HeroSection({
             layout="rail"
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Mobile fallback */}
       <div className="relative z-10 flex h-full flex-col justify-end px-5 pt-20 pb-6 md:hidden">
-        <div className="mb-auto flex justify-end pr-12">
+        <motion.div
+          className="mb-auto flex justify-end pr-12"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
+        >
           <a
             href="#kontak"
             className="inline-flex h-11 items-center border border-[var(--frame-line)] px-4 text-[11px] font-semibold tracking-[0.2em] uppercase"
           >
             Reservasi
           </a>
-        </div>
+        </motion.div>
 
         <div>
           <HeroTitle brand={brand} eyebrow={eyebrow} support={support} />
-          <div className="mt-5 flex items-center">
-            <HeroSocialIcons links={socialLinks} joined />
+          <motion.div
+            className="mt-5 flex items-center"
+            variants={heroCtaStagger}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div variants={heroCtaItem}>
+              <HeroSocialIcons links={socialLinks} joined />
+            </motion.div>
             {ctas.map((cta) => (
-              <a
+              <motion.a
                 key={cta.label}
                 href={cta.href}
+                variants={heroCtaItem}
+                whileHover={hoverLift}
+                whileTap={tapPress}
                 className={cn(
                   "inline-flex h-11 items-center justify-center gap-2 border border-l-0 border-[var(--frame-line)] px-4 text-sm font-semibold",
                 )}
               >
                 <span aria-hidden>{">>"}</span>
                 <span>{cta.label}</span>
-              </a>
+              </motion.a>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        <div className="mt-5 max-h-[42dvh] overflow-y-auto border border-[var(--frame-line)] bg-black/45 px-3 py-4 backdrop-blur-[2px]">
+        <motion.div
+          className="mt-5 max-h-[42dvh] overflow-y-auto border border-[var(--frame-line)] bg-black/45 px-3 py-4 backdrop-blur-[2px]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35, ease: easeOut }}
+        >
           <OnAirNow
             content={onAir}
             show={onAirShow}
             upcoming={upcomingShows}
             layout="stack"
           />
-        </div>
+        </motion.div>
       </div>
     </section>
   );
