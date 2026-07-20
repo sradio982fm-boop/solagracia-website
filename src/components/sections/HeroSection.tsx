@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { HeroSocialIcons } from "@/components/sections/HeroSocialIcons";
@@ -47,10 +48,12 @@ export function HeroSection({
     verticalTagline,
   } = content;
 
-  const { cleanUrl: coverCleanUrl, objectPosition: coverPosition } =
-    parseFocalUrl(coverSrc);
+  const { cleanUrl: coverCleanUrl, focus: coverFocus } = parseFocalUrl(coverSrc);
   const safeCoverSrc = sanitizeAssetSrc(coverCleanUrl, HERO_COVER_FALLBACK);
   const safeMobileCtaHref = sanitizeHref(mobileCtaHref, "#kontak");
+  // Portrait mobile crop ≠ desktop 16:9 framing — keep phone centered;
+  // honor CMS focus from md up where the admin preview matches.
+  const coverPositionDesktop = `${coverFocus.x}% ${coverFocus.y}%`;
 
   return (
     <section
@@ -70,8 +73,12 @@ export function HeroSection({
           fill
           priority
           sizes="100vw"
-          className="object-cover"
-          style={{ objectPosition: coverPosition }}
+          className="object-cover object-center md:[object-position:var(--hero-cover-focus)]"
+          style={
+            {
+              "--hero-cover-focus": coverPositionDesktop,
+            } as CSSProperties
+          }
         />
         <div
           className="absolute inset-0 bg-[rgba(8,10,16,0.08)]"
