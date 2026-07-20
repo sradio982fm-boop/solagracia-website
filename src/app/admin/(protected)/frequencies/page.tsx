@@ -13,18 +13,19 @@ import {
   Group,
   Stack,
   Text,
-  Title,
   Modal,
   TextInput,
   Switch,
-  Paper,
   Badge,
-  ActionIcon,
   Skeleton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminSurface } from "@/components/admin/AdminSurface";
+import { AdminIconButton } from "@/components/admin/AdminIconButton";
 
 interface FrequencyFormState {
   label: string;
@@ -94,34 +95,41 @@ export default function FrequenciesPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end">
-        <div>
-          <Title order={4} fw={700}>
-            Frekuensi & Streaming
-          </Title>
-          <Text size="sm" c="dimmed">
-            Audio default · video popup (HLS/MP4). Seed: siar.us streams.
-          </Text>
-        </div>
-        <Button color="dark" onClick={openCreate}>
-          Tambah Frekuensi
-        </Button>
-      </Group>
+      <AdminPageHeader
+        title="Frekuensi & Streaming"
+        description="Audio default · video popup (HLS/MP4). Seed: siar.us streams."
+        actions={
+          <Button
+            color="dark"
+            onClick={openCreate}
+            leftSection={
+              <i className="material-icons text-[18px]" aria-hidden>
+                add
+              </i>
+            }
+          >
+            Tambah Frekuensi
+          </Button>
+        }
+      />
 
       {isLoading ? (
-        <Skeleton height={120} />
+        <Skeleton height={120} radius="md" />
+      ) : frequencies.length === 0 ? (
+        <AdminEmptyState
+          icon="settings_input_antenna"
+          title="Belum ada frekuensi"
+          description="Tambahkan stream audio/video untuk player situs."
+          actionLabel="Tambah Frekuensi"
+          onAction={openCreate}
+        />
       ) : (
         <Stack gap="sm">
           {frequencies.map((f) => (
-            <Paper
-              key={f.id}
-              p="md"
-              withBorder
-              style={{ borderColor: "#0a0a0a", background: "#fff" }}
-            >
-              <Group justify="space-between" align="flex-start">
-                <Stack gap={4}>
-                  <Group gap="xs">
+            <AdminSurface key={f.id} p="md">
+              <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
+                <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
+                  <Group gap="xs" wrap="wrap">
                     <Text fw={700}>{f.label}</Text>
                     {f.isDefault && (
                       <Badge color="dark" variant="filled">
@@ -134,17 +142,17 @@ export default function FrequenciesPage() {
                       </Badge>
                     )}
                   </Group>
-                  <Text size="xs" c="dimmed">
+                  <Text size="xs" c="dimmed" truncate="end">
                     Audio: {f.audioUrl}
                   </Text>
-                  <Text size="xs" c="dimmed">
+                  <Text size="xs" c="dimmed" truncate="end">
                     Video: {f.videoUrl || "—"}
                   </Text>
                 </Stack>
                 <Group gap="xs">
                   {!f.isDefault && (
                     <Button
-                      size="xs"
+                      size="sm"
                       variant="outline"
                       color="dark"
                       onClick={() =>
@@ -154,25 +162,20 @@ export default function FrequenciesPage() {
                       Set default
                     </Button>
                   )}
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  <AdminIconButton
+                    icon="edit"
+                    label="Edit frekuensi"
                     onClick={() => openEdit(f)}
-                    aria-label="Edit"
-                  >
-                    ✎
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  />
+                  <AdminIconButton
+                    icon="delete"
+                    label="Hapus frekuensi"
+                    color="red"
                     onClick={() => setDeleteTarget(f)}
-                    aria-label="Hapus"
-                  >
-                    ×
-                  </ActionIcon>
+                  />
                 </Group>
               </Group>
-            </Paper>
+            </AdminSurface>
           ))}
         </Stack>
       )}

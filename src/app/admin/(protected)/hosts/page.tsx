@@ -13,13 +13,10 @@ import {
   Group,
   Stack,
   Text,
-  Title,
   Modal,
   TextInput,
   Textarea,
-  Paper,
   Badge,
-  ActionIcon,
   Skeleton,
   SimpleGrid,
   Avatar,
@@ -31,6 +28,10 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { TagInput } from "@/components/admin/TagInput";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminSurface } from "@/components/admin/AdminSurface";
+import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { FIELD_LIMITS } from "@/lib/admin/constants";
 
 interface HostFormState {
@@ -141,47 +142,49 @@ export default function HostsAdminPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end">
-        <div>
-          <Title order={4} fw={700}>
-            Penyiar
-          </Title>
-          <Text size="sm" c="dimmed">
-            Kelola daftar penyiar untuk section Penyiar di homepage.
-          </Text>
-        </div>
-        <Button color="dark" onClick={openCreate}>
-          Tambah Penyiar
-        </Button>
-      </Group>
+      <AdminPageHeader
+        title="Penyiar"
+        description="Kelola daftar penyiar untuk section Penyiar di homepage."
+        actions={
+          <Button
+            color="dark"
+            onClick={openCreate}
+            leftSection={
+              <i className="material-icons text-[18px]" aria-hidden>
+                add
+              </i>
+            }
+          >
+            Tambah Penyiar
+          </Button>
+        }
+      />
 
       {isLoading ? (
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} height={200} />
+            <Skeleton key={i} height={200} radius="md" />
           ))}
         </SimpleGrid>
       ) : hosts.length === 0 ? (
-        <Paper
-          withBorder
-          p="xl"
-          style={{ borderColor: "#0a0a0a", background: "#fff", textAlign: "center" }}
-        >
-          <Text size="sm" c="dimmed">
-            Belum ada penyiar.
-          </Text>
-        </Paper>
+        <AdminEmptyState
+          icon="group_off"
+          title="Belum ada penyiar"
+          description="Tambahkan penyiar untuk ditampilkan di homepage."
+          actionLabel="Tambah Penyiar"
+          onAction={openCreate}
+        />
       ) : (
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
           {hosts.map((host) => (
-            <Paper
-              key={host.id}
-              p="md"
-              withBorder
-              style={{ borderColor: "#0a0a0a", background: "#fff" }}
-            >
+            <AdminSurface key={host.id} p="md">
               <Stack align="center" gap="sm">
-                <Avatar size={72} radius="md" src={host.photoUrl} alt={host.name}>
+                <Avatar
+                  size={72}
+                  radius="md"
+                  src={host.photoUrl}
+                  alt={host.name}
+                >
                   {host.name[0]}
                 </Avatar>
                 <div style={{ textAlign: "center" }}>
@@ -211,25 +214,20 @@ export default function HostsAdminPage() {
                 )}
                 <StatusBadge status={host.status} />
                 <Group gap="xs">
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  <AdminIconButton
+                    icon="edit"
+                    label="Edit penyiar"
                     onClick={() => openEdit(host)}
-                    aria-label="Edit"
-                  >
-                    ✎
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  />
+                  <AdminIconButton
+                    icon="delete"
+                    label="Arsipkan penyiar"
+                    color="red"
                     onClick={() => setDeleteTarget(host)}
-                    aria-label="Arsipkan"
-                  >
-                    ×
-                  </ActionIcon>
+                  />
                 </Group>
               </Stack>
-            </Paper>
+            </AdminSurface>
           ))}
         </SimpleGrid>
       )}

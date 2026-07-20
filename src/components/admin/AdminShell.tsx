@@ -5,6 +5,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
 import { AuthGuard } from "./AuthGuard";
+import { ADMIN_BORDER, ADMIN_INK, ADMIN_PAGE_BG, ADMIN_SURFACE } from "@/lib/admin/ui";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [opened, { toggle, close }] = useDisclosure();
@@ -14,22 +15,23 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <AppShell
         header={{ height: 56 }}
         navbar={{
-          width: 260,
+          width: 248,
           breakpoint: "sm",
           collapsed: { mobile: !opened },
         }}
         padding="md"
         styles={{
           header: {
-            borderBottom: "1px solid #0a0a0a",
-            background: "#fff",
+            borderBottom: `1px solid ${ADMIN_BORDER}`,
+            background: ADMIN_SURFACE,
           },
           navbar: {
-            borderRight: "1px solid #0a0a0a",
-            background: "#fff",
+            borderRight: `1px solid ${ADMIN_BORDER}`,
+            background: ADMIN_SURFACE,
           },
           main: {
-            background: "#f5f5f5",
+            background: ADMIN_PAGE_BG,
+            color: ADMIN_INK,
           },
         }}
       >

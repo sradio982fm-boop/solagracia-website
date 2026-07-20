@@ -20,6 +20,7 @@ import {
   strongPasswordSchema,
   passwordRequirementsText,
 } from "@/lib/schemas/password";
+import { ADMIN_INK } from "@/lib/admin/ui";
 
 interface AdminHeaderProps {
   navOpened: boolean;
@@ -42,32 +43,55 @@ export function AdminHeader({ navOpened, onNavToggle }: AdminHeaderProps) {
             onClick={onNavToggle}
             hiddenFrom="sm"
             size="sm"
-            color="#0a0a0a"
+            color={ADMIN_INK}
+            aria-label={navOpened ? "Tutup navigasi" : "Buka navigasi"}
           />
           <Group gap={6} align="baseline">
-            <Text size="lg" fw={900} tt="uppercase" lts={-0.5} c="#0a0a0a">
+            <Text size="lg" fw={900} tt="uppercase" lts={-0.5} c={ADMIN_INK}>
               Solagracia
             </Text>
-            <Text size="xs" fw={700} c="dimmed">
+            <Text
+              size="xs"
+              fw={700}
+              c="dimmed"
+              style={{
+                border: "1px solid var(--mantine-color-dark-2)",
+                borderRadius: 4,
+                padding: "1px 6px",
+              }}
+            >
               Admin
             </Text>
           </Group>
         </Group>
-        <Menu position="bottom-end" shadow="md" width={180}>
+        <Menu position="bottom-end" shadow="md" width={200}>
           <Menu.Target>
             <UnstyledButton
               px="sm"
-              py={4}
-              style={{ borderRadius: "var(--mantine-radius-md)" }}
+              py={6}
+              aria-label="Menu akun"
+              style={{
+                borderRadius: "var(--mantine-radius-md)",
+                minHeight: 44,
+                transition: "background-color 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background =
+                  "var(--mantine-color-gray-0)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
             >
               <Group gap="xs">
                 <i
-                  className="material-icons text-[18px]"
-                  style={{ color: "var(--mantine-color-gray-6)" }}
+                  className="material-icons text-[20px]"
+                  style={{ color: "var(--mantine-color-gray-7)" }}
+                  aria-hidden
                 >
                   account_circle
                 </i>
-                <Text size="sm" fw={500} visibleFrom="sm">
+                <Text size="sm" fw={500} visibleFrom="sm" lineClamp={1} maw={180}>
                   {user?.email || "Admin"}
                 </Text>
               </Group>
@@ -199,23 +223,24 @@ function ChangePasswordModal({
           onChange={(e) => setConfirmPassword(e.currentTarget.value)}
           required
         />
-        {error && (
-          <Text size="sm" c="red">
+        {error ? (
+          <Text size="sm" c="red" role="alert">
             {error}
           </Text>
-        )}
+        ) : null}
         <Group justify="flex-end" mt="sm">
           <Button
-            variant="subtle"
-            color="gray"
+            variant="default"
             onClick={() => {
               reset();
               onClose();
             }}
+            disabled={loading}
           >
             Batal
           </Button>
           <Button
+            color="dark"
             onClick={handleSubmit}
             loading={loading}
             disabled={!oldPassword || !newPassword || !confirmPassword}

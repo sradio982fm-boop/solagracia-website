@@ -7,13 +7,45 @@ interface StatusBadgeProps {
 export function StatusBadge({ status }: StatusBadgeProps) {
   if (status === "published") {
     return (
-      <Badge variant="filled" color="teal" size="sm">
+      <Badge
+        variant="dot"
+        color="teal"
+        size="sm"
+        radius="sm"
+        tt="capitalize"
+        fw={500}
+        styles={{
+          root: {
+            textTransform: "none",
+            background: "transparent",
+            border: "none",
+            paddingInline: 0,
+            height: "auto",
+          },
+        }}
+      >
         Published
       </Badge>
     );
   }
+
   return (
-    <Badge variant="light" color="gray" size="sm">
+    <Badge
+      variant="dot"
+      color="gray"
+      size="sm"
+      radius="sm"
+      fw={500}
+      styles={{
+        root: {
+          textTransform: "none",
+          background: "transparent",
+          border: "none",
+          paddingInline: 0,
+          height: "auto",
+        },
+      }}
+    >
       Draft
     </Badge>
   );

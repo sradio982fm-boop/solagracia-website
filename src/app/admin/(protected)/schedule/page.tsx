@@ -21,13 +21,10 @@ import {
   Group,
   Stack,
   Text,
-  Title,
   Modal,
   Select,
   TextInput,
   Textarea,
-  Paper,
-  ActionIcon,
   Skeleton,
   SegmentedControl,
   Avatar,
@@ -36,6 +33,10 @@ import {
   Badge,
   NumberInput,
 } from "@mantine/core";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminSurface } from "@/components/admin/AdminSurface";
+import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { TimeInput } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -138,7 +139,15 @@ function ShowsTab() {
   return (
     <Stack gap="md">
       <Group justify="flex-end">
-        <Button color="dark" onClick={openCreate}>
+        <Button
+          color="dark"
+          onClick={openCreate}
+          leftSection={
+            <i className="material-icons text-[18px]" aria-hidden>
+              add
+            </i>
+          }
+        >
           Tambah Acara
         </Button>
       </Group>
@@ -146,17 +155,15 @@ function ShowsTab() {
       {isLoading ? (
         <Skeleton height={200} />
       ) : shows.length === 0 ? (
-        <Paper
-          withBorder
-          p="xl"
-          style={{ borderColor: "#0a0a0a", background: "#fff", textAlign: "center" }}
-        >
-          <Text size="sm" c="dimmed">
-            Belum ada acara.
-          </Text>
-        </Paper>
+        <AdminEmptyState
+          icon="live_tv"
+          title="Belum ada acara"
+          description="Tambahkan acara siaran untuk dijadwalkan."
+          actionLabel="Tambah Acara"
+          onAction={openCreate}
+        />
       ) : (
-        <Paper withBorder style={{ borderColor: "#0a0a0a", overflow: "hidden" }}>
+        <AdminSurface style={{ overflow: "hidden" }}>
           {shows.map((show, i) => (
             <Group
               key={show.id}
@@ -166,7 +173,7 @@ function ShowsTab() {
               wrap="nowrap"
               style={{
                 borderTop: i > 0 ? "1px solid #e5e5e5" : undefined,
-                background: "#fff",
+                background: "transparent",
               }}
             >
               <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
@@ -197,26 +204,21 @@ function ShowsTab() {
               </Group>
               <Group gap="xs" wrap="nowrap">
                 <StatusBadge status={show.status} />
-                <ActionIcon
-                  variant="outline"
-                  color="dark"
+                <AdminIconButton
+                  icon="edit"
+                  label="Edit acara"
                   onClick={() => openEdit(show)}
-                  aria-label="Edit"
-                >
-                  ✎
-                </ActionIcon>
-                <ActionIcon
-                  variant="outline"
-                  color="dark"
+                />
+                <AdminIconButton
+                  icon="delete"
+                  label="Hapus acara"
+                  color="red"
                   onClick={() => setDeleteTarget(show)}
-                  aria-label="Hapus"
-                >
-                  ×
-                </ActionIcon>
+                />
               </Group>
             </Group>
           ))}
-        </Paper>
+        </AdminSurface>
       )}
 
       <Modal
@@ -440,17 +442,15 @@ function ScheduleTab() {
       {isLoading ? (
         <Skeleton height={200} />
       ) : entries.length === 0 ? (
-        <Paper
-          withBorder
-          p="xl"
-          style={{ borderColor: "#0a0a0a", background: "#fff", textAlign: "center" }}
-        >
-          <Text size="sm" c="dimmed">
-            Belum ada jadwal untuk {DAY_LABELS[dayNum]}.
-          </Text>
-        </Paper>
+        <AdminEmptyState
+          icon="event_busy"
+          title={`Belum ada jadwal untuk ${DAY_LABELS[dayNum]}`}
+          description="Tambahkan slot waktu untuk hari ini."
+          actionLabel="Tambah Slot"
+          onAction={openCreate}
+        />
       ) : (
-        <Paper withBorder style={{ borderColor: "#0a0a0a", overflow: "hidden" }}>
+        <AdminSurface style={{ overflow: "hidden" }}>
           {entries.map((entry, i) => (
             <Group
               key={entry.id}
@@ -459,7 +459,7 @@ function ScheduleTab() {
               py="sm"
               style={{
                 borderTop: i > 0 ? "1px solid #e5e5e5" : undefined,
-                background: "#fff",
+                background: "transparent",
               }}
             >
               <Group gap="lg">
@@ -476,26 +476,21 @@ function ScheduleTab() {
                 </div>
               </Group>
               <Group gap="xs">
-                <ActionIcon
-                  variant="outline"
-                  color="dark"
+                <AdminIconButton
+                  icon="edit"
+                  label="Edit slot"
                   onClick={() => openEdit(entry)}
-                  aria-label="Edit"
-                >
-                  ✎
-                </ActionIcon>
-                <ActionIcon
-                  variant="outline"
-                  color="dark"
+                />
+                <AdminIconButton
+                  icon="delete"
+                  label="Hapus slot"
+                  color="red"
                   onClick={() => setDeleteTarget(entry)}
-                  aria-label="Hapus"
-                >
-                  ×
-                </ActionIcon>
+                />
               </Group>
             </Group>
           ))}
-        </Paper>
+        </AdminSurface>
       )}
 
       <Modal
@@ -631,14 +626,10 @@ function ScheduleTab() {
 export default function ScheduleAdminPage() {
   return (
     <Stack gap="lg">
-      <div>
-        <Title order={4} fw={700}>
-          Jadwal & Acara
-        </Title>
-        <Text size="sm" c="dimmed">
-          Kelola acara siaran dan slot jadwal mingguan.
-        </Text>
-      </div>
+      <AdminPageHeader
+        title="Jadwal & Acara"
+        description="Kelola acara siaran dan slot jadwal mingguan."
+      />
 
       <Tabs defaultValue="shows" color="dark">
         <Tabs.List>

@@ -44,9 +44,16 @@ export function ConfirmDialog({
             Batal
           </Button>
           <Button
-            color={variant === "destructive" ? "red" : undefined}
+            color={variant === "destructive" ? "red" : "dark"}
             onClick={onConfirm}
             loading={loading}
+            leftSection={
+              variant === "destructive" ? (
+                <i className="material-icons text-[16px]" aria-hidden>
+                  delete_outline
+                </i>
+              ) : undefined
+            }
           >
             {confirmLabel}
           </Button>

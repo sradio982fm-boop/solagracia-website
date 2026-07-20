@@ -12,8 +12,6 @@ import {
   Group,
   Stack,
   Text,
-  Title,
-  Paper,
   Badge,
   Skeleton,
   SimpleGrid,
@@ -21,9 +19,15 @@ import {
   Tabs,
   Select,
   Button,
+  ScrollArea,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { formatDateShort } from "@/lib/admin/format";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminSurface } from "@/components/admin/AdminSurface";
+import { ADMIN_BORDER, ADMIN_MUTED_BG } from "@/lib/admin/ui";
 
 const EVENT_TYPE_MAP: Record<
   string,
@@ -78,60 +82,57 @@ export default function AnalyticsPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end" wrap="wrap">
-        <div>
-          <Title order={4} fw={600}>
-            Analytics
-          </Title>
-          <Text size="sm" c="dimmed">
-            Pengunjung, event log, dan breakdown geo.
-          </Text>
-        </div>
-        <DatePickerInput
-          type="range"
-          value={dateRange}
-          onChange={(v: DatesRangeValue) => setDateRange(v)}
-          placeholder="Pilih rentang tanggal"
-          size="sm"
-          maxDate={new Date()}
-          clearable={false}
-          valueFormat="D MMM YYYY"
-          w={240}
-        />
-      </Group>
+      <AdminPageHeader
+        title="Analytics"
+        description="Pengunjung, event log, dan breakdown geo."
+        actions={
+          <DatePickerInput
+            type="range"
+            value={dateRange}
+            onChange={(v: DatesRangeValue) => setDateRange(v)}
+            placeholder="Pilih rentang tanggal"
+            size="sm"
+            maxDate={new Date()}
+            clearable={false}
+            valueFormat="D MMM YYYY"
+            w={240}
+            aria-label="Rentang tanggal analytics"
+          />
+        }
+      />
 
-      <SimpleGrid cols={{ base: 2, sm: 3, md: 6 }}>
-        <MetricCard
+      <SimpleGrid cols={{ base: 2, sm: 3, md: 6 }} spacing="sm">
+        <AdminStatCard
           loading={overviewLoading}
           label="Pengunjung"
           value={overview?.summary.uniqueVisitors}
           icon="person"
         />
-        <MetricCard
+        <AdminStatCard
           loading={overviewLoading}
           label="Sesi"
           value={overview?.summary.totalSessions}
           icon="schedule"
         />
-        <MetricCard
+        <AdminStatCard
           loading={overviewLoading}
           label="Page Views"
           value={overview?.summary.totalPageViews}
           icon="visibility"
         />
-        <MetricCard
+        <AdminStatCard
           loading={overviewLoading}
           label="Audio Play"
           value={overview?.summary.audioPlays}
           icon="headphones"
         />
-        <MetricCard
+        <AdminStatCard
           loading={overviewLoading}
           label="Video Play"
           value={overview?.summary.streamPlays}
           icon="play_arrow"
         />
-        <MetricCard
+        <AdminStatCard
           loading={overviewLoading}
           label="Kontak"
           value={overview?.summary.contactForms}
@@ -140,7 +141,7 @@ export default function AnalyticsPage() {
       </SimpleGrid>
 
       {!overviewLoading && overview && overview.topSections.length > 0 ? (
-        <Paper withBorder radius="md" p="md" style={{ borderColor: "#0a0a0a" }}>
+        <AdminSurface p="md">
           <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb="sm">
             Section teratas
           </Text>
@@ -150,13 +151,13 @@ export default function AnalyticsPage() {
                 <Text size="sm" ff="monospace">
                   {section.sectionId}
                 </Text>
-                <Text size="sm" fw={600}>
+                <Text size="sm" fw={600} ff="monospace">
                   {section.views.toLocaleString("id-ID")}
                 </Text>
               </Group>
             ))}
           </Stack>
-        </Paper>
+        </AdminSurface>
       ) : null}
 
       <Tabs value={activeTab} onChange={setActiveTab}>
@@ -201,24 +202,11 @@ function VisitorsTab({ filters }: { filters: { from?: string; to?: string } }) {
 
   if (visitors.length === 0) {
     return (
-      <Paper
-        withBorder
-        radius="md"
-        py={60}
-        style={{ textAlign: "center", borderColor: "#0a0a0a" }}
-      >
-        <Stack align="center" gap="xs">
-          <i
-            className="material-icons text-[40px]"
-            style={{ color: "var(--mantine-color-gray-4)" }}
-          >
-            person_off
-          </i>
-          <Text size="sm" c="dimmed">
-            Belum ada data pengunjung pada periode ini.
-          </Text>
-        </Stack>
-      </Paper>
+      <AdminEmptyState
+        icon="person_off"
+        title="Belum ada pengunjung"
+        description="Belum ada data pengunjung pada periode ini."
+      />
     );
   }
 
@@ -239,61 +227,59 @@ function VisitorsTab({ filters }: { filters: { from?: string; to?: string } }) {
         </Badge>
       </Group>
 
-      <Paper
-        withBorder
-        radius="md"
-        style={{ overflow: "hidden", borderColor: "#0a0a0a" }}
-      >
-        <Group
-          px="md"
-          py="xs"
-          style={{
-            borderBottom: "1px solid #0a0a0a",
-            background: "var(--mantine-color-gray-0)",
-          }}
-          gap={0}
-          wrap="nowrap"
-        >
-          <Text size="xs" fw={600} c="dimmed" style={{ flex: 2, minWidth: 0 }}>
-            UID
-          </Text>
-          <Text size="xs" fw={600} c="dimmed" style={{ flex: 2, minWidth: 0 }}>
-            Lokasi
-          </Text>
-          <Text size="xs" fw={600} c="dimmed" style={{ flex: 1, minWidth: 0 }}>
-            Viewport
-          </Text>
-          <Text
-            size="xs"
-            fw={600}
-            c="dimmed"
-            ta="center"
-            style={{ flex: 1, minWidth: 0 }}
+      <ScrollArea type="auto" offsetScrollbars>
+        <AdminSurface style={{ overflow: "hidden", minWidth: 720 }}>
+          <Group
+            px="md"
+            py="xs"
+            style={{
+              borderBottom: `1px solid ${ADMIN_BORDER}`,
+              background: ADMIN_MUTED_BG,
+            }}
+            gap={0}
+            wrap="nowrap"
           >
-            Sesi
-          </Text>
-          <Text
-            size="xs"
-            fw={600}
-            c="dimmed"
-            ta="center"
-            style={{ flex: 1, minWidth: 0 }}
-          >
-            PV
-          </Text>
-          <Text size="xs" fw={600} c="dimmed" style={{ flex: 2, minWidth: 0 }}>
-            Terakhir Aktif
-          </Text>
-        </Group>
+            <Text size="xs" fw={600} c="dimmed" style={{ flex: 2, minWidth: 0 }}>
+              UID
+            </Text>
+            <Text size="xs" fw={600} c="dimmed" style={{ flex: 2, minWidth: 0 }}>
+              Lokasi
+            </Text>
+            <Text size="xs" fw={600} c="dimmed" style={{ flex: 1, minWidth: 0 }}>
+              Viewport
+            </Text>
+            <Text
+              size="xs"
+              fw={600}
+              c="dimmed"
+              ta="center"
+              style={{ flex: 1, minWidth: 0 }}
+            >
+              Sesi
+            </Text>
+            <Text
+              size="xs"
+              fw={600}
+              c="dimmed"
+              ta="center"
+              style={{ flex: 1, minWidth: 0 }}
+            >
+              PV
+            </Text>
+            <Text size="xs" fw={600} c="dimmed" style={{ flex: 2, minWidth: 0 }}>
+              Terakhir Aktif
+            </Text>
+          </Group>
 
-        {visitors.map((v, i) => (
-          <VisitorRow
-            key={v.id}
-            visitor={v}
-            isLast={i === visitors.length - 1}
-          />
-        ))}
-      </Paper>
+          {visitors.map((v, i) => (
+            <VisitorRow
+              key={v.id}
+              visitor={v}
+              isLast={i === visitors.length - 1}
+            />
+          ))}
+        </AdminSurface>
+      </ScrollArea>
 
       {hasNextPage ? (
         <Group justify="center">
@@ -392,24 +378,11 @@ function EventsTab({ filters }: { filters: { from?: string; to?: string } }) {
 
   if (events.length === 0) {
     return (
-      <Paper
-        withBorder
-        radius="md"
-        py={60}
-        style={{ textAlign: "center", borderColor: "#0a0a0a" }}
-      >
-        <Stack align="center" gap="xs">
-          <i
-            className="material-icons text-[40px]"
-            style={{ color: "var(--mantine-color-gray-4)" }}
-          >
-            event_busy
-          </i>
-          <Text size="sm" c="dimmed">
-            Belum ada event pada periode ini.
-          </Text>
-        </Stack>
-      </Paper>
+      <AdminEmptyState
+        icon="event_busy"
+        title="Belum ada event"
+        description="Belum ada event pada periode ini."
+      />
     );
   }
 
@@ -430,41 +403,39 @@ function EventsTab({ filters }: { filters: { from?: string; to?: string } }) {
         </Badge>
       </Group>
 
-      <Paper
-        withBorder
-        radius="md"
-        style={{ overflow: "hidden", borderColor: "#0a0a0a" }}
-      >
-        <Group
-          px="md"
-          py="xs"
-          gap="xs"
-          style={{
-            borderBottom: "1px solid #0a0a0a",
-            background: "var(--mantine-color-gray-0)",
-          }}
-        >
-          <Text size="xs" fw={600} c="dimmed" w={130}>
-            Waktu
-          </Text>
-          <Text size="xs" fw={600} c="dimmed" w={120}>
-            Tipe
-          </Text>
-          <Text size="xs" fw={600} c="dimmed" w={100}>
-            Data
-          </Text>
-          <Text size="xs" fw={600} c="dimmed" w={100}>
-            Visitor
-          </Text>
-          <Text size="xs" fw={600} c="dimmed" style={{ flex: 1 }}>
-            Session
-          </Text>
-        </Group>
+      <ScrollArea type="auto" offsetScrollbars>
+        <AdminSurface style={{ overflow: "hidden", minWidth: 640 }}>
+          <Group
+            px="md"
+            py="xs"
+            gap="xs"
+            style={{
+              borderBottom: `1px solid ${ADMIN_BORDER}`,
+              background: ADMIN_MUTED_BG,
+            }}
+          >
+            <Text size="xs" fw={600} c="dimmed" w={130}>
+              Waktu
+            </Text>
+            <Text size="xs" fw={600} c="dimmed" w={120}>
+              Tipe
+            </Text>
+            <Text size="xs" fw={600} c="dimmed" w={100}>
+              Data
+            </Text>
+            <Text size="xs" fw={600} c="dimmed" w={100}>
+              Visitor
+            </Text>
+            <Text size="xs" fw={600} c="dimmed" style={{ flex: 1 }}>
+              Session
+            </Text>
+          </Group>
 
-        {events.map((ev, i) => (
-          <EventRow key={ev.id} event={ev} isLast={i === events.length - 1} />
-        ))}
-      </Paper>
+          {events.map((ev, i) => (
+            <EventRow key={ev.id} event={ev} isLast={i === events.length - 1} />
+          ))}
+        </AdminSurface>
+      </ScrollArea>
 
       {hasNextPage ? (
         <Group justify="center">
@@ -540,43 +511,9 @@ function EventRow({
   );
 }
 
-function MetricCard({
-  loading,
-  label,
-  value,
-  icon,
-}: {
-  loading: boolean;
-  label: string;
-  value?: number;
-  icon: string;
-}) {
-  return (
-    <Paper withBorder radius="md" p="md" style={{ borderColor: "#0a0a0a" }}>
-      <Group justify="space-between" align="flex-start">
-        <Stack gap={4}>
-          <Text size="xs" tt="uppercase" fw={500} c="dimmed" lts={0.5}>
-            {label}
-          </Text>
-          {loading ? (
-            <Skeleton height={28} width={80} />
-          ) : (
-            <Text size="xl" fw={700} ff="monospace">
-              {(value ?? 0).toLocaleString("id-ID")}
-            </Text>
-          )}
-        </Stack>
-        <ThemeIcon variant="light" color="dark" size="lg" radius="md">
-          <i className="material-icons text-[18px]">{icon}</i>
-        </ThemeIcon>
-      </Group>
-    </Paper>
-  );
-}
-
 function VisitorsSkeleton() {
   return (
-    <Paper withBorder radius="md" p="md" style={{ borderColor: "#0a0a0a" }}>
+    <AdminSurface p="md">
       <Stack gap="sm">
         {Array.from({ length: 8 }).map((_, i) => (
           <Group key={i} gap="sm">
@@ -589,13 +526,13 @@ function VisitorsSkeleton() {
           </Group>
         ))}
       </Stack>
-    </Paper>
+    </AdminSurface>
   );
 }
 
 function EventsSkeleton() {
   return (
-    <Paper withBorder radius="md" p="md" style={{ borderColor: "#0a0a0a" }}>
+    <AdminSurface p="md">
       <Stack gap="sm">
         {Array.from({ length: 8 }).map((_, i) => (
           <Group key={i} gap="sm">
@@ -607,7 +544,7 @@ function EventsSkeleton() {
           </Group>
         ))}
       </Stack>
-    </Paper>
+    </AdminSurface>
   );
 }
 

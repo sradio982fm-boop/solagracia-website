@@ -4,68 +4,27 @@ import {
   Alert,
   Badge,
   Group,
-  Paper,
   SimpleGrid,
   Skeleton,
   Stack,
   Text,
-  Title,
 } from "@mantine/core";
 import Link from "next/link";
 import { useDashboardStats } from "@/hooks/admin/useDashboard";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminStatCard } from "@/components/admin/AdminStatCard";
+import { AdminSurface } from "@/components/admin/AdminSurface";
 
 const QUICK_LINKS = [
-  { href: "/admin/frequencies", label: "Frekuensi" },
-  { href: "/admin/schedule", label: "Jadwal" },
-  { href: "/admin/hosts", label: "Penyiar" },
-  { href: "/admin/partners", label: "Partner" },
-  { href: "/admin/ads", label: "Iklan" },
-  { href: "/admin/social", label: "Social" },
-  { href: "/admin/site", label: "Konfigurasi Situs" },
+  { href: "/admin/frequencies", label: "Frekuensi", icon: "settings_input_antenna" },
+  { href: "/admin/schedule", label: "Jadwal", icon: "calendar_month" },
+  { href: "/admin/hosts", label: "Penyiar", icon: "group" },
+  { href: "/admin/partners", label: "Partner", icon: "handshake" },
+  { href: "/admin/ads", label: "Iklan", icon: "campaign" },
+  { href: "/admin/social", label: "Social", icon: "share" },
+  { href: "/admin/site", label: "Konfigurasi Situs", icon: "settings" },
+  { href: "/admin/analytics", label: "Analytics", icon: "analytics" },
 ] as const;
-
-function StatCard({
-  label,
-  value,
-  detail,
-  href,
-}: {
-  label: string;
-  value: string | number;
-  detail?: string;
-  href?: string;
-}) {
-  const content = (
-    <Paper
-      p="md"
-      withBorder
-      style={{
-        borderColor: "#0a0a0a",
-        height: "100%",
-      }}
-    >
-      <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
-        {label}
-      </Text>
-      <Text size="xl" fw={700} mt={6}>
-        {value}
-      </Text>
-      {detail ? (
-        <Text size="xs" c="dimmed" mt={4}>
-          {detail}
-        </Text>
-      ) : null}
-    </Paper>
-  );
-
-  if (!href) return content;
-
-  return (
-    <Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
-      {content}
-    </Link>
-  );
-}
 
 export default function AdminDashboardPage() {
   const { data, isLoading, error } = useDashboardStats();
@@ -73,10 +32,10 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return (
       <Stack gap="lg">
-        <Skeleton height={28} width={220} />
+        <Skeleton height={40} width={280} />
         <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
           {Array.from({ length: 8 }).map((_, index) => (
-            <Skeleton key={index} height={96} />
+            <Skeleton key={index} height={96} radius="md" />
           ))}
         </SimpleGrid>
       </Stack>
@@ -85,7 +44,7 @@ export default function AdminDashboardPage() {
 
   if (error || !data) {
     return (
-      <Alert color="red" title="Gagal memuat dashboard">
+      <Alert color="red" title="Gagal memuat dashboard" role="alert">
         {error instanceof Error ? error.message : "Terjadi kesalahan."}
       </Alert>
     );
@@ -97,14 +56,10 @@ export default function AdminDashboardPage() {
 
   return (
     <Stack gap="lg">
-      <div>
-        <Title order={3} fw={700}>
-          Dashboard
-        </Title>
-        <Text size="sm" c="dimmed">
-          Kesehatan konten Solagracia — bukan analytics pengunjung.
-        </Text>
-      </div>
+      <AdminPageHeader
+        title="Dashboard"
+        description="Kesehatan konten Solagracia — bukan analytics pengunjung."
+      />
 
       {(errors.length > 0 || warnings.length > 0) && (
         <Stack gap="sm">
@@ -114,6 +69,12 @@ export default function AdminDashboardPage() {
               color="red"
               variant="light"
               title="Perlu perhatian"
+              role="alert"
+              icon={
+                <i className="material-icons text-[18px]" aria-hidden>
+                  error
+                </i>
+              }
             >
               {issue.href ? (
                 <Text
@@ -135,6 +96,11 @@ export default function AdminDashboardPage() {
               color="yellow"
               variant="light"
               title="Saran"
+              icon={
+                <i className="material-icons text-[18px]" aria-hidden>
+                  warning
+                </i>
+              }
             >
               {issue.href ? (
                 <Text
@@ -154,48 +120,55 @@ export default function AdminDashboardPage() {
       )}
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-        <StatCard
+        <AdminStatCard
           label="Penyiar"
           value={counts.hosts.published}
           detail={`${counts.hosts.total} total · ${counts.hosts.draft} draft`}
           href="/admin/hosts"
+          icon="group"
         />
-        <StatCard
+        <AdminStatCard
           label="Program"
           value={counts.shows.published}
           detail={`${counts.shows.total} total · ${counts.shows.draft} draft`}
           href="/admin/schedule"
+          icon="live_tv"
         />
-        <StatCard
+        <AdminStatCard
           label="Slot jadwal"
           value={counts.scheduleSlots}
           href="/admin/schedule"
+          icon="calendar_month"
         />
-        <StatCard
+        <AdminStatCard
           label="Partner"
           value={counts.partners.published}
           detail={`${counts.partners.total} total`}
           href="/admin/partners"
+          icon="handshake"
         />
-        <StatCard
+        <AdminStatCard
           label="Paket sponsorship"
           value={counts.sponsorshipPlans.published}
           detail={`${counts.sponsorshipPlans.total} total · target 3`}
           href="/admin/partners"
+          icon="workspace_premium"
         />
-        <StatCard
+        <AdminStatCard
           label="Iklan"
           value={counts.ads.published}
           detail={`${counts.ads.hidden} hidden · ${counts.ads.total} total`}
           href="/admin/ads"
+          icon="campaign"
         />
-        <StatCard
+        <AdminStatCard
           label="Social links"
           value={counts.socialLinks.active}
           detail={`${counts.socialLinks.total} total`}
           href="/admin/social"
+          icon="share"
         />
-        <StatCard
+        <AdminStatCard
           label="Frekuensi aktif"
           value={counts.frequencies.active}
           detail={
@@ -204,13 +177,22 @@ export default function AdminDashboardPage() {
               : `${counts.frequencies.total} total · belum ada default`
           }
           href="/admin/frequencies"
+          icon="settings_input_antenna"
         />
       </SimpleGrid>
 
-      <Paper p="md" withBorder style={{ borderColor: "#0a0a0a" }}>
-        <Group justify="space-between" mb="sm">
+      <AdminSurface p="md">
+        <Group justify="space-between" mb="sm" wrap="wrap" gap="sm">
           <Text fw={600}>Section homepage</Text>
-          <Badge color={counts.sections.hidden > 0 ? "yellow" : "green"}>
+          <Badge
+            color={counts.sections.hidden > 0 ? "yellow" : "teal"}
+            variant="light"
+            leftSection={
+              <i className="material-icons text-[12px]" aria-hidden>
+                {counts.sections.hidden > 0 ? "visibility_off" : "visibility"}
+              </i>
+            }
+          >
             {counts.sections.visible}/{counts.sections.total} visible
           </Badge>
         </Group>
@@ -223,34 +205,41 @@ export default function AdminDashboardPage() {
           size="sm"
           mt="xs"
           td="underline"
+          fw={500}
         >
           Kelola section config
         </Text>
-      </Paper>
+      </AdminSurface>
 
-      <div>
-        <Title order={5} mb="sm">
+      <Stack gap="sm">
+        <Text fw={600} size="sm">
           Kelola konten
-        </Title>
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+        </Text>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="sm">
           {QUICK_LINKS.map((link) => (
-            <Paper
+            <Link
               key={link.href}
-              component={Link}
               href={link.href}
-              p="md"
-              withBorder
-              style={{
-                borderColor: "#0a0a0a",
-                textDecoration: "none",
-                color: "inherit",
-              }}
+              style={{ textDecoration: "none", color: "inherit" }}
             >
-              <Text fw={600}>{link.label}</Text>
-            </Paper>
+              <AdminSurface p="md" interactive>
+                <Group gap="sm" wrap="nowrap">
+                  <i
+                    className="material-icons text-[20px]"
+                    style={{ color: "var(--mantine-color-gray-7)" }}
+                    aria-hidden
+                  >
+                    {link.icon}
+                  </i>
+                  <Text fw={600} size="sm">
+                    {link.label}
+                  </Text>
+                </Group>
+              </AdminSurface>
+            </Link>
           ))}
         </SimpleGrid>
-      </div>
+      </Stack>
     </Stack>
   );
 }

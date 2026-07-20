@@ -20,13 +20,9 @@ import {
   Group,
   Stack,
   Text,
-  Title,
   Modal,
   TextInput,
   Textarea,
-  Paper,
-  Badge,
-  ActionIcon,
   Skeleton,
   Select,
   Switch,
@@ -34,6 +30,10 @@ import {
   NumberInput,
   Divider,
 } from "@mantine/core";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminSurface } from "@/components/admin/AdminSurface";
+import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useDisclosure } from "@mantine/hooks";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -233,82 +233,96 @@ export default function AdsAdminPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end">
-        <div>
-          <Title order={4} fw={700}>
-            Iklan
-          </Title>
-          <Text size="sm" c="dimmed">
-            Ruang iklan per section — tentang, program, penyiar. Hero, partner,
-            dan kontak tetap bebas iklan.
-          </Text>
-        </div>
-        <Button
-          color="dark"
-          onClick={openCreate}
-          disabled={usedSections.size >= AD_CAPABLE_SECTIONS.length}
-        >
-          Tambah Slot
-        </Button>
-      </Group>
+      <AdminPageHeader
+        title="Iklan"
+        description="Ruang iklan per section — tentang, program, penyiar. Hero, partner, dan kontak tetap bebas iklan."
+        actions={
+          <Button
+            color="dark"
+            onClick={openCreate}
+            disabled={usedSections.size >= AD_CAPABLE_SECTIONS.length}
+            leftSection={
+              <i className="material-icons text-[18px]" aria-hidden>
+                add
+              </i>
+            }
+          >
+            Tambah Slot
+          </Button>
+        }
+      />
 
       {isLoading ? (
-        <Skeleton height={120} />
+        <Skeleton height={120} radius="md" />
       ) : ads.length === 0 ? (
-        <Paper p="lg" withBorder style={{ borderColor: "#0a0a0a" }}>
-          <Text size="sm" c="dimmed">
-            Belum ada slot iklan di CMS. Tambah slot atau seed dari data statis
-            — halaman publik memakai fallback sampai slot published ada.
-          </Text>
-        </Paper>
+        <AdminEmptyState
+          icon="campaign"
+          title="Belum ada slot iklan"
+          description="Tambah slot atau seed dari data statis — halaman publik memakai fallback sampai slot published ada."
+          actionLabel="Tambah Slot"
+          onAction={openCreate}
+        />
       ) : (
         <Stack gap="sm">
           {ads.map((ad) => (
-            <Paper
+            <AdminSurface
               key={ad.id}
               p="md"
-              withBorder
               style={{
-                borderColor: "#0a0a0a",
-                background: ad.isVisible ? "#fff" : "#f8f8f8",
+                background: ad.isVisible
+                  ? undefined
+                  : "var(--mantine-color-dark-0)",
+                opacity: ad.isVisible ? 1 : 0.72,
               }}
             >
-              <Group justify="space-between" align="flex-start" wrap="nowrap">
-                <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
-                  <Group gap="xs">
-                    <Text fw={700}>{AD_SECTION_LABELS[ad.sectionId]}</Text>
-                    <Badge variant="outline" color="dark" size="sm">
+              <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md">
+                <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap="sm" wrap="wrap" align="center">
+                    <Text fw={700} size="sm">
+                      {AD_SECTION_LABELS[ad.sectionId]}
+                    </Text>
+                    <Text
+                      size="xs"
+                      c="dimmed"
+                      tt="uppercase"
+                      lts={0.6}
+                      fw={600}
+                    >
                       {ad.variant}
-                    </Badge>
+                    </Text>
                     <StatusBadge status={ad.status} />
-                    {!ad.isVisible && (
-                      <Badge color="gray" variant="outline" size="sm">
+                    {!ad.isVisible ? (
+                      <Text size="xs" c="dimmed" fw={500}>
                         Hidden
-                      </Badge>
-                    )}
+                      </Text>
+                    ) : null}
                   </Group>
+
                   {ad.sponsor ? (
                     <Text size="sm" fw={600}>
                       {ad.sponsor}
                     </Text>
                   ) : null}
                   {ad.line ? (
-                    <Text size="xs" c="dimmed" lineClamp={2}>
+                    <Text size="sm" c="dimmed" lineClamp={2}>
                       {ad.line}
                     </Text>
                   ) : null}
                   {ad.imageUrl ? (
-                    <Text size="xs" c="dimmed" truncate>
-                      Creative: {ad.imageUrl}
+                    <Text size="xs" c="dimmed" ff="monospace" truncate>
+                      {ad.imageUrl}
                     </Text>
                   ) : null}
-                  <Group gap="xs">
-                    <Badge variant="light" color="dark" size="sm">
-                      {ad.clickCount} klik
-                    </Badge>
+
+                  <Group gap="md" mt={4}>
+                    <Text size="xs" c="dimmed">
+                      <Text span fw={600} c="dark">
+                        {ad.clickCount.toLocaleString("id-ID")}
+                      </Text>{" "}
+                      klik
+                    </Text>
                     {ad.startsAt || ad.endsAt ? (
                       <Text size="xs" c="dimmed">
-                        Jadwal:{" "}
                         {ad.startsAt
                           ? formatScheduleLabel(ad.startsAt)
                           : "—"}{" "}
@@ -319,9 +333,9 @@ export default function AdsAdminPage() {
                   </Group>
                 </Stack>
 
-                <Group gap="xs" wrap="nowrap">
+                <Group gap={4} wrap="nowrap" align="center">
                   <Switch
-                    size="sm"
+                    size="xs"
                     color="dark"
                     checked={ad.isVisible}
                     onChange={(e) =>
@@ -330,27 +344,22 @@ export default function AdsAdminPage() {
                         isVisible: e.currentTarget.checked,
                       })
                     }
-                    aria-label="Visible"
+                    aria-label="Tampilkan di situs"
                   />
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  <AdminIconButton
+                    icon="edit"
+                    label="Edit iklan"
                     onClick={() => openEdit(ad)}
-                    aria-label="Edit"
-                  >
-                    ✎
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  />
+                  <AdminIconButton
+                    icon="delete"
+                    label="Hapus iklan"
+                    color="red"
                     onClick={() => setDeleteTarget(ad)}
-                    aria-label="Hapus"
-                  >
-                    ×
-                  </ActionIcon>
+                  />
                 </Group>
               </Group>
-            </Paper>
+            </AdminSurface>
           ))}
         </Stack>
       )}
@@ -522,9 +531,9 @@ export default function AdsAdminPage() {
 
           <Divider label="Preview" labelPosition="center" />
 
-          <Paper p="md" withBorder style={{ borderColor: "#0a0a0a" }}>
+          <AdminSurface p="md">
             <AdSlotPreview ad={previewAd} />
-          </Paper>
+          </AdminSurface>
 
           <Group justify="flex-end">
             <Button variant="default" onClick={close}>

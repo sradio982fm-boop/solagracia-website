@@ -12,7 +12,9 @@ import {
   Title,
   Text,
   Center,
+  Loader,
 } from "@mantine/core";
+import { ADMIN_BORDER, ADMIN_PAGE_BG } from "@/lib/admin/ui";
 
 function safeAdminNext(next: string | null): string {
   if (next && next.startsWith("/admin") && !next.startsWith("/admin/login")) {
@@ -53,30 +55,36 @@ export default function AdminLoginPage() {
 
   if (isLoading) {
     return (
-      <Center h="100vh">
-        <Text c="dimmed">Memuat…</Text>
+      <Center h="100vh" bg={ADMIN_PAGE_BG}>
+        <Stack align="center" gap="sm">
+          <Loader color="dark" size="sm" />
+          <Text size="sm" c="dimmed">
+            Memuat…
+          </Text>
+        </Stack>
       </Center>
     );
   }
 
   return (
-    <Center mih="100vh" bg="#f5f5f5" px="md">
+    <Center mih="100vh" bg={ADMIN_PAGE_BG} px="md">
       <Paper
         component="form"
         onSubmit={handleSubmit}
-        p="xl"
+        p={{ base: "lg", sm: "xl" }}
         w="100%"
         maw={400}
         withBorder
-        style={{ borderColor: "#0a0a0a" }}
+        radius="md"
+        style={{ borderColor: ADMIN_BORDER }}
       >
         <Stack gap="md">
           <div>
-            <Title order={3} fw={900} tt="uppercase">
+            <Title order={1} size="h3" fw={900} tt="uppercase">
               Solagracia
             </Title>
-            <Text size="sm" c="dimmed">
-              Admin login
+            <Text size="sm" c="dimmed" mt={4}>
+              Masuk ke panel admin
             </Text>
           </div>
           <TextInput
@@ -86,6 +94,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setEmail(e.currentTarget.value)}
             required
             autoComplete="username"
+            inputMode="email"
           />
           <PasswordInput
             label="Password"
@@ -94,12 +103,18 @@ export default function AdminLoginPage() {
             required
             autoComplete="current-password"
           />
-          {error && (
-            <Text size="sm" c="red">
+          {error ? (
+            <Text size="sm" c="red" role="alert">
               {error}
             </Text>
-          )}
-          <Button type="submit" color="dark" loading={submitting} fullWidth>
+          ) : null}
+          <Button
+            type="submit"
+            color="dark"
+            loading={submitting}
+            fullWidth
+            size="md"
+          >
             Masuk
           </Button>
         </Stack>

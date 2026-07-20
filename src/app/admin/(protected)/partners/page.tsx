@@ -21,14 +21,12 @@ import {
   type SiteConfigMap,
 } from "@/hooks/admin/useSiteConfig";
 import {
-  ActionIcon,
   Avatar,
   Badge,
   Button,
   Group,
   Modal,
   NumberInput,
-  Paper,
   SegmentedControl,
   SimpleGrid,
   Skeleton,
@@ -38,12 +36,15 @@ import {
   Text,
   Textarea,
   TextInput,
-  Title,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminSurface } from "@/components/admin/AdminSurface";
+import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { TagInput } from "@/components/admin/TagInput";
 import { partnerContent as defaults } from "@/data/partner";
 
@@ -294,16 +295,12 @@ export default function PartnersAdminPage() {
 
   return (
     <Stack gap="lg">
-      <div>
-        <Title order={4} fw={700}>
-          Partner
-        </Title>
-        <Text size="sm" c="dimmed">
-          Riwayat marquee + paket sponsorship (maks. 3 publikasi).
-        </Text>
-      </div>
+      <AdminPageHeader
+        title="Partner"
+        description="Riwayat marquee + paket sponsorship (maks. 3 publikasi)."
+      />
 
-      <Paper p="md" withBorder style={{ borderColor: "#0a0a0a" }}>
+      <AdminSurface p="md">
         <Stack gap="md">
           <Text fw={600} size="sm">
             Label & WhatsApp section Partner
@@ -333,7 +330,7 @@ export default function PartnersAdminPage() {
             </Button>
           </Group>
         </Stack>
-      </Paper>
+      </AdminSurface>
 
       <Tabs value={tab} onChange={(v) => setTab((v as TabId) || "history")}>
         <Tabs.List>
@@ -360,17 +357,16 @@ export default function PartnersAdminPage() {
             {partnersLoading ?
               <Skeleton height={120} />
             : partners.length === 0 ?
-              <Text size="sm" c="dimmed">
-                Belum ada partner riwayat. Tambahkan dari tombol di atas.
-              </Text>
+              <AdminEmptyState
+                icon="handshake"
+                title="Belum ada partner riwayat"
+                description="Tambahkan partner untuk marquee homepage."
+                actionLabel="Tambah Partner"
+                onAction={openCreatePartner}
+              />
             : <Stack gap="sm">
                 {partners.map((partner) => (
-                  <Paper
-                    key={partner.id}
-                    p="md"
-                    withBorder
-                    style={{ borderColor: "#0a0a0a", background: "#fff" }}
-                  >
+                  <AdminSurface key={partner.id} p="md">
                     <Group justify="space-between" align="flex-start">
                       <Group gap="md">
                         {partner.logoUrl ?
@@ -394,25 +390,20 @@ export default function PartnersAdminPage() {
                         </Stack>
                       </Group>
                       <Group gap="xs">
-                        <ActionIcon
-                          variant="outline"
-                          color="dark"
+                        <AdminIconButton
+                          icon="edit"
+                          label="Edit partner"
                           onClick={() => openEditPartner(partner)}
-                          aria-label="Edit"
-                        >
-                          ✎
-                        </ActionIcon>
-                        <ActionIcon
-                          variant="outline"
-                          color="dark"
+                        />
+                        <AdminIconButton
+                          icon="delete"
+                          label="Hapus partner"
+                          color="red"
                           onClick={() => setDeletePartnerTarget(partner)}
-                          aria-label="Hapus"
-                        >
-                          ×
-                        </ActionIcon>
+                        />
                       </Group>
                     </Group>
-                  </Paper>
+                  </AdminSurface>
                 ))}
               </Stack>
             }
@@ -439,19 +430,18 @@ export default function PartnersAdminPage() {
             )}
 
             {plansLoading ?
-              <Skeleton height={120} />
+              <Skeleton height={120} radius="md" />
             : plans.length === 0 ?
-              <Text size="sm" c="dimmed">
-                Belum ada paket sponsorship.
-              </Text>
+              <AdminEmptyState
+                icon="workspace_premium"
+                title="Belum ada paket sponsorship"
+                description="Tambahkan hingga 3 paket published untuk section Partner."
+                actionLabel="Tambah Paket"
+                onAction={openCreatePlan}
+              />
             : <Stack gap="sm">
                 {plans.map((plan) => (
-                  <Paper
-                    key={plan.id}
-                    p="md"
-                    withBorder
-                    style={{ borderColor: "#0a0a0a", background: "#fff" }}
-                  >
+                  <AdminSurface key={plan.id} p="md">
                     <Group justify="space-between" align="flex-start">
                       <Stack gap={4}>
                         <Group gap="xs">
@@ -476,25 +466,20 @@ export default function PartnersAdminPage() {
                         </Group>
                       </Stack>
                       <Group gap="xs">
-                        <ActionIcon
-                          variant="outline"
-                          color="dark"
+                        <AdminIconButton
+                          icon="edit"
+                          label="Edit paket"
                           onClick={() => openEditPlan(plan)}
-                          aria-label="Edit"
-                        >
-                          ✎
-                        </ActionIcon>
-                        <ActionIcon
-                          variant="outline"
-                          color="dark"
+                        />
+                        <AdminIconButton
+                          icon="delete"
+                          label="Hapus paket"
+                          color="red"
                           onClick={() => setDeletePlanTarget(plan)}
-                          aria-label="Hapus"
-                        >
-                          ×
-                        </ActionIcon>
+                        />
                       </Group>
                     </Group>
-                  </Paper>
+                  </AdminSurface>
                 ))}
               </Stack>
             }

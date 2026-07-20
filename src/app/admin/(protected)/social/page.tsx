@@ -13,18 +13,19 @@ import {
   Group,
   Stack,
   Text,
-  Title,
   Modal,
   TextInput,
   Select,
   Switch,
-  Paper,
   Badge,
-  ActionIcon,
   Skeleton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminSurface } from "@/components/admin/AdminSurface";
+import { AdminIconButton } from "@/components/admin/AdminIconButton";
 
 const PLATFORMS = [
   { value: "instagram", label: "Instagram" },
@@ -94,34 +95,41 @@ export default function SocialAdminPage() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="flex-end">
-        <div>
-          <Title order={4} fw={700}>
-            Social Media
-          </Title>
-          <Text size="sm" c="dimmed">
-            Satu sumber untuk hero, kontak, dan footer.
-          </Text>
-        </div>
-        <Button color="dark" onClick={openCreate}>
-          Tambah Link
-        </Button>
-      </Group>
+      <AdminPageHeader
+        title="Social Media"
+        description="Satu sumber untuk hero, kontak, dan footer."
+        actions={
+          <Button
+            color="dark"
+            onClick={openCreate}
+            leftSection={
+              <i className="material-icons text-[18px]" aria-hidden>
+                add
+              </i>
+            }
+          >
+            Tambah Link
+          </Button>
+        }
+      />
 
       {isLoading ? (
-        <Skeleton height={100} />
+        <Skeleton height={100} radius="md" />
+      ) : links.length === 0 ? (
+        <AdminEmptyState
+          icon="share"
+          title="Belum ada social link"
+          description="Tambahkan link platform untuk ditampilkan di situs."
+          actionLabel="Tambah Link"
+          onAction={openCreate}
+        />
       ) : (
         <Stack gap="sm">
           {links.map((row) => (
-            <Paper
-              key={row.id}
-              p="md"
-              withBorder
-              style={{ borderColor: "#0a0a0a", background: "#fff" }}
-            >
-              <Group justify="space-between">
-                <Stack gap={2}>
-                  <Group gap="xs">
+            <AdminSurface key={row.id} p="md">
+              <Group justify="space-between" wrap="wrap" gap="sm">
+                <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                  <Group gap="xs" wrap="wrap">
                     <Text fw={700}>{row.label}</Text>
                     <Badge color="dark" variant="outline">
                       {row.platform}
@@ -132,28 +140,25 @@ export default function SocialAdminPage() {
                       </Badge>
                     )}
                   </Group>
-                  <Text size="xs" c="dimmed">
+                  <Text size="xs" c="dimmed" truncate="end">
                     {row.url}
                   </Text>
                 </Stack>
                 <Group gap="xs">
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  <AdminIconButton
+                    icon="edit"
+                    label="Edit link"
                     onClick={() => openEdit(row)}
-                  >
-                    ✎
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="outline"
-                    color="dark"
+                  />
+                  <AdminIconButton
+                    icon="delete"
+                    label="Hapus link"
+                    color="red"
                     onClick={() => setDeleteTarget(row)}
-                  >
-                    ×
-                  </ActionIcon>
+                  />
                 </Group>
               </Group>
-            </Paper>
+            </AdminSurface>
           ))}
         </Stack>
       )}

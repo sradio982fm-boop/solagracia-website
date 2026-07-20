@@ -13,6 +13,7 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { FooterConfigPanel } from "@/components/admin/FooterConfigPanel";
 import { KontakConfigPanel } from "@/components/admin/KontakConfigPanel";
@@ -389,13 +390,10 @@ export default function SiteAdminPage() {
 
   return (
     <Stack gap="lg">
-      <div>
-        <Title order={4}>Konfigurasi Situs</Title>
-        <Text size="sm" c="dimmed" mt={4}>
-          SEO, brand, hero, tentang, kontak, footer, marquee, dan header seksi.
-          Fallback ke data lokal jika kosong.
-        </Text>
-      </div>
+      <AdminPageHeader
+        title="Konfigurasi Situs"
+        description="SEO, brand, hero, tentang, kontak, footer, marquee, dan header seksi. Fallback ke data lokal jika kosong."
+      />
 
       <Accordion
         multiple
