@@ -621,7 +621,10 @@ export async function fetchSectionConfig(): Promise<SectionConfigPayload> {
   }
 }
 
-/** Section ad plates — CMS with static fallback when no CMS row exists. */
+/**
+ * Section ad plates — live CMS first, else `/public/ads` via SECTION_ADS.
+ * Empty DB / fetch failure still returns static fallbacks for tentang/program/penyiar.
+ */
 export async function fetchSectionAds(): Promise<
   Partial<Record<SectionId, AdPlaceholder>>
 > {
@@ -633,11 +636,11 @@ export async function fetchSectionAds(): Promise<
       .in("section_id", [...AD_CAPABLE_SECTIONS])
       .order("sort_order", { ascending: true });
 
-    if (error || !data?.length) {
+    if (error) {
       return buildSectionAdsFromRows([]);
     }
 
-    return buildSectionAdsFromRows(data as AdSlotRow[]);
+    return buildSectionAdsFromRows((data ?? []) as AdSlotRow[]);
   } catch {
     return buildSectionAdsFromRows([]);
   }

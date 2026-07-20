@@ -2,8 +2,9 @@ import type { SectionId } from "@/data/constants";
 import type { AdPlaceholder } from "@/types/ads";
 
 /**
- * Curated ad placeholders — quiet slots on tentang / program / penyiar.
- * Hero, partner, and kontak stay ad-free. Swap for real creatives / CMS later.
+ * Static `/public/ads` creatives — used when no live CMS ad exists for a section.
+ * Live = published + is_visible + inside schedule. Intentional hide (published +
+ * is_visible false) suppresses this fallback.
  *
  * Modes:
  * - text only
