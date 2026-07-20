@@ -62,11 +62,11 @@ export function HeroSection({
           className="object-cover object-center"
         />
         <div
-          className="absolute inset-0 bg-[rgba(8,10,16,0.32)]"
+          className="absolute inset-0 bg-[rgba(8,10,16,0.08)]"
           aria-hidden
         />
         <div
-          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,16,0.34)_0%,transparent_30%,transparent_60%,rgba(8,10,16,0.62)_100%)]"
+          className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,10,16,0.2)_0%,transparent_32%,transparent_62%,rgba(8,10,16,0.4)_100%)]"
           aria-hidden
         />
       </motion.div>
