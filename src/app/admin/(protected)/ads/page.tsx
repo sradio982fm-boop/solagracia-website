@@ -1,0 +1,493 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import {
+  useAds,
+  useCreateAd,
+  useUpdateAd,
+  useDeleteAd,
+} from "@/hooks/admin/useAds";
+import {
+  AD_CAPABLE_SECTIONS,
+  AD_SECTION_LABELS,
+  AD_VARIANT_OPTIONS,
+  adSlotToPlaceholder,
+  type AdCapableSectionId,
+  type AdSlot,
+} from "@/lib/ads";
+import {
+  Button,
+  Group,
+  Stack,
+  Text,
+  Title,
+  Modal,
+  TextInput,
+  Textarea,
+  Paper,
+  Badge,
+  ActionIcon,
+  Skeleton,
+  Select,
+  Switch,
+  SegmentedControl,
+  NumberInput,
+  Divider,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import { StatusBadge } from "@/components/admin/StatusBadge";
+import { AdSlot as AdSlotPreview } from "@/components/ads/AdSlot";
+import type { AdImageShape, AdSlotTone, AdSlotVariant } from "@/types/ads";
+
+interface AdFormState {
+  sectionId: AdCapableSectionId;
+  label: string;
+  sponsor: string;
+  line: string;
+  variant: AdSlotVariant;
+  tone: AdSlotTone | "";
+  href: string;
+  imageUrl: string;
+  imageAlt: string;
+  imageShape: AdImageShape | "";
+  isVisible: boolean;
+  sortOrder: number;
+  status: "draft" | "published";
+}
+
+const EMPTY_FORM: AdFormState = {
+  sectionId: "tentang",
+  label: "Partner",
+  sponsor: "",
+  line: "",
+  variant: "panel",
+  tone: "",
+  href: "#kontak",
+  imageUrl: "",
+  imageAlt: "",
+  imageShape: "banner",
+  isVisible: true,
+  sortOrder: 0,
+  status: "published",
+};
+
+function formFromAd(ad: AdSlot): AdFormState {
+  return {
+    sectionId: ad.sectionId,
+    label: ad.label,
+    sponsor: ad.sponsor,
+    line: ad.line,
+    variant: ad.variant,
+    tone: ad.tone,
+    href: ad.href,
+    imageUrl: ad.imageUrl,
+    imageAlt: ad.imageAlt,
+    imageShape: ad.imageShape || "banner",
+    isVisible: ad.isVisible,
+    sortOrder: ad.sortOrder,
+    status: ad.status,
+  };
+}
+
+function uploadAspectRatio(
+  variant: AdSlotVariant,
+  imageShape: AdImageShape | "",
+): "banner" | "portrait" | "video" | "square" {
+  if (variant === "image") {
+    return imageShape === "portrait" ? "portrait" : "banner";
+  }
+  if (variant === "panel") return "portrait";
+  if (variant === "inline") return "square";
+  return "banner";
+}
+
+export default function AdsAdminPage() {
+  const { data, isLoading } = useAds();
+  const createAd = useCreateAd();
+  const updateAd = useUpdateAd();
+  const deleteAd = useDeleteAd();
+
+  const [opened, { open, close }] = useDisclosure(false);
+  const [editing, setEditing] = useState<AdSlot | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdSlot | null>(null);
+  const [form, setForm] = useState<AdFormState>(EMPTY_FORM);
+
+  const ads = data?.ads || [];
+
+  const usedSections = useMemo(
+    () => new Set(ads.map((ad) => ad.sectionId)),
+    [ads],
+  );
+
+  const sectionOptions = AD_CAPABLE_SECTIONS.map((id) => ({
+    value: id,
+    label: AD_SECTION_LABELS[id],
+    disabled: !editing && usedSections.has(id),
+  }));
+
+  const isImageVariant = form.variant === "image";
+  const showCopyFields = !isImageVariant;
+
+  const previewAd = useMemo(
+    () =>
+      adSlotToPlaceholder({
+        id: "preview",
+        sectionId: form.sectionId,
+        label: form.label,
+        sponsor: form.sponsor,
+        line: form.line,
+        variant: form.variant,
+        tone: form.tone,
+        href: form.href,
+        imageUrl: form.imageUrl,
+        imageAlt: form.imageAlt,
+        imageShape: form.imageShape,
+        isVisible: form.isVisible,
+        sortOrder: form.sortOrder,
+        status: form.status,
+      }),
+    [form],
+  );
+
+  function updateField<K extends keyof AdFormState>(key: K, value: AdFormState[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function openCreate() {
+    setEditing(null);
+    const nextSection =
+      AD_CAPABLE_SECTIONS.find((id) => !usedSections.has(id)) ?? "tentang";
+    setForm({ ...EMPTY_FORM, sectionId: nextSection, sortOrder: ads.length });
+    open();
+  }
+
+  function openEdit(ad: AdSlot) {
+    setEditing(ad);
+    setForm(formFromAd(ad));
+    open();
+  }
+
+  async function handleSubmit() {
+    const payload = {
+      sectionId: form.sectionId,
+      label: form.label,
+      sponsor: form.sponsor,
+      line: form.line,
+      variant: form.variant,
+      tone: form.tone,
+      href: form.href,
+      imageUrl: form.imageUrl,
+      imageAlt: form.imageAlt,
+      imageShape: isImageVariant ? form.imageShape : "",
+      isVisible: form.isVisible,
+      sortOrder: form.sortOrder,
+      status: form.status,
+    };
+
+    if (editing) {
+      await updateAd.mutateAsync({ id: editing.id, ...payload });
+    } else {
+      await createAd.mutateAsync(payload);
+    }
+    close();
+  }
+
+  const isSaving = createAd.isPending || updateAd.isPending;
+  const isFormValid = Boolean(form.variant && form.sectionId);
+
+  return (
+    <Stack gap="lg">
+      <Group justify="space-between" align="flex-end">
+        <div>
+          <Title order={4} fw={700}>
+            Iklan
+          </Title>
+          <Text size="sm" c="dimmed">
+            Ruang iklan per section — tentang, program, penyiar. Hero, partner,
+            dan kontak tetap bebas iklan.
+          </Text>
+        </div>
+        <Button
+          color="dark"
+          onClick={openCreate}
+          disabled={usedSections.size >= AD_CAPABLE_SECTIONS.length}
+        >
+          Tambah Slot
+        </Button>
+      </Group>
+
+      {isLoading ? (
+        <Skeleton height={120} />
+      ) : ads.length === 0 ? (
+        <Paper p="lg" withBorder style={{ borderColor: "#0a0a0a" }}>
+          <Text size="sm" c="dimmed">
+            Belum ada slot iklan di CMS. Tambah slot atau seed dari data statis
+            — halaman publik memakai fallback sampai slot published ada.
+          </Text>
+        </Paper>
+      ) : (
+        <Stack gap="sm">
+          {ads.map((ad) => (
+            <Paper
+              key={ad.id}
+              p="md"
+              withBorder
+              style={{
+                borderColor: "#0a0a0a",
+                background: ad.isVisible ? "#fff" : "#f8f8f8",
+              }}
+            >
+              <Group justify="space-between" align="flex-start" wrap="nowrap">
+                <Stack gap={6} style={{ flex: 1, minWidth: 0 }}>
+                  <Group gap="xs">
+                    <Text fw={700}>{AD_SECTION_LABELS[ad.sectionId]}</Text>
+                    <Badge variant="outline" color="dark" size="sm">
+                      {ad.variant}
+                    </Badge>
+                    <StatusBadge status={ad.status} />
+                    {!ad.isVisible && (
+                      <Badge color="gray" variant="outline" size="sm">
+                        Hidden
+                      </Badge>
+                    )}
+                  </Group>
+                  {ad.sponsor ? (
+                    <Text size="sm" fw={600}>
+                      {ad.sponsor}
+                    </Text>
+                  ) : null}
+                  {ad.line ? (
+                    <Text size="xs" c="dimmed" lineClamp={2}>
+                      {ad.line}
+                    </Text>
+                  ) : null}
+                  {ad.imageUrl ? (
+                    <Text size="xs" c="dimmed" truncate>
+                      Creative: {ad.imageUrl}
+                    </Text>
+                  ) : null}
+                </Stack>
+
+                <Group gap="xs" wrap="nowrap">
+                  <Switch
+                    size="sm"
+                    color="dark"
+                    checked={ad.isVisible}
+                    onChange={(e) =>
+                      updateAd.mutate({
+                        id: ad.id,
+                        isVisible: e.currentTarget.checked,
+                      })
+                    }
+                    aria-label="Visible"
+                  />
+                  <ActionIcon
+                    variant="outline"
+                    color="dark"
+                    onClick={() => openEdit(ad)}
+                    aria-label="Edit"
+                  >
+                    ✎
+                  </ActionIcon>
+                  <ActionIcon
+                    variant="outline"
+                    color="dark"
+                    onClick={() => setDeleteTarget(ad)}
+                    aria-label="Hapus"
+                  >
+                    ×
+                  </ActionIcon>
+                </Group>
+              </Group>
+            </Paper>
+          ))}
+        </Stack>
+      )}
+
+      <Modal
+        opened={opened}
+        onClose={close}
+        title={editing ? "Edit Slot Iklan" : "Tambah Slot Iklan"}
+        centered
+        size="xl"
+      >
+        <Stack gap="md">
+          <Select
+            label="Section"
+            data={sectionOptions}
+            value={form.sectionId}
+            onChange={(value) =>
+              value && updateField("sectionId", value as AdCapableSectionId)
+            }
+            disabled={Boolean(editing)}
+            required
+          />
+
+          <Select
+            label="Variant"
+            data={AD_VARIANT_OPTIONS.map((o) => ({
+              value: o.value,
+              label: o.label,
+            }))}
+            value={form.variant}
+            onChange={(value) =>
+              value && updateField("variant", value as AdSlotVariant)
+            }
+            required
+          />
+
+          <Group grow>
+            <TextInput
+              label="Label"
+              description="Quiet plate label — e.g. Partner"
+              value={form.label}
+              onChange={(e) => updateField("label", e.currentTarget.value)}
+            />
+            <Select
+              label="Tone"
+              clearable
+              data={[
+                { value: "match", label: "Match section" },
+                { value: "ink", label: "Ink (dark plate)" },
+              ]}
+              value={form.tone || null}
+              onChange={(value) =>
+                updateField("tone", (value ?? "") as AdSlotTone | "")
+              }
+            />
+          </Group>
+
+          {showCopyFields ? (
+            <>
+              <TextInput
+                label="Sponsor / headline"
+                value={form.sponsor}
+                onChange={(e) => updateField("sponsor", e.currentTarget.value)}
+              />
+              <Textarea
+                label="Supporting line"
+                value={form.line}
+                onChange={(e) => updateField("line", e.currentTarget.value)}
+                minRows={2}
+                autosize
+              />
+            </>
+          ) : null}
+
+          {isImageVariant ? (
+            <Select
+              label="Image shape"
+              data={[
+                { value: "banner", label: "Banner (4:1)" },
+                { value: "portrait", label: "Portrait (3:4)" },
+              ]}
+              value={form.imageShape || "banner"}
+              onChange={(value) =>
+                updateField("imageShape", (value ?? "banner") as AdImageShape)
+              }
+            />
+          ) : null}
+
+          <TextInput
+            label="Link (href)"
+            description="URL atau anchor — e.g. #kontak"
+            value={form.href}
+            onChange={(e) => updateField("href", e.currentTarget.value)}
+          />
+
+          <div>
+            <Text size="sm" fw={500} mb={6}>
+              Creative
+            </Text>
+            <ImageUpload
+              value={form.imageUrl}
+              onChange={(url) => updateField("imageUrl", url)}
+              bucket="ads"
+              subpath={form.sectionId}
+              aspectRatio={uploadAspectRatio(form.variant, form.imageShape)}
+            />
+          </div>
+
+          <TextInput
+            label="Image alt"
+            value={form.imageAlt}
+            onChange={(e) => updateField("imageAlt", e.currentTarget.value)}
+          />
+
+          <Group grow>
+            <NumberInput
+              label="Sort order"
+              min={0}
+              value={form.sortOrder}
+              onChange={(value) =>
+                updateField("sortOrder", typeof value === "number" ? value : 0)
+              }
+            />
+            <div>
+              <Text size="sm" fw={500} mb={8}>
+                Status
+              </Text>
+              <SegmentedControl
+                fullWidth
+                color="dark"
+                value={form.status}
+                onChange={(value) =>
+                  updateField("status", value as "draft" | "published")
+                }
+                data={[
+                  { label: "Draft", value: "draft" },
+                  { label: "Published", value: "published" },
+                ]}
+              />
+            </div>
+          </Group>
+
+          <Switch
+            label="Visible on site"
+            description="Sembunyikan tanpa menghapus creative"
+            checked={form.isVisible}
+            onChange={(e) =>
+              updateField("isVisible", e.currentTarget.checked)
+            }
+            color="dark"
+          />
+
+          <Divider label="Preview" labelPosition="center" />
+
+          <Paper p="md" withBorder style={{ borderColor: "#0a0a0a" }}>
+            <AdSlotPreview ad={previewAd} />
+          </Paper>
+
+          <Group justify="flex-end">
+            <Button variant="default" onClick={close}>
+              Batal
+            </Button>
+            <Button
+              color="dark"
+              loading={isSaving}
+              disabled={!isFormValid}
+              onClick={handleSubmit}
+            >
+              Simpan
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => !o && setDeleteTarget(null)}
+        title="Hapus slot iklan?"
+        description="Creative akan dihapus dari CMS. Halaman publik kembali ke fallback statis jika ada."
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await deleteAd.mutateAsync(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+        loading={deleteAd.isPending}
+      />
+    </Stack>
+  );
+}

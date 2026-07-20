@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { SECTION_ADS } from "@/data/ads";
+import { SmartImage } from "@/components/SmartImage";
 import {
   easeOut,
   fadeUpCard,
@@ -15,12 +15,14 @@ import {
 } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { formatShowWindow } from "@/lib/schedule";
+import type { AdPlaceholder } from "@/types/ads";
 import type { ProgramContent, ScheduleShow, WeekdayId } from "@/types/schedule";
 
 type ProgramSectionProps = {
   content: ProgramContent;
   /** WIB weekday from the server page — keeps SSR + hydrate in sync */
   initialDay: WeekdayId;
+  ad?: AdPlaceholder;
 };
 
 const viewport = viewportLoose;
@@ -30,11 +32,16 @@ const cardVariants = fadeUpCard;
 /**
  * #program — weekly lineup grid with day picker + radio-soul atmosphere.
  */
-export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
+function frequencyStamp(label: string): string {
+  return label.replace(/\s*FM$/i, "").trim() || label;
+}
+
+export function ProgramSection({ content, initialDay, ad }: ProgramSectionProps) {
   const [activeDay, setActiveDay] = useState<WeekdayId>(initialDay);
 
   const shows = content.byDay[activeDay] ?? [];
-  const ad = SECTION_ADS.program;
+  const frequencyLabel = content.frequencyLabel || "98.2 FM";
+  const brandStamp = `Solagracia · ${frequencyLabel}`;
 
   return (
     <section
@@ -46,7 +53,7 @@ export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
         "[@media(min-height:1200px)]:justify-center",
       )}
     >
-      <RadioSoulAtmosphere />
+      <RadioSoulAtmosphere frequencyLabel={frequencyLabel} />
 
       {/*
         Tall / 2K: keep show grid + vertical ad near FHD proportions
@@ -161,7 +168,7 @@ export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
                   variants={cardVariants}
                   className="min-h-0"
                 >
-                  <ShowCard show={show} />
+                  <ShowCard show={show} brandStamp={brandStamp} />
                 </motion.div>
               ))}
             </motion.div>
@@ -172,7 +179,13 @@ export function ProgramSection({ content, initialDay }: ProgramSectionProps) {
   );
 }
 
-function ShowCard({ show }: { show: ScheduleShow }) {
+function ShowCard({
+  show,
+  brandStamp,
+}: {
+  show: ScheduleShow;
+  brandStamp: string;
+}) {
   return (
     <motion.a
       data-show-card
@@ -186,12 +199,10 @@ function ShowCard({ show }: { show: ScheduleShow }) {
       )}
     >
       <span data-scale-in className="absolute inset-0 block will-change-transform">
-        <Image
+        <SmartImage
           src={show.imageSrc}
           alt={show.imageAlt}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
         />
       </span>
       <span
@@ -207,7 +218,7 @@ function ShowCard({ show }: { show: ScheduleShow }) {
 
       <span className="absolute inset-x-0 top-[18%] z-[1] flex flex-col items-center px-4 text-center">
         <span className="text-[9px] font-semibold tracking-[0.24em] text-white/55 uppercase">
-          Solagracia · 98.2 FM
+          {brandStamp}
         </span>
         <span className="mt-2 text-[clamp(1.35rem,2.4vw,1.75rem)] leading-[1.05] font-extrabold tracking-[-0.02em] text-white">
           {show.title}
@@ -232,7 +243,11 @@ function ShowCard({ show }: { show: ScheduleShow }) {
  * Dark studio frequency field — waves, rings, meters, grain.
  * Warmth from ember wash + cover photo, not flat void.
  */
-function RadioSoulAtmosphere() {
+function RadioSoulAtmosphere({
+  frequencyLabel,
+}: {
+  frequencyLabel: string;
+}) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       <div
@@ -316,7 +331,7 @@ function RadioSoulAtmosphere() {
       />
 
       <p className="absolute right-[4%] bottom-[12%] hidden text-[clamp(3.5rem,10vw,7.5rem)] leading-none font-extrabold tracking-[-0.06em] text-white/[0.04] select-none lg:block">
-        98.2
+        {frequencyStamp(frequencyLabel)}
       </p>
     </div>
   );

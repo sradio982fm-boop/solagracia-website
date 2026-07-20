@@ -2,19 +2,25 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useId, useState } from "react";
-import { LETTER_NAV, SECTION_IDS } from "@/data/constants";
+import type { SectionId } from "@/data/constants";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { cn } from "@/lib/utils";
+import type { NavLetter } from "@/types/site";
+
+type NavMenuProps = {
+  links: readonly NavLetter[];
+  sectionIds: readonly SectionId[];
+};
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
 /**
  * Frame hamburger + slide-in nav panel for GRACIA sections.
  */
-export function NavMenu() {
+export function NavMenu({ links, sectionIds }: NavMenuProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
-  const activeId = useActiveSection(SECTION_IDS, "home");
+  const activeId = useActiveSection(sectionIds, "home");
 
   useEffect(() => {
     if (!open) return;
@@ -110,7 +116,7 @@ export function NavMenu() {
               </p>
 
               <ul className="mt-10 flex flex-col">
-                {LETTER_NAV.map((link, index) => {
+                {links.map((link, index) => {
                   const isActive = link.sectionId === activeId;
 
                   return (

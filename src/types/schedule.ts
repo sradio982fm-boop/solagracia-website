@@ -44,6 +44,8 @@ export type ProgramContent = {
   eyebrow: string;
   title: string;
   description: string;
+  /** Brand frequency SoT — e.g. `98.2 FM` */
+  frequencyLabel?: string;
   days: WeekdayOption[];
   byDay: Record<WeekdayId, ScheduleShow[]>;
 };

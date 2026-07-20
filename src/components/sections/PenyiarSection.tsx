@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { SECTION_ADS } from "@/data/ads";
+import { SmartImage } from "@/components/SmartImage";
 import {
   easeOut,
   fadeUpCard,
@@ -13,10 +13,12 @@ import {
   viewportOnce,
 } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import type { AdPlaceholder } from "@/types/ads";
 import type { PenyiarContent, PenyiarHost } from "@/types/penyiar";
 
 type PenyiarSectionProps = {
   content: PenyiarContent;
+  ad?: AdPlaceholder;
 };
 
 /** Hosts visible per desktop page — keeps the stage inside 100dvh */
@@ -30,8 +32,7 @@ const cardVariants = fadeUpCard;
  * #penyiar — viewport-locked host roster.
  * More than 3 hosts → paged 3-up on desktop; swipe strip on mobile.
  */
-export function PenyiarSection({ content }: PenyiarSectionProps) {
-  const ad = SECTION_ADS.penyiar;
+export function PenyiarSection({ content, ad }: PenyiarSectionProps) {
   const hosts = content.hosts;
   const pageCount = Math.max(1, Math.ceil(hosts.length / PAGE_SIZE));
   const [page, setPage] = useState(0);
@@ -245,12 +246,10 @@ function HostCard({ host }: { host: PenyiarHost }) {
         href={host.href ?? "#penyiar"}
         className="relative min-h-0 flex-1 overflow-hidden bg-[rgba(12,12,14,0.06)] no-underline"
       >
-        <Image
+        <SmartImage
           src={host.imageSrc}
           alt={host.imageAlt}
-          fill
-          sizes="(max-width: 640px) 80vw, 45vw"
-          className="object-cover object-[50%_20%] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:scale-[1.06]"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/card:scale-[1.06]"
         />
         <span
           className="absolute inset-0 bg-[linear-gradient(180deg,transparent_40%,rgba(8,10,16,0.5)_100%)] transition-opacity duration-500 group-hover/card:bg-[linear-gradient(180deg,rgba(8,10,16,0.1)_20%,rgba(8,10,16,0.62)_100%)]"

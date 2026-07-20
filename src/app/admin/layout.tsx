@@ -1,9 +1,10 @@
+import { AdminAuthProvider } from "@/lib/admin/auth-context";
 import { AdminMantineProvider } from "@/lib/admin/mantine-provider";
 import { AdminQueryProvider } from "@/lib/admin/query-provider";
 import { Toaster } from "sonner";
 
 export const metadata = {
-  title: "Admin",
+  title: "Admin · Solagracia",
 };
 
 export default function AdminRootLayout({
@@ -14,8 +15,10 @@ export default function AdminRootLayout({
   return (
     <AdminQueryProvider>
       <AdminMantineProvider>
-        {children}
-        <Toaster position="top-right" richColors />
+        <AdminAuthProvider>
+          {children}
+          <Toaster position="top-right" richColors />
+        </AdminAuthProvider>
       </AdminMantineProvider>
     </AdminQueryProvider>
   );

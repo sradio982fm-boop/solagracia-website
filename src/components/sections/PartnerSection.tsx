@@ -12,7 +12,7 @@ import {
   viewportOnce,
 } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-import type { PartnerContent, SponsorshipPlan } from "@/types/partner";
+import type { PartnerContent, PartnerLogo, SponsorshipPlan } from "@/types/partner";
 
 type PartnerSectionProps = {
   content: PartnerContent;
@@ -79,17 +79,7 @@ export function PartnerSection({ content }: PartnerSectionProps) {
           <div className="partner-logo-marquee relative overflow-hidden border border-[rgba(255,255,255,0.12)] bg-black/35">
             <div className="partner-logo-marquee__track flex w-max items-stretch">
               {logos.map((partner, index) => (
-                <div
-                  key={`${partner.id}-${index}`}
-                  className="flex w-[9.5rem] shrink-0 flex-col items-center justify-center gap-2 border-r border-[rgba(255,255,255,0.1)] px-4 py-3.5 md:w-[11rem] md:py-4"
-                >
-                  <span className="inline-flex h-10 w-10 items-center justify-center border border-[rgba(255,255,255,0.22)] text-[0.72rem] font-extrabold tracking-[0.08em] text-white/85">
-                    {partner.initials}
-                  </span>
-                  <span className="max-w-full truncate text-center text-[10px] font-medium tracking-[0.06em] text-white/55 uppercase">
-                    {partner.name}
-                  </span>
-                </div>
+                <PartnerMarqueeItem key={`${partner.id}-${index}`} partner={partner} />
               ))}
             </div>
           </div>
@@ -123,6 +113,8 @@ export function PartnerSection({ content }: PartnerSectionProps) {
                 <PlanCard
                   plan={plan}
                   whatsappNumber={content.whatsappNumber}
+                  planCtaLabel={content.planCtaLabel}
+                  currencyPrefix={content.currencyPrefix}
                 />
               </motion.div>
             ))}
@@ -142,12 +134,56 @@ export function PartnerSection({ content }: PartnerSectionProps) {
   );
 }
 
+function PartnerMarqueeItem({ partner }: { partner: PartnerLogo }) {
+  const inner = (
+    <>
+      {partner.logoUrl ?
+        <Image
+          src={partner.logoUrl}
+          alt={partner.name}
+          width={40}
+          height={40}
+          className="h-10 w-10 object-contain"
+        />
+      : <span className="inline-flex h-10 w-10 items-center justify-center border border-[rgba(255,255,255,0.22)] text-[0.72rem] font-extrabold tracking-[0.08em] text-white/85">
+          {partner.initials}
+        </span>
+      }
+      <span className="max-w-full truncate text-center text-[10px] font-medium tracking-[0.06em] text-white/55 uppercase">
+        {partner.name}
+      </span>
+    </>
+  );
+
+  const className =
+    "flex w-[9.5rem] shrink-0 flex-col items-center justify-center gap-2 border-r border-[rgba(255,255,255,0.1)] px-4 py-3.5 md:w-[11rem] md:py-4";
+
+  if (partner.href) {
+    return (
+      <a
+        href={partner.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(className, "no-underline transition-colors hover:bg-white/5")}
+      >
+        {inner}
+      </a>
+    );
+  }
+
+  return <div className={className}>{inner}</div>;
+}
+
 function PlanCard({
   plan,
   whatsappNumber,
+  planCtaLabel,
+  currencyPrefix,
 }: {
   plan: SponsorshipPlan;
   whatsappNumber: string;
+  planCtaLabel: string;
+  currencyPrefix: string;
 }) {
   const href = whatsappHref(whatsappNumber, plan.whatsappMessage);
 
@@ -177,7 +213,7 @@ function PlanCard({
 
       <p className="mt-4 m-0 border-b border-[rgba(255,255,255,0.12)] pb-3">
         <span className="text-[0.7rem] font-medium tracking-[0.12em] text-white/50 uppercase">
-          IDR
+          {currencyPrefix}
         </span>{" "}
         <span className="text-[clamp(1.5rem,2.4vw,1.9rem)] font-extrabold tracking-[-0.03em] text-white">
           {plan.price}
@@ -211,7 +247,7 @@ function PlanCard({
             : "border border-[rgba(255,255,255,0.35)] text-white hover:bg-white/10",
         )}
       >
-        WhatsApp
+        {planCtaLabel}
       </motion.a>
     </motion.article>
   );

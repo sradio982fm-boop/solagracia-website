@@ -14,6 +14,8 @@ export const partnerContent: PartnerContent = {
   moreInfoLabel: "More Info",
   moreInfoHref: "#kontak",
   whatsappNumber: "628811982982",
+  planCtaLabel: "WhatsApp",
+  currencyPrefix: "IDR",
   partners: [
     { id: "sradio", name: "S Radio 98.2 FM", initials: "SR" },
     { id: "golden", name: "Golden Hour Cafe", initials: "GH" },

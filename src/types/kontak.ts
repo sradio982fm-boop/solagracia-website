@@ -1,7 +1,7 @@
 import type { SocialLink } from "@/types/site";
 
 export type KontakChannel = {
-  id: "whatsapp" | "email" | "hotline";
+  id: string;
   label: string;
   detail: string;
   href: string;

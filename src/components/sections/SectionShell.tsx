@@ -1,6 +1,6 @@
 import { AdSlot } from "@/components/ads/AdSlot";
-import { SECTION_ADS } from "@/data/ads";
 import { SECTION_SURFACE, type SectionId } from "@/data/constants";
+import type { AdPlaceholder } from "@/types/ads";
 import { cn } from "@/lib/utils";
 
 type SectionShellProps = {
@@ -10,6 +10,7 @@ type SectionShellProps = {
   description: string;
   /** Hide the curated partner slot for this section */
   hideAd?: boolean;
+  ad?: AdPlaceholder;
 };
 
 /**
@@ -21,9 +22,10 @@ export function SectionShell({
   title,
   description,
   hideAd = false,
+  ad: adProp,
 }: SectionShellProps) {
   const surface = SECTION_SURFACE[id];
-  const ad = hideAd ? undefined : SECTION_ADS[id];
+  const ad = hideAd ? undefined : adProp;
 
   return (
     <section

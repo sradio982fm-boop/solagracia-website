@@ -5,7 +5,6 @@ import { useGSAP } from "@gsap/react";
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { SECTION_ADS } from "@/data/ads";
 import { ensureGsap, prefersReducedMotion } from "@/lib/gsap";
 import {
   easeOut,
@@ -15,10 +14,12 @@ import {
   viewportOnce,
 } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import type { AdPlaceholder } from "@/types/ads";
 import type { SocialQuotePart, TentangContent } from "@/types/site";
 
 type TentangSectionProps = {
   content: TentangContent;
+  ad?: AdPlaceholder;
 };
 
 const columnVariants = staggerContainer(0.09, 0.04);
@@ -34,10 +35,14 @@ const METER_BARS = [28, 52, 36, 68, 44, 78, 40, 62, 34, 56, 48, 70] as const;
  * #tentang — viewport-locked loft about + social proof + partner spot.
  * Cool plaster burns into warm bright on scroll (matches Penyiar tone).
  */
-export function TentangSection({ content }: TentangSectionProps) {
+function frequencyStamp(label: string): string {
+  return label.replace(/\s*FM$/i, "").trim() || label;
+}
+
+export function TentangSection({ content, ad }: TentangSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const ad = SECTION_ADS.tentang;
   const { testimonial } = content;
+  const frequencyLabel = content.frequencyLabel || "98.2 FM";
 
   useGSAP(
     () => {
@@ -85,7 +90,7 @@ export function TentangSection({ content }: TentangSectionProps) {
       data-surface="white"
       className="section-surface-white section-slide relative flex flex-col border-t px-4 pt-[clamp(32px,4.5vw,56px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
-      <StudioAtmosphere />
+      <StudioAtmosphere frequencyLabel={frequencyLabel} />
 
       {/* Top-aligned stack — copy fills the stage, ad rides directly under it */}
       <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1180px] flex-col justify-start gap-2 pt-1 lg:gap-2 lg:pt-2">
@@ -105,7 +110,7 @@ export function TentangSection({ content }: TentangSectionProps) {
                 <span className="absolute inset-0 animate-ping rounded-full bg-[var(--accent)] opacity-40" />
                 <span className="relative h-2 w-2 rounded-full bg-[var(--accent)]" />
               </span>
-              Studio · 98.2 FM
+              Studio · {frequencyLabel}
             </motion.p>
 
             <motion.h2
@@ -289,7 +294,7 @@ export function TentangSection({ content }: TentangSectionProps) {
  * Broadcast loft wash — cool start burns into warm bright plaster (Penyiar tone).
  * GSAP scrubs [data-burn-*] layers on scroll; see FrequencyTuning.
  */
-function StudioAtmosphere() {
+function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       {/* Soft studio photo plane */}
@@ -387,7 +392,7 @@ function StudioAtmosphere() {
 
       {/* Frequency watermark */}
       <p className="absolute top-[12%] right-[6%] hidden text-[clamp(4rem,12vw,9rem)] leading-none font-extrabold tracking-[-0.06em] text-[rgba(12,12,14,0.05)] select-none md:block">
-        98.2
+        {frequencyStamp(frequencyLabel)}
       </p>
 
       {/* Level meters — lower right, studio desk cue */}

@@ -2,6 +2,8 @@ export type PartnerLogo = {
   id: string;
   name: string;
   initials: string;
+  logoUrl?: string;
+  href?: string;
 };
 
 export type SponsorshipPlan = {
@@ -24,6 +26,8 @@ export type PartnerContent = {
   moreInfoHref: string;
   /** Digits only, country code included — e.g. 628811982982 */
   whatsappNumber: string;
+  planCtaLabel: string;
+  currencyPrefix: string;
   partners: PartnerLogo[];
   plans: SponsorshipPlan[];
 };

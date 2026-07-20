@@ -1,10 +1,7 @@
-import { ChromeThemeSync } from "@/components/layout/ChromeThemeSync";
 import { Footer } from "@/components/layout/Footer";
-import { LetterRail } from "@/components/layout/LetterRail";
-import { NavMenu } from "@/components/layout/NavMenu";
-import { RadioMarquee } from "@/components/layout/RadioMarquee";
-import { SectionNav } from "@/components/layout/SectionNav";
+import { SiteNavigation } from "@/components/layout/SiteNavigation";
 import { SiteFrame } from "@/components/layout/SiteFrame";
+import { RadioMarquee } from "@/components/layout/RadioMarquee";
 import { StickyMediaPlayer } from "@/components/media/StickyMediaPlayer";
 import { FrequencyTuningLazy } from "@/components/motion/FrequencyTuningLazy";
 import { ContactSection } from "@/components/sections/ContactSection";
@@ -13,56 +10,182 @@ import { PartnerSection } from "@/components/sections/PartnerSection";
 import { PenyiarSection } from "@/components/sections/PenyiarSection";
 import { ProgramSection } from "@/components/sections/ProgramSection";
 import { TentangSection } from "@/components/sections/TentangSection";
-import { LETTER_NAV } from "@/data/constants";
-import { footerContent } from "@/data/footer";
-import { heroContent } from "@/data/hero";
-import { kontakContent } from "@/data/kontak";
-import { mediaPlayerContent } from "@/data/media";
-import { partnerContent } from "@/data/partner";
-import { penyiarContent } from "@/data/penyiar";
-import { programContent, scheduleContent } from "@/data/schedule";
-import { tentangContent } from "@/data/tentang";
+import type { SectionId } from "@/data/constants";
+import {
+  applyHeader,
+  fetchBrandContent,
+  fetchFooterContent,
+  fetchHeroContent,
+  fetchKontakContent,
+  fetchMarqueeItems,
+  fetchMediaPlayerContent,
+  fetchOnAirContent,
+  fetchPartnerContent,
+  fetchPenyiarContent,
+  fetchProgramContent,
+  fetchSectionConfig,
+  fetchSectionHeaders,
+  fetchSectionAds,
+  fetchSocialLinks,
+  fetchTentangContent,
+} from "@/lib/data-fetcher";
+import { buildExploreLinks, orderedVisibleSectionKeys } from "@/lib/section-config";
 import { getOnAirShow, getUpcomingShows, getWeekdayId } from "@/lib/schedule";
+import { toFooterSocialLinks, toSocialLinks } from "@/lib/social";
+import type { ReactNode } from "react";
+
+export const revalidate = 3600;
 
 /**
- * Home — sradio-style composition: server page passes local data into sections.
- * Schedule later swaps `scheduleContent` / helpers for CMS/API.
- *
- * On-air slate uses Asia/Jakarta so SSR HTML matches Indonesian clients.
+ * Home — SSR content from Supabase with static fallbacks.
  */
-export default function HomePage() {
+export default async function HomePage() {
   const now = jakartaNow();
   const todayId = getWeekdayId(now);
-  const todaysShows = programContent.byDay[todayId];
+
+  const [socialRows, headers, brand, program, onAir, penyiar, sectionAds, sectionConfig] =
+    await Promise.all([
+      fetchSocialLinks(),
+      fetchSectionHeaders(),
+      fetchBrandContent(),
+      fetchProgramContent(),
+      fetchOnAirContent(todayId),
+      fetchPenyiarContent(),
+      fetchSectionAds(),
+      fetchSectionConfig(),
+    ]);
+
+  const partner = await fetchPartnerContent(headers.partner);
+
+  const todaysShows = program.byDay[todayId];
   const onAirShow = getOnAirShow(todaysShows, now);
   const upcomingShows = getUpcomingShows(todaysShows, 3, now);
 
+  const socialLinks = toSocialLinks(socialRows);
+  const footerSocials = toFooterSocialLinks(socialRows);
+  const exploreLinks = buildExploreLinks(sectionConfig.nav);
+
+  const [mediaPlayerContent, hero, tentang, kontak, footer, marqueeItems] =
+    await Promise.all([
+      fetchMediaPlayerContent(onAirShow?.title),
+      fetchHeroContent(socialLinks),
+      fetchTentangContent(brand.frequencyLabel),
+      fetchKontakContent({
+        socialLinks,
+        frequencyLabel: brand.frequencyLabel,
+        header: headers.kontak,
+      }),
+      fetchFooterContent({ socialLinks: footerSocials, exploreLinks }),
+      fetchMarqueeItems(),
+    ]);
+
+  const programWithMeta = {
+    ...applyHeader(program, headers.program),
+    frequencyLabel: brand.frequencyLabel,
+  };
+
+  const visibleSections = orderedVisibleSectionKeys(sectionConfig.sections);
+  const sectionBlocks = visibleSections.flatMap((sectionId) =>
+    renderSection(sectionId, {
+      hero,
+      onAir,
+      onAirShow,
+      upcomingShows,
+      tentang,
+      programWithMeta,
+      todayId,
+      marqueeItems,
+      penyiar,
+      headers,
+      partner,
+      kontak,
+      sectionAds,
+    }),
+  );
+
   return (
     <>
-      <ChromeThemeSync />
       <SiteFrame />
-      <NavMenu />
-      <SectionNav />
-      <LetterRail links={LETTER_NAV} logoSrc={heroContent.logoSrc} />
+      <SiteNavigation
+        nav={sectionConfig.nav}
+        sectionIds={sectionConfig.sectionIds}
+        surfaces={sectionConfig.surfaces}
+        logoSrc={hero.logoSrc}
+      />
       <StickyMediaPlayer content={mediaPlayerContent} />
       <FrequencyTuningLazy />
-      <main className="w-full max-w-full overflow-x-hidden">
-        <HeroSection
-          content={heroContent}
-          onAir={scheduleContent}
-          onAirShow={onAirShow}
-          upcomingShows={upcomingShows}
-        />
-        <TentangSection content={tentangContent} />
-        <ProgramSection content={programContent} initialDay={todayId} />
-        <RadioMarquee />
-        <PenyiarSection content={penyiarContent} />
-        <PartnerSection content={partnerContent} />
-        <ContactSection content={kontakContent} />
-      </main>
-      <Footer content={footerContent} />
+      <main className="w-full max-w-full overflow-x-hidden">{sectionBlocks}</main>
+      <Footer content={footer} />
     </>
   );
+}
+
+type SectionRenderContext = {
+  hero: Awaited<ReturnType<typeof fetchHeroContent>>;
+  onAir: Awaited<ReturnType<typeof fetchOnAirContent>>;
+  onAirShow: ReturnType<typeof getOnAirShow>;
+  upcomingShows: ReturnType<typeof getUpcomingShows>;
+  tentang: Awaited<ReturnType<typeof fetchTentangContent>>;
+  programWithMeta: Awaited<ReturnType<typeof fetchProgramContent>> & {
+    frequencyLabel: string;
+  };
+  todayId: ReturnType<typeof getWeekdayId>;
+  marqueeItems: string[];
+  penyiar: Awaited<ReturnType<typeof fetchPenyiarContent>>;
+  headers: Awaited<ReturnType<typeof fetchSectionHeaders>>;
+  partner: Awaited<ReturnType<typeof fetchPartnerContent>>;
+  kontak: Awaited<ReturnType<typeof fetchKontakContent>>;
+  sectionAds: Awaited<ReturnType<typeof fetchSectionAds>>;
+};
+
+function renderSection(
+  sectionId: SectionId,
+  ctx: SectionRenderContext,
+): ReactNode[] {
+  switch (sectionId) {
+    case "home":
+      return [
+        <HeroSection
+          key="home"
+          content={ctx.hero}
+          onAir={ctx.onAir}
+          onAirShow={ctx.onAirShow}
+          upcomingShows={ctx.upcomingShows}
+        />,
+      ];
+    case "tentang":
+      return [
+        <TentangSection
+          key="tentang"
+          content={ctx.tentang}
+          ad={ctx.sectionAds.tentang}
+        />,
+      ];
+    case "program":
+      return [
+        <ProgramSection
+          key="program"
+          content={ctx.programWithMeta}
+          initialDay={ctx.todayId}
+          ad={ctx.sectionAds.program}
+        />,
+        <RadioMarquee key="marquee" items={ctx.marqueeItems} />,
+      ];
+    case "penyiar":
+      return [
+        <PenyiarSection
+          key="penyiar"
+          content={applyHeader(ctx.penyiar, ctx.headers.penyiar)}
+          ad={ctx.sectionAds.penyiar}
+        />,
+      ];
+    case "partner":
+      return [<PartnerSection key="partner" content={ctx.partner} />];
+    case "kontak":
+      return [<ContactSection key="kontak" content={ctx.kontak} />];
+    default:
+      return [];
+  }
 }
 
 /** Stable “now” in WIB for SSR + client schedule selection */

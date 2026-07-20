@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { site } from "@/data/site";
+import { fetchSeoContent } from "@/lib/data-fetcher";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -37,29 +37,37 @@ const montserrat = localFont({
   fallback: ["system-ui", "sans-serif"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: site.title,
-    template: `%s | ${site.name}`,
-  },
-  description: site.description,
-  applicationName: site.name,
-  icons: {
-    icon: [{ url: "/favicon.ico", sizes: "any" }],
-  },
-  openGraph: {
-    title: site.title,
-    description: site.description,
-    siteName: site.name,
-    locale: "id_ID",
-    type: "website",
-  },
-  twitter: {
-    card: "summary",
-    title: site.title,
-    description: site.description,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await fetchSeoContent();
+
+  return {
+    title: {
+      default: seo.title,
+      template: `%s | ${seo.siteName}`,
+    },
+    description: seo.description,
+    applicationName: seo.siteName,
+    icons: {
+      icon: [{ url: seo.faviconUrl || "/favicon.ico", sizes: "any" }],
+    },
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      siteName: seo.siteName,
+      locale: "id_ID",
+      type: "website",
+      ...(seo.ogImageUrl
+        ? { images: [{ url: seo.ogImageUrl }] }
+        : {}),
+    },
+    twitter: {
+      card: seo.ogImageUrl ? "summary_large_image" : "summary",
+      title: seo.title,
+      description: seo.description,
+      ...(seo.ogImageUrl ? { images: [seo.ogImageUrl] } : {}),
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#0c0c0f",

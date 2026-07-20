@@ -1,8 +1,7 @@
 import type { HeroContent } from "@/types/site";
 
 /**
- * Local hero copy — stand-in for future CMS / site_config.
- * Swap fields later; keep HeroSection prop-driven.
+ * Local hero copy — fallback when CMS site_config.hero is empty.
  */
 export const heroContent: HeroContent = {
   brand: "Solagracia.",
@@ -16,26 +15,8 @@ export const heroContent: HeroContent = {
   ctas: [
     { label: "Tentang", href: "#tentang", variant: "text", icon: "arrow" },
   ],
-  panelRows: [
-    {
-      initials: "EV",
-      title: "Events",
-      blurb: "Gathering intim dengan atmosfer loft.",
-      href: "#program",
-    },
-    {
-      initials: "SP",
-      title: "Spaces",
-      blurb: "Ruang untuk makan, kerja, dan cerita.",
-      href: "#tentang",
-    },
-    {
-      initials: "ST",
-      title: "Stories",
-      blurb: "Cerita di balik meja dan dinding bata.",
-      href: "#penyiar",
-    },
-  ],
+  mobileCtaLabel: "Reservasi",
+  mobileCtaHref: "#partner",
   socialLinks: [
     {
       label: "TikTok",

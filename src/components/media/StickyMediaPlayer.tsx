@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useHlsPlayer } from "@/hooks/useHlsPlayer";
 import { cn } from "@/lib/utils";
 import type { MediaPlayerContent } from "@/types/site";
 
@@ -17,6 +18,7 @@ const DEFAULT_VOLUME = 0.8;
 /**
  * Sticky radio bar — audio by default; arrow expands a docked video popup
  * (mini ↔ maximized). Expanding video pauses audio; closing returns to audio.
+ * HLS (.m3u8) video uses hls.js; Icecast audio uses native <audio>.
  */
 export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
   const {
@@ -40,6 +42,12 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
 
   const videoOpen = mode !== "audio";
   const videoMaximized = mode === "video-max";
+
+  const { start: startVideo, stop: stopVideo } = useHlsPlayer(videoRef, {
+    url: videoSrc,
+    muted,
+    mediaSessionTitle: `${stationName} · Live`,
+  });
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -82,16 +90,14 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
 
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
-
-    void video.play().catch(() => {
-      /* autoplay may require a second tap */
-    });
+    startVideo();
 
     return () => {
       video.removeEventListener("play", onPlay);
       video.removeEventListener("pause", onPause);
+      stopVideo();
     };
-  }, [videoOpen]);
+  }, [videoOpen, startVideo, stopVideo]);
 
   const toggleAudio = async () => {
     const audio = audioRef.current;
@@ -117,11 +123,7 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
   };
 
   const closeVideo = () => {
-    const video = videoRef.current;
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-    }
+    stopVideo();
     setVideoPlaying(false);
     setMode("audio");
   };
@@ -205,7 +207,6 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
                 >
                   <video
                     ref={videoRef}
-                    src={videoSrc}
                     poster={videoPoster}
                     className="h-full w-full object-cover"
                     playsInline

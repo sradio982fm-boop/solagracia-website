@@ -58,7 +58,7 @@ export function Footer({ content }: FooterProps) {
                 className="inline-flex h-11 items-center gap-2.5 border border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-main)] uppercase no-underline transition-colors hover:bg-white/10"
               >
                 <PlayIcon />
-                Dengarkan
+                {content.listenLabel}
               </motion.a>
               <motion.a
                 href={content.contactHref}
@@ -72,7 +72,7 @@ export function Footer({ content }: FooterProps) {
           </motion.div>
 
           <motion.div variants={fadeUpSoft}>
-            <FooterHeading>Ikuti</FooterHeading>
+            <FooterHeading>{content.columnIkuti}</FooterHeading>
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
               {content.socialLinks.map((link) => (
                 <li key={link.label}>
@@ -85,7 +85,7 @@ export function Footer({ content }: FooterProps) {
           </motion.div>
 
           <motion.div variants={fadeUpSoft}>
-            <FooterHeading>Jelajahi</FooterHeading>
+            <FooterHeading>{content.columnJelajahi}</FooterHeading>
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
               {content.exploreLinks.map((link) => (
                 <li key={link.label}>
@@ -105,10 +105,10 @@ export function Footer({ content }: FooterProps) {
         >
           <span className="inline-flex items-baseline gap-1.5 uppercase tracking-[0.06em]">
             <span className="text-[0.95rem] font-extrabold text-[var(--text-main)]">
-              SOLAGRACIA
+              {content.wordmark}
             </span>
             <span className="text-[0.95rem] font-extrabold text-transparent italic [-webkit-text-stroke:1px_rgba(244,244,246,0.55)]">
-              ·S RADIO
+              {content.wordmarkSub}
             </span>
           </span>
 

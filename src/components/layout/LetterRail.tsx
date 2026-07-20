@@ -1,18 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { SECTION_IDS } from "@/data/constants";
+import type { SectionId } from "@/data/constants";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { cn } from "@/lib/utils";
 import type { NavLetter } from "@/types/site";
 
 type LetterRailProps = {
   links: readonly NavLetter[];
+  sectionIds: readonly SectionId[];
   logoSrc: string;
 };
 
-export function LetterRail({ links, logoSrc }: LetterRailProps) {
-  const activeId = useActiveSection(SECTION_IDS, "home");
+export function LetterRail({ links, sectionIds, logoSrc }: LetterRailProps) {
+  const activeId = useActiveSection(sectionIds, "home");
 
   return (
     <aside

@@ -37,6 +37,8 @@ export function HeroSection({
     coverSrc,
     coverAlt,
     ctas,
+    mobileCtaLabel,
+    mobileCtaHref,
     socialLinks,
     verticalTagline,
   } = content;
@@ -152,10 +154,10 @@ export function HeroSection({
           transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
         >
           <a
-            href="#partner"
+            href={mobileCtaHref}
             className="inline-flex h-11 items-center border border-[var(--frame-line)] px-4 text-[11px] font-semibold tracking-[0.2em] uppercase"
           >
-            Reservasi
+            {mobileCtaLabel}
           </a>
         </motion.div>
 

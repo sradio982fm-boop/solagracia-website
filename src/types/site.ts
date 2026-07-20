@@ -14,17 +14,20 @@ export type HeroCta = {
   icon?: "phone" | "arrow";
 };
 
-export type HeroPanelRow = {
-  initials: string;
-  title: string;
-  blurb: string;
-  href: string;
-};
+export type SocialIconId =
+  | "tiktok"
+  | "instagram"
+  | "whatsapp"
+  | "youtube"
+  | "x"
+  | "facebook"
+  | "spotify"
+  | "link";
 
 export type SocialLink = {
   label: string;
   href: string;
-  icon: "tiktok" | "instagram" | "whatsapp";
+  icon: SocialIconId;
 };
 
 export type HeroContent = {
@@ -36,8 +39,31 @@ export type HeroContent = {
   coverAlt: string;
   logoSrc: string;
   ctas: HeroCta[];
-  panelRows: HeroPanelRow[];
+  mobileCtaLabel: string;
+  mobileCtaHref: string;
   socialLinks: SocialLink[];
+};
+
+export type SectionHeaderContent = {
+  eyebrow: string;
+  title: string;
+  titleAccent: string;
+  description: string;
+};
+
+export type SeoContent = {
+  siteName: string;
+  parentName: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ogImageUrl: string;
+  faviconUrl: string;
+};
+
+export type BrandContent = {
+  displayName: string;
+  frequencyLabel: string;
 };
 
 export type MediaPlayerContent = {
@@ -81,6 +107,8 @@ export type TentangContent = {
   headline: string;
   /** Phrase inside headline rendered in accent ember */
   headlineAccent: string;
+  /** Brand frequency SoT — e.g. `98.2 FM` */
+  frequencyLabel?: string;
   body: string[];
   stats: TentangStat[];
   ctas: TentangCta[];
@@ -100,8 +128,13 @@ export type FooterContent = {
   /** Use `{year}` placeholder */
   copyrightText: string;
   listenHref: string;
+  listenLabel: string;
   contactHref: string;
   contactLabel: string;
+  columnIkuti: string;
+  columnJelajahi: string;
+  wordmark: string;
+  wordmarkSub: string;
   exploreLinks: FooterLink[];
   legalLinks: FooterLink[];
   socialLinks: FooterLink[];

@@ -1,23 +1,28 @@
 "use client";
 
-import { LETTER_NAV, SECTION_IDS } from "@/data/constants";
+import type { SectionId } from "@/data/constants";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import { cn } from "@/lib/utils";
+import type { NavLetter } from "@/types/site";
+
+type SectionNavProps = {
+  links: readonly NavLetter[];
+  sectionIds: readonly SectionId[];
+};
 
 /**
  * Prev / next section controls — labeled for clarity, parked above the
  * sticky radio player so the player never shoves them aside.
  */
-export function SectionNav() {
-  const activeId = useActiveSection(SECTION_IDS, "home");
+export function SectionNav({ links, sectionIds }: SectionNavProps) {
+  const activeId = useActiveSection(sectionIds, "home");
   const index = Math.max(
     0,
-    SECTION_IDS.findIndex((id) => id === activeId),
+    sectionIds.findIndex((id) => id === activeId),
   );
 
-  const prev = index > 0 ? LETTER_NAV[index - 1] : null;
-  const next =
-    index < LETTER_NAV.length - 1 ? LETTER_NAV[index + 1] : null;
+  const prev = index > 0 ? links[index - 1] : null;
+  const next = index < links.length - 1 ? links[index + 1] : null;
 
   return (
     <div

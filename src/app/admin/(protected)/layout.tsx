@@ -1,10 +1,9 @@
-/**
- * Protected admin shell. Add session checks / AuthGuard here later.
- */
+import { AdminShell } from "@/components/admin/AdminShell";
+
 export default function ProtectedAdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

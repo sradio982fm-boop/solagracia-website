@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { SocialIcon } from "@/components/sections/HeroSocialIcons";
 import { buildKontakWhatsAppHref } from "@/data/kontak";
@@ -26,12 +26,22 @@ const itemVariants = fadeUpSoft;
 
 const VU_HEIGHTS = [38, 62, 44, 78, 52, 70, 40, 86, 48, 66, 42, 74] as const;
 
+/** Avoid SSR/client mismatch from prefers-reduced-motion animations. */
+function useClientReady() {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    setReady(true);
+  }, []);
+  return ready;
+}
+
 /**
  * #kontak — viewport-locked studio contact desk.
  * Plaster surface, radio call-in atmosphere, no ad slot.
  */
 export function ContactSection({ content }: ContactSectionProps) {
   const addressLines = content.address.split("\n");
+  const vuReady = useClientReady();
 
   return (
     <section
@@ -39,7 +49,7 @@ export function ContactSection({ content }: ContactSectionProps) {
       data-surface="white"
       className="section-surface-white section-slide relative flex flex-col border-t px-4 pt-[clamp(28px,4vw,48px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]"
     >
-      <CallDeskAtmosphere />
+      <CallDeskAtmosphere animateVu={vuReady} />
 
       <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1120px] flex-col">
         <motion.header
@@ -178,10 +188,15 @@ export function ContactSection({ content }: ContactSectionProps) {
                 {VU_HEIGHTS.slice(0, 8).map((height, index) => (
                   <span
                     key={index}
-                    className="kontak-vu-bar w-[2px] bg-[var(--accent)]"
+                    className={cn(
+                      "w-[2px] bg-[var(--accent)]",
+                      vuReady && "kontak-vu-bar",
+                    )}
                     style={{
                       height: `${height * 0.22}px`,
-                      animationDelay: `${index * 0.11}s`,
+                      ...(vuReady
+                        ? { animationDelay: `${index * 0.11}s` }
+                        : {}),
                     }}
                   />
                 ))}
@@ -339,7 +354,7 @@ function ChannelIcon({ id }: { id: KontakChannel["id"] }) {
  * Call-in desk atmosphere — broadcast rings, soft studio wash, VU cue.
  * Distinct from Tentang loft / Penyiar mic-room / Partner stage.
  */
-function CallDeskAtmosphere() {
+function CallDeskAtmosphere({ animateVu }: { animateVu: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       <div
@@ -397,10 +412,13 @@ function CallDeskAtmosphere() {
         {VU_HEIGHTS.map((height, index) => (
           <span
             key={index}
-            className="kontak-vu-bar w-[3px] bg-[rgba(12,12,14,0.7)]"
+            className={cn(
+              "w-[3px] bg-[rgba(12,12,14,0.7)]",
+              animateVu && "kontak-vu-bar",
+            )}
             style={{
               height: `${height}%`,
-              animationDelay: `${index * 0.09}s`,
+              ...(animateVu ? { animationDelay: `${index * 0.09}s` } : {}),
             }}
           />
         ))}
