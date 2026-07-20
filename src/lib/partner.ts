@@ -62,12 +62,13 @@ export function mapPartnerFromConfig(
   },
 ): PartnerContent {
   const header = options?.header;
+  // Prefer CMS lists; empty array means intentionally empty (no static mock logos/plans)
   const partners =
-    options?.partners?.length ?
-      options.partners.map(mapPartnerRow)
-    : fallback.partners;
+    options?.partners != null
+      ? options.partners.map(mapPartnerRow)
+      : fallback.partners;
   const plans =
-    options?.plans?.length ? options.plans.map(mapPlanRow) : fallback.plans;
+    options?.plans != null ? options.plans.map(mapPlanRow) : fallback.plans;
 
   const base: PartnerContent = {
     eyebrow: header?.eyebrow || fallback.eyebrow,

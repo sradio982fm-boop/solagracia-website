@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { trackAnalyticsEvent } from "@/components/AnalyticsTracker";
 import { useHlsPlayer } from "@/hooks/useHlsPlayer";
+import { sanitizeAssetSrc, sanitizeHttpHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { FrequencyOption, MediaPlayerContent } from "@/types/site";
 
@@ -46,9 +47,17 @@ export function StickyMediaPlayer({
   const stationName = selected?.stationName || content.stationName;
   const showTitle = content.showTitle;
   const frequency = selected?.label || content.frequency;
-  const audioSrc = selected?.audioSrc || content.audioSrc;
-  const videoSrc = selected?.videoSrc || content.videoSrc;
-  const videoPoster = selected?.videoPoster || content.videoPoster;
+  const audioSrc = sanitizeHttpHref(
+    selected?.audioSrc || content.audioSrc,
+    "",
+  );
+  const videoSrc = sanitizeHttpHref(
+    selected?.videoSrc || content.videoSrc,
+    "",
+  );
+  const videoPoster = sanitizeAssetSrc(
+    selected?.videoPoster || content.videoPoster,
+  );
   const canSwitch = frequencies.length > 1;
 
   const [mode, setMode] = useState<PlayerMode>("audio");
@@ -210,7 +219,7 @@ export function StickyMediaPlayer({
 
   return (
     <>
-      <audio ref={audioRef} src={audioSrc} preload="none" />
+      <audio ref={audioRef} src={audioSrc || undefined} preload="none" />
 
       <div className="pointer-events-none fixed right-3 bottom-[calc(var(--frame-inset-bottom)+8px)] left-3 z-[45] flex justify-center md:right-[calc(var(--frame-inset)+8.5rem)] md:left-[calc(var(--frame-inset)+var(--rail)+12px)]">
         <div className="pointer-events-auto relative w-full max-w-3xl">
@@ -251,7 +260,7 @@ export function StickyMediaPlayer({
                 >
                   <video
                     ref={videoRef}
-                    poster={videoPoster}
+                    poster={videoPoster || undefined}
                     className="h-full w-full object-cover"
                     playsInline
                     controls={false}

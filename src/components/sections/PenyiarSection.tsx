@@ -12,6 +12,7 @@ import {
   tapPress,
   viewportOnce,
 } from "@/lib/motion";
+import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { AdPlaceholder } from "@/types/ads";
 import type { PenyiarContent, PenyiarHost } from "@/types/penyiar";
@@ -243,7 +244,7 @@ function HostCard({ host }: { host: PenyiarHost }) {
       </div>
 
       <a
-        href={host.href ?? "#penyiar"}
+        href={sanitizeHref(host.href, "#penyiar")}
         className="relative min-h-0 flex-1 overflow-hidden bg-[rgba(12,12,14,0.06)] no-underline"
       >
         <SmartImage

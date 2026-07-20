@@ -1,8 +1,9 @@
 import type { NextResponse } from "next/server";
+import { GATE_COOKIE, createApiGateToken } from "@/lib/api-security";
 
 /** Refresh token — only sent to auth API routes. */
 export const REFRESH_COOKIE = "sg_refresh";
-/** Session flag for proxy gate on /admin pages (no secret). */
+/** Session flag for proxy gate on /admin pages. */
 export const SESSION_COOKIE = "sg_session";
 
 const REFRESH_PATH = "/api/auth";
@@ -18,10 +19,11 @@ function cookieBase() {
   };
 }
 
-export function setAuthCookies(
+export async function setAuthCookies(
   response: NextResponse,
   refreshToken: string,
-): void {
+  userId: string,
+): Promise<void> {
   response.cookies.set(REFRESH_COOKIE, refreshToken, {
     ...cookieBase(),
     path: REFRESH_PATH,
@@ -30,21 +32,25 @@ export function setAuthCookies(
     ...cookieBase(),
     path: SESSION_PATH,
   });
+
+  const gate = await createApiGateToken(userId);
+  if (gate) {
+    response.cookies.set(GATE_COOKIE, gate, {
+      ...cookieBase(),
+      path: SESSION_PATH,
+    });
+  }
 }
 
 export function clearAuthCookies(response: NextResponse): void {
-  response.cookies.set(REFRESH_COOKIE, "", {
+  const clear = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: REFRESH_PATH,
+    sameSite: "lax" as const,
     maxAge: 0,
-  });
-  response.cookies.set(SESSION_COOKIE, "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: SESSION_PATH,
-    maxAge: 0,
-  });
+  };
+
+  response.cookies.set(REFRESH_COOKIE, "", { ...clear, path: REFRESH_PATH });
+  response.cookies.set(SESSION_COOKIE, "", { ...clear, path: SESSION_PATH });
+  response.cookies.set(GATE_COOKIE, "", { ...clear, path: SESSION_PATH });
 }

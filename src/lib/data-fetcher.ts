@@ -385,11 +385,16 @@ export async function fetchPartnerContent(
 
     return mapPartnerFromConfig(config.partner, {
       header,
-      partners: partnersRes.data,
-      plans: plansRes.data,
+      partners: partnersRes.data ?? [],
+      plans: plansRes.data ?? [],
     });
   } catch {
-    return mapPartnerFromConfig(undefined, { header });
+    // Network/config failure only — empty lists, not seeded mock logos/plans
+    return mapPartnerFromConfig(undefined, {
+      header,
+      partners: [],
+      plans: [],
+    });
   }
 }
 
@@ -409,9 +414,10 @@ export async function fetchPenyiarContent(header?: {
       .eq("status", "published")
       .order("sort_order", { ascending: true });
 
-    if (error || !data?.length) {
+    if (error) {
       return {
         ...fallbackPenyiar,
+        hosts: [],
         ...(header?.eyebrow ? { eyebrow: header.eyebrow } : {}),
         ...(header?.title ? { title: header.title } : {}),
         ...(header?.titleAccent ? { titleAccent: header.titleAccent } : {}),
@@ -424,7 +430,7 @@ export async function fetchPenyiarContent(header?: {
       title: header?.title || fallbackPenyiar.title,
       titleAccent: header?.titleAccent || fallbackPenyiar.titleAccent,
       description: header?.description || fallbackPenyiar.description,
-      hosts: data.map((row) => ({
+      hosts: (data ?? []).map((row) => ({
         id: row.id,
         name: row.name,
         role: row.role_title || "",
@@ -437,7 +443,7 @@ export async function fetchPenyiarContent(header?: {
       })),
     };
   } catch {
-    return fallbackPenyiar;
+    return { ...fallbackPenyiar, hosts: [] };
   }
 }
 

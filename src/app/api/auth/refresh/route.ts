@@ -43,6 +43,10 @@ export async function POST(request: NextRequest) {
     expiresIn: data.session.expires_in,
   });
 
-  setAuthCookies(response, data.session.refresh_token);
+  await setAuthCookies(
+    response,
+    data.session.refresh_token,
+    data.user.id,
+  );
   return response;
 }

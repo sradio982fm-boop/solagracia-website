@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 /**
- * Baseline CSP for Solagracia (S Radio sub-brand).
- * Tighten connect-src / img-src as features land.
+ * Content Security Policy — restricts where scripts/frames/media/etc. can be
+ * loaded from. Combined with input sanitization in `src/lib/security.ts`,
+ * this is our primary defense against injected gambling/malware content.
+ *
+ * NOTE: `script-src` includes `'unsafe-inline'` and `'unsafe-eval'` because
+ * Next.js emits inline hydration scripts and RSC uses eval'd chunks. Because
+ * of this, stored inline XSS is prevented at the *input* layer instead of
+ * the CSP layer (see `sanitizeHtml` / `sanitizeHref` in `src/lib/security.ts`).
  */
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
@@ -12,9 +18,9 @@ const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data: blob: https://*.supabase.co",
   "media-src 'self' blob: https://*.siar.us:* https://*.siar.us",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.siar.us:* https://*.siar.us",
-  "frame-src 'self'",
+  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
   "frame-ancestors 'none'",
-  "form-action 'self'",
+  "form-action 'self' https://wa.me",
   "base-uri 'self'",
   "object-src 'none'",
   "worker-src 'self' blob:",

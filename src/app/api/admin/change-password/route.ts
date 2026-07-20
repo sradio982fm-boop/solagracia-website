@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
 import { strongPasswordSchema } from "@/lib/schemas/password";
 
@@ -11,12 +12,8 @@ const changePasswordSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "");
-
-  if (!token) {
-    return errorResponse("Unauthorized", 401);
-  }
+  const auth = await requireAdmin(request);
+  if (auth.error) return auth.error;
 
   const body = await request.json().catch(() => null);
   const parsed = changePasswordSchema.safeParse(body);
@@ -29,22 +26,9 @@ export async function POST(request: NextRequest) {
     return errorResponse("Password baru harus berbeda dari yang lama", 400);
   }
 
-  const userClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { global: { headers: { Authorization: `Bearer ${token}` } } },
-  );
-
-  const {
-    data: { user },
-    error: authError,
-  } = await userClient.auth.getUser();
-  if (authError || !user) {
-    return errorResponse("Unauthorized", 401);
-  }
-
-  if (user.app_metadata?.role !== "admin") {
-    return errorResponse("Forbidden", 403);
+  const user = auth.user;
+  if (!user.email) {
+    return errorResponse("User email missing", 400);
   }
 
   const verifyClient = createClient(
@@ -53,7 +37,7 @@ export async function POST(request: NextRequest) {
   );
 
   const { error: signInError } = await verifyClient.auth.signInWithPassword({
-    email: user.email!,
+    email: user.email,
     password: oldPassword,
   });
 

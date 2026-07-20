@@ -1,5 +1,4 @@
 import type { SectionId } from "@/data/constants";
-import { SECTION_ADS } from "@/data/ads";
 import type {
   AdImageShape,
   AdPlaceholder,
@@ -110,8 +109,8 @@ export function rowToPlaceholder(row: AdSlotRow): AdPlaceholder {
 }
 
 /**
- * Build public section ads map.
- * CMS rows take precedence when published + visible; hidden/draft CMS rows suppress fallback.
+ * Build public section ads map from CMS rows only.
+ * No static SECTION_ADS injection — missing/hidden/draft = no ad plate.
  */
 export function buildSectionAdsFromRows(
   rows: AdSlotRow[],
@@ -119,17 +118,10 @@ export function buildSectionAdsFromRows(
   const result: Partial<Record<SectionId, AdPlaceholder>> = {};
 
   for (const sectionId of AD_CAPABLE_SECTIONS) {
-    const sectionRows = rows.filter((row) => row.section_id === sectionId);
-
-    if (sectionRows.length === 0) {
-      const fallback = SECTION_ADS[sectionId];
-      if (fallback) result[sectionId] = fallback;
-      continue;
-    }
-
-    const live = sectionRows
+    const live = rows
       .filter(
         (row) =>
+          row.section_id === sectionId &&
           row.status === "published" &&
           row.is_visible &&
           isAdScheduledActive(row),

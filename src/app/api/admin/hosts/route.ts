@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
+import { optionalAssetUrl, optionalWebHref } from "@/lib/security";
 import { slugify } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 
@@ -10,13 +11,13 @@ const statusEnum = z.enum(["draft", "published"]);
 
 const createHostSchema = z.object({
   name: z.string().min(1).max(100),
-  photoUrl: z.string().optional().or(z.literal("")),
+  photoUrl: optionalAssetUrl.optional(),
   photoAlt: z.string().max(200).optional().or(z.literal("")),
   roleTitle: z.string().min(1).max(100),
   tagline: z.string().min(1).max(200),
   tags: z.array(z.string().max(30)).max(5).optional().default([]),
   displayNumber: z.string().max(20).optional().or(z.literal("")),
-  href: z.string().max(500).optional().or(z.literal("")),
+  href: optionalWebHref.optional(),
   bio: z.string().max(1000).optional().or(z.literal("")),
   sortOrder: z.number().int().min(0).optional().default(0),
   status: statusEnum.optional().default("published"),
@@ -25,13 +26,13 @@ const createHostSchema = z.object({
 const updateHostSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(100).optional(),
-  photoUrl: z.string().optional().or(z.literal("")),
+  photoUrl: optionalAssetUrl.optional(),
   photoAlt: z.string().max(200).optional().or(z.literal("")),
   roleTitle: z.string().min(1).max(100).optional(),
   tagline: z.string().min(1).max(200).optional(),
   tags: z.array(z.string().max(30)).max(5).optional(),
   displayNumber: z.string().max(20).optional().or(z.literal("")),
-  href: z.string().max(500).optional().or(z.literal("")),
+  href: optionalWebHref.optional(),
   bio: z.string().max(1000).optional().or(z.literal("")),
   sortOrder: z.number().int().min(0).optional(),
   status: statusEnum.optional(),

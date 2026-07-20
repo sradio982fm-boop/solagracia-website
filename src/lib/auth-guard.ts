@@ -1,9 +1,17 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { errorResponse } from "./api-helpers";
+import {
+  GATE_COOKIE,
+  hasValidApiKeyHeader,
+  isApiKeyConfigured,
+  verifyApiGateToken,
+} from "./api-security";
 
 /**
- * Validates the request has a valid admin JWT.
+ * Validates admin access:
+ * 1. Bearer JWT must be a valid Supabase user with `app_metadata.role = admin`
+ * 2. When `SG_API_KEY` is set: httpOnly gate cookie **or** `x-api-key` header
  */
 export async function requireAdmin(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -11,6 +19,16 @@ export async function requireAdmin(request: NextRequest) {
 
   if (!token) {
     return { error: errorResponse("Unauthorized", 401) };
+  }
+
+  if (isApiKeyConfigured()) {
+    const gateOk = await verifyApiGateToken(
+      request.cookies.get(GATE_COOKIE)?.value,
+    );
+    const keyOk = hasValidApiKeyHeader(request);
+    if (!gateOk && !keyOk) {
+      return { error: errorResponse("Unauthorized — missing API gate", 401) };
+    }
   }
 
   const supabase = createClient(

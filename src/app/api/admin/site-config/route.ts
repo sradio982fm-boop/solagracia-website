@@ -3,15 +3,31 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
+import { isSafeAssetUrl, isSafeHttpUrl, isSafeWebUrl } from "@/lib/security";
 import { revalidatePath } from "next/cache";
 
 const valueTypeSchema = z.enum(["text", "image", "url", "json"]);
+
+// Any config key that ends with these suffixes is treated as a URL and must
+// resolve to a safe scheme. Prevents `javascript:` payloads reaching the DB.
+const URL_KEY_SUFFIXES = ["_url", "url", "_href", "href"] as const;
+
+function isUrlKey(key: string): boolean {
+  const normalized = key.toLowerCase();
+  return URL_KEY_SUFFIXES.some((suffix) => normalized.endsWith(suffix));
+}
+
+function isSafeConfigUrl(value: string, valueType: string): boolean {
+  if (valueType === "image") return isSafeAssetUrl(value);
+  if (valueType === "url") return isSafeHttpUrl(value) || isSafeWebUrl(value);
+  return isSafeHttpUrl(value) || isSafeWebUrl(value) || isSafeAssetUrl(value);
+}
 
 const singleUpdateSchema = z.object({
   section: z.string().min(1).max(50),
   key: z.string().min(1).max(100),
   value: z.string().nullable(),
-  valueType: valueTypeSchema.optional().default("text"),
+  valueType: valueTypeSchema.optional(),
 });
 
 const batchUpdateSchema = z.object({
@@ -57,6 +73,10 @@ export async function GET(request: NextRequest) {
   return jsonResponse({ config: groupSiteConfig(data || []) });
 }
 
+/**
+ * Edit-only: updates existing `(section, key)` rows. Never inserts.
+ * Missing keys are reported so admins can't accidentally create orphans.
+ */
 export async function PUT(request: NextRequest) {
   const auth = await requireAdmin(request);
   if (auth.error) return auth.error;
@@ -80,19 +100,73 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  const supabase = createSupabaseAdmin();
-  const { error } = await supabase.from("site_config").upsert(
-    updates.map((u) => ({
-      section: u.section,
-      key: u.key,
-      value: u.value,
-      value_type: u.valueType,
-    })),
-    { onConflict: "section,key" },
-  );
+  for (const { section, key, value, valueType } of updates) {
+    if (
+      value &&
+      (valueType === "url" || valueType === "image" || isUrlKey(key)) &&
+      !isSafeConfigUrl(value, valueType ?? "url")
+    ) {
+      return errorResponse(
+        `Field "${section}.${key}" must be a safe http(s)/mailto/tel URL or path`,
+        400,
+      );
+    }
+  }
 
-  if (error) return errorResponse("Failed to update site config", 500);
+  const supabase = createSupabaseAdmin();
+  const failed: Array<{ section: string; key: string; reason: string }> = [];
+  let updated = 0;
+
+  for (const { section, key, value, valueType } of updates) {
+    const payload: Record<string, unknown> = {
+      value,
+      updated_at: new Date().toISOString(),
+    };
+    if (valueType !== undefined) payload.value_type = valueType;
+
+    const { data, error } = await supabase
+      .from("site_config")
+      .update(payload)
+      .eq("section", section)
+      .eq("key", key)
+      .select("id");
+
+    if (error) {
+      failed.push({ section, key, reason: error.message });
+      continue;
+    }
+
+    if (!data?.length) {
+      failed.push({
+        section,
+        key,
+        reason: "Config key not found — edit only, no insert",
+      });
+      continue;
+    }
+
+    updated += 1;
+  }
 
   revalidatePath("/");
-  return jsonResponse({ updated: updates.length });
+
+  if (failed.length === updates.length) {
+    return errorResponse(
+      failed[0]?.reason ?? "Config keys not found — edit only, no insert",
+      404,
+    );
+  }
+
+  if (failed.length > 0) {
+    return jsonResponse(
+      {
+        updated,
+        failed,
+        message: `Updated ${updated}/${updates.length}, ${failed.length} failed`,
+      },
+      207,
+    );
+  }
+
+  return jsonResponse({ updated, message: "Site config updated" });
 }

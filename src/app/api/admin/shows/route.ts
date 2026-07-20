@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
+import { optionalAssetUrl } from "@/lib/security";
 import { slugify } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 
@@ -13,7 +14,7 @@ const createShowSchema = z.object({
   title: z.string().min(1).max(200),
   hostId: optionalHostId,
   description: z.string().max(500).optional().or(z.literal("")),
-  coverUrl: z.string().optional().or(z.literal("")),
+  coverUrl: optionalAssetUrl.optional(),
   tag: z.string().max(50).optional().or(z.literal("")),
   status: statusEnum.optional().default("published"),
 });
@@ -23,7 +24,7 @@ const updateShowSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   hostId: optionalHostId,
   description: z.string().max(500).optional().or(z.literal("")),
-  coverUrl: z.string().optional().or(z.literal("")),
+  coverUrl: optionalAssetUrl.optional(),
   tag: z.string().max(50).optional().or(z.literal("")),
   status: statusEnum.optional(),
 });

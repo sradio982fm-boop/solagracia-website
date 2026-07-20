@@ -3,14 +3,14 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
-import { httpUrl } from "@/lib/security";
+import { httpUrl, optionalAssetUrl, optionalHttpUrl } from "@/lib/security";
 import { revalidatePath } from "next/cache";
 
 const createFrequencySchema = z.object({
   label: z.string().min(1).max(100),
-  videoUrl: httpUrl.optional().or(z.literal("")),
+  videoUrl: optionalHttpUrl.optional(),
   audioUrl: httpUrl,
-  posterUrl: z.string().optional().or(z.literal("")),
+  posterUrl: optionalAssetUrl.optional(),
   stationName: z.string().max(100).optional(),
   sortOrder: z.number().int().min(0).optional().default(0),
   isDefault: z.boolean().optional().default(false),
@@ -20,9 +20,9 @@ const createFrequencySchema = z.object({
 const updateFrequencySchema = z.object({
   id: z.string().uuid(),
   label: z.string().min(1).max(100).optional(),
-  videoUrl: httpUrl.optional().or(z.literal("")),
+  videoUrl: optionalHttpUrl.optional(),
   audioUrl: httpUrl.optional(),
-  posterUrl: z.string().optional().or(z.literal("")),
+  posterUrl: optionalAssetUrl.optional(),
   stationName: z.string().max(100).optional(),
   sortOrder: z.number().int().min(0).optional(),
   isDefault: z.boolean().optional(),

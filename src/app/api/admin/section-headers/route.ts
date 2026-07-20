@@ -42,6 +42,9 @@ export async function GET(request: NextRequest) {
   });
 }
 
+/**
+ * Edit-only: updates an existing section header by `section`. Never inserts.
+ */
 export async function PUT(request: NextRequest) {
   const auth = await requireAdmin(request);
   if (auth.error) return auth.error;
@@ -54,39 +57,40 @@ export async function PUT(request: NextRequest) {
 
   const supabase = createSupabaseAdmin();
 
-  const { data: existing } = await supabase
-    .from("section_headers")
-    .select("*")
-    .eq("section", parsed.data.section)
-    .maybeSingle();
-
-  const payload = {
-    section: parsed.data.section,
-    eyebrow:
-      parsed.data.eyebrow !== undefined
-        ? parsed.data.eyebrow || null
-        : (existing?.eyebrow ?? null),
-    title:
-      parsed.data.title !== undefined
-        ? parsed.data.title || null
-        : (existing?.title ?? null),
-    title_accent:
-      parsed.data.titleAccent !== undefined
-        ? parsed.data.titleAccent || null
-        : (existing?.title_accent ?? null),
-    description:
-      parsed.data.description !== undefined
-        ? parsed.data.description || null
-        : (existing?.description ?? null),
+  const payload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
   };
+  if (parsed.data.eyebrow !== undefined) {
+    payload.eyebrow = parsed.data.eyebrow || null;
+  }
+  if (parsed.data.title !== undefined) {
+    payload.title = parsed.data.title || null;
+  }
+  if (parsed.data.titleAccent !== undefined) {
+    payload.title_accent = parsed.data.titleAccent || null;
+  }
+  if (parsed.data.description !== undefined) {
+    payload.description = parsed.data.description || null;
+  }
+
+  if (Object.keys(payload).length === 1) {
+    return errorResponse("No fields to update", 400);
+  }
 
   const { data, error } = await supabase
     .from("section_headers")
-    .upsert(payload, { onConflict: "section" })
+    .update(payload)
+    .eq("section", parsed.data.section)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) return errorResponse("Failed to update section header", 500);
+  if (!data) {
+    return errorResponse(
+      `Section header "${parsed.data.section}" not found — edit only, no insert`,
+      404,
+    );
+  }
 
   revalidatePath("/");
   return jsonResponse({ header: mapSectionHeader(data) });

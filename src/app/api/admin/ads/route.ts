@@ -4,6 +4,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
 import { AD_CAPABLE_SECTIONS, mapAdSlot } from "@/lib/ads";
+import { optionalAssetUrl, optionalHttpUrl } from "@/lib/security";
 import { revalidatePath } from "next/cache";
 
 const statusEnum = z.enum(["draft", "published"]);
@@ -19,8 +20,8 @@ const createAdSchema = z.object({
   line: z.string().max(200).optional().or(z.literal("")),
   variant: variantEnum,
   tone: toneEnum.optional().or(z.literal("")),
-  href: z.string().max(500).optional().or(z.literal("")),
-  imageUrl: z.string().max(500).optional().or(z.literal("")),
+  href: optionalHttpUrl.optional(),
+  imageUrl: optionalAssetUrl.optional(),
   imageAlt: z.string().max(200).optional().or(z.literal("")),
   imageShape: imageShapeEnum.optional().or(z.literal("")),
   isVisible: z.boolean().optional().default(true),
@@ -38,8 +39,8 @@ const updateAdSchema = z.object({
   line: z.string().max(200).optional().or(z.literal("")),
   variant: variantEnum.optional(),
   tone: toneEnum.optional().or(z.literal("")),
-  href: z.string().max(500).optional().or(z.literal("")),
-  imageUrl: z.string().max(500).optional().or(z.literal("")),
+  href: optionalHttpUrl.optional(),
+  imageUrl: optionalAssetUrl.optional(),
   imageAlt: z.string().max(200).optional().or(z.literal("")),
   imageShape: imageShapeEnum.optional().or(z.literal("")),
   isVisible: z.boolean().optional(),

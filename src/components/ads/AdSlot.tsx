@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { hoverLift, tapPress } from "@/lib/motion";
+import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { AdPlaceholder } from "@/types/ads";
 
@@ -20,13 +21,17 @@ type AdSlotProps = {
 export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const label = ad.label ?? "Partner";
   const ink = ad.tone === "ink";
-  const isFullImage = ad.variant === "image" && Boolean(ad.imageSrc);
+  const safeImageSrc = sanitizeAssetSrc(ad.imageSrc);
+  const isFullImage = ad.variant === "image" && Boolean(safeImageSrc);
   const isPortrait = ad.imageShape === "portrait";
-  const hasThumb = Boolean(ad.imageSrc) && !isFullImage;
+  const hasThumb = Boolean(safeImageSrc) && !isFullImage;
   const hasCaption = Boolean(ad.sponsor || ad.line);
   const title = ad.sponsor ?? ad.imageAlt ?? label;
+  const safeAdHref = sanitizeHref(ad.href, "");
   const linkHref =
-    ad.href && ad.id ? `/api/public/ad-click?id=${ad.id}` : ad.href;
+    safeAdHref && ad.id
+      ? `/api/public/ad-click?id=${ad.id}`
+      : safeAdHref || undefined;
 
   const plateClass = cn(
     "group relative block overflow-hidden transition-colors",
@@ -101,7 +106,7 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
         )}
       >
         <Image
-          src={ad.imageSrc!}
+          src={safeImageSrc}
           alt={ad.imageAlt ?? title}
           fill
           sizes={
@@ -167,7 +172,7 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
           )}
         >
           <Image
-            src={ad.imageSrc!}
+            src={safeImageSrc}
             alt={ad.imageAlt ?? title}
             fill
             sizes={ad.variant === "inline" ? "64px" : "280px"}

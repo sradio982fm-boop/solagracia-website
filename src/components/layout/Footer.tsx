@@ -10,6 +10,7 @@ import {
   tapPress,
   viewportLoose,
 } from "@/lib/motion";
+import { sanitizeHref } from "@/lib/security";
 import type { FooterContent } from "@/types/site";
 
 type FooterProps = {
@@ -52,7 +53,7 @@ export function Footer({ content }: FooterProps) {
             </p>
             <div className="flex flex-wrap items-center gap-0">
               <motion.a
-                href={content.listenHref}
+                href={sanitizeHref(content.listenHref)}
                 whileHover={hoverLift}
                 whileTap={tapPress}
                 className="inline-flex h-11 items-center gap-2.5 border border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-main)] uppercase no-underline transition-colors hover:bg-white/10"
@@ -61,7 +62,7 @@ export function Footer({ content }: FooterProps) {
                 {content.listenLabel}
               </motion.a>
               <motion.a
-                href={content.contactHref}
+                href={sanitizeHref(content.contactHref)}
                 whileHover={hoverLift}
                 whileTap={tapPress}
                 className="inline-flex h-11 items-center border border-l-0 border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-dim)] uppercase no-underline transition-colors hover:bg-white/10 hover:text-[var(--text-main)]"
@@ -116,7 +117,7 @@ export function Footer({ content }: FooterProps) {
             {content.legalLinks.map((link) => (
               <li key={link.label}>
                 <a
-                  href={link.href}
+                  href={sanitizeHref(link.href)}
                   className="inline-flex min-h-11 items-center text-[0.72rem] font-semibold tracking-[0.16em] text-[var(--text-dim)] uppercase no-underline transition-colors hover:text-[var(--text-main)]"
                 >
                   {link.label}
@@ -156,7 +157,7 @@ function FooterTextLink({
 }) {
   return (
     <a
-      href={href}
+      href={sanitizeHref(href)}
       {...(external
         ? { target: "_blank", rel: "noopener noreferrer" }
         : undefined)}

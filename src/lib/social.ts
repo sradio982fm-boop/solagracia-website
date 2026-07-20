@@ -1,5 +1,4 @@
 import type { SocialIconId, SocialLink } from "@/types/site";
-import { heroContent } from "@/data/hero";
 
 const PLATFORM_ICONS: Record<string, SocialIconId> = {
   tiktok: "tiktok",
@@ -22,9 +21,9 @@ export type SocialRow = {
   url: string;
 };
 
-/** Maps DB/active social rows → public SocialLink[]. Falls back to hero static. */
+/** Maps DB/active social rows → public SocialLink[]. Empty CMS = no links. */
 export function toSocialLinks(rows: SocialRow[] | null | undefined): SocialLink[] {
-  if (!rows?.length) return [...heroContent.socialLinks];
+  if (!rows?.length) return [];
   return rows.map((row) => ({
     label: row.label,
     href: row.url,

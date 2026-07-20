@@ -13,6 +13,7 @@ import {
   tapPress,
   viewportOnce,
 } from "@/lib/motion";
+import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { KontakChannel, KontakContent } from "@/types/kontak";
 
@@ -127,7 +128,7 @@ export function ContactSection({ content }: ContactSectionProps) {
                       {line.label}
                     </span>
                     <a
-                      href={line.href}
+                      href={sanitizeHref(line.href)}
                       className="text-[0.88rem] font-semibold tracking-[-0.01em] text-[var(--section-fg)] no-underline transition-colors hover:text-[var(--accent)]"
                     >
                       {line.number}
@@ -138,7 +139,7 @@ export function ContactSection({ content }: ContactSectionProps) {
 
               <div className="mt-auto flex items-center justify-between gap-3 border-t border-[rgba(12,12,14,0.1)] pt-3">
                 <a
-                  href={`mailto:${content.email}`}
+                  href={sanitizeHref(`mailto:${content.email}`)}
                   className="text-[0.78rem] font-medium tracking-[0.04em] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--section-fg)]"
                 >
                   {content.email}
@@ -150,7 +151,7 @@ export function ContactSection({ content }: ContactSectionProps) {
                   {content.socialLinks.map((link, index) => (
                     <li key={link.label}>
                       <a
-                        href={link.href}
+                        href={sanitizeHref(link.href)}
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={link.label}
@@ -215,7 +216,7 @@ function ChannelCard({ channel }: { channel: KontakChannel }) {
   return (
     <motion.a
       data-channel
-      href={channel.href}
+      href={sanitizeHref(channel.href)}
       target={channel.external ? "_blank" : undefined}
       rel={channel.external ? "noopener noreferrer" : undefined}
       whileHover={hoverLift}
@@ -256,12 +257,16 @@ function ContactForm({ content }: { content: KontakContent }) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const href = buildKontakWhatsAppHref(
-      content.whatsappNumber,
-      content.form.whatsappTemplate,
-      name,
-      message,
+    const href = sanitizeHref(
+      buildKontakWhatsAppHref(
+        content.whatsappNumber,
+        content.form.whatsappTemplate,
+        name,
+        message,
+      ),
+      "",
     );
+    if (!href) return;
     window.open(href, "_blank", "noopener,noreferrer");
   }
 

@@ -13,6 +13,7 @@ import {
   staggerContainer,
   viewportOnce,
 } from "@/lib/motion";
+import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { AdPlaceholder } from "@/types/ads";
 import type { SocialQuotePart, TentangContent } from "@/types/site";
@@ -159,7 +160,7 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
               {content.ctas.map((cta, index) => (
                 <motion.a
                   key={cta.label}
-                  href={cta.href}
+                  href={sanitizeHref(cta.href)}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.2, ease: easeOut }}
@@ -256,14 +257,14 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
                     {testimonial.authorName}
                   </cite>
                   <a
-                    href={testimonial.href}
+                    href={sanitizeHref(testimonial.href)}
                     className="mt-0.5 block truncate text-[0.78rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
                   >
                     {testimonial.authorHandle}
                   </a>
                 </div>
                 <a
-                  href={testimonial.href}
+                  href={sanitizeHref(testimonial.href)}
                   className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)]"
                   aria-label="Buka postingan"
                 >
@@ -417,7 +418,7 @@ function QuotePart({ part }: { part: SocialQuotePart }) {
   if (part.type === "link") {
     return (
       <a
-        href={part.href}
+        href={sanitizeHref(part.href)}
         className="text-[var(--accent)] underline decoration-[color-mix(in_srgb,var(--accent)_45%,transparent)] underline-offset-[3px] transition-opacity hover:opacity-80"
       >
         {part.value}

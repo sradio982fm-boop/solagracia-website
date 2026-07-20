@@ -13,9 +13,12 @@ import {
   hoverLift,
   tapPress,
 } from "@/lib/motion";
+import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { HeroContent } from "@/types/site";
 import type { OnAirContent, ScheduleShow } from "@/types/schedule";
+
+const HERO_COVER_FALLBACK = "/cover-image.png";
 
 type HeroSectionProps = {
   content: HeroContent;
@@ -43,6 +46,9 @@ export function HeroSection({
     verticalTagline,
   } = content;
 
+  const safeCoverSrc = sanitizeAssetSrc(coverSrc, HERO_COVER_FALLBACK);
+  const safeMobileCtaHref = sanitizeHref(mobileCtaHref, "#kontak");
+
   return (
     <section
       id="home"
@@ -56,7 +62,7 @@ export function HeroSection({
         transition={{ duration: 1.35, ease: easeOut }}
       >
         <Image
-          src={coverSrc}
+          src={safeCoverSrc}
           alt={coverAlt}
           fill
           priority
@@ -104,7 +110,7 @@ export function HeroSection({
             {ctas.map((cta) => (
               <motion.a
                 key={cta.label}
-                href={cta.href}
+                href={sanitizeHref(cta.href)}
                 variants={heroCtaItem}
                 whileHover={hoverLift}
                 whileTap={tapPress}
@@ -154,7 +160,7 @@ export function HeroSection({
           transition={{ duration: 0.5, delay: 0.15, ease: easeOut }}
         >
           <a
-            href={mobileCtaHref}
+            href={safeMobileCtaHref}
             className="inline-flex h-11 items-center border border-[var(--frame-line)] px-4 text-[11px] font-semibold tracking-[0.2em] uppercase"
           >
             {mobileCtaLabel}
@@ -175,7 +181,7 @@ export function HeroSection({
             {ctas.map((cta) => (
               <motion.a
                 key={cta.label}
-                href={cta.href}
+                href={sanitizeHref(cta.href)}
                 variants={heroCtaItem}
                 whileHover={hoverLift}
                 whileTap={tapPress}

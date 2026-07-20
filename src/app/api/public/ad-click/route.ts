@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { errorResponse } from "@/lib/api-helpers";
+import { isSafeHttpUrl } from "@/lib/security";
 
 const idSchema = z.string().uuid();
 
@@ -18,7 +19,7 @@ async function handleAdClick(request: NextRequest) {
   });
 
   if (error) return errorResponse("Failed to track click", 500);
-  if (!href || typeof href !== "string") {
+  if (!href || typeof href !== "string" || !isSafeHttpUrl(href)) {
     return errorResponse("Ad not found or not clickable", 404);
   }
 

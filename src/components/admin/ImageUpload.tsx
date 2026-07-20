@@ -2,8 +2,9 @@
 
 import { useState, useCallback } from "react";
 import { adminUpload } from "@/lib/admin/api-client";
-import { cn } from "@/lib/utils";
 import { buildFocalUrl, parseFocalUrl } from "@/lib/focal-point";
+import { sanitizeAssetSrc } from "@/lib/security";
+import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
   value?: string;
@@ -119,7 +120,8 @@ export function ImageUpload({
     [updateFocusFromPointer],
   );
 
-  const { cleanUrl, focus } = parseFocalUrl(value);
+  const { cleanUrl: rawCleanUrl, focus } = parseFocalUrl(value);
+  const cleanUrl = sanitizeAssetSrc(rawCleanUrl);
 
   // Crop window (object-cover) expressed as fractions of the displayed image,
   // so the admin sees exactly what will remain visible at the target ratio.
@@ -157,7 +159,7 @@ export function ImageUpload({
         onDrop={handleDrop}
         onClick={value ? undefined : openFileDialog}
       >
-        {value ? (
+        {value && cleanUrl ? (
           <div className="flex items-center justify-center bg-[#1a1a1f] p-2">
             {/* Wrapper sizes exactly to the displayed image so the crop overlay
                 maps 1:1 — the full image is always shown, never cropped here. */}

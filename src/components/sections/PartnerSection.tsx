@@ -11,6 +11,7 @@ import {
   tapPress,
   viewportOnce,
 } from "@/lib/motion";
+import { sanitizeAssetSrc, sanitizeHref, sanitizeHttpHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { PartnerContent, PartnerLogo, SponsorshipPlan } from "@/types/partner";
 
@@ -122,7 +123,7 @@ export function PartnerSection({ content }: PartnerSectionProps) {
 
           <div className="mt-3 flex shrink-0 justify-center">
             <a
-              href={content.moreInfoHref}
+              href={sanitizeHref(content.moreInfoHref)}
               className="inline-flex h-10 items-center border border-[rgba(255,255,255,0.35)] px-5 text-[0.68rem] font-semibold tracking-[0.18em] text-white/80 uppercase no-underline transition-colors hover:bg-white/10 hover:text-white"
             >
               {content.moreInfoLabel}
@@ -135,11 +136,14 @@ export function PartnerSection({ content }: PartnerSectionProps) {
 }
 
 function PartnerMarqueeItem({ partner }: { partner: PartnerLogo }) {
+  const safeLogo = sanitizeAssetSrc(partner.logoUrl);
+  const safeHref = partner.href ? sanitizeHttpHref(partner.href, "") : "";
+
   const inner = (
     <>
-      {partner.logoUrl ?
+      {safeLogo ?
         <Image
-          src={partner.logoUrl}
+          src={safeLogo}
           alt={partner.name}
           width={40}
           height={40}
@@ -158,10 +162,10 @@ function PartnerMarqueeItem({ partner }: { partner: PartnerLogo }) {
   const className =
     "flex w-[9.5rem] shrink-0 flex-col items-center justify-center gap-2 border-r border-[rgba(255,255,255,0.1)] px-4 py-3.5 md:w-[11rem] md:py-4";
 
-  if (partner.href) {
+  if (safeHref) {
     return (
       <a
-        href={partner.href}
+        href={safeHref}
         target="_blank"
         rel="noopener noreferrer"
         className={cn(className, "no-underline transition-colors hover:bg-white/5")}
@@ -185,7 +189,7 @@ function PlanCard({
   planCtaLabel: string;
   currencyPrefix: string;
 }) {
-  const href = whatsappHref(whatsappNumber, plan.whatsappMessage);
+  const href = sanitizeHref(whatsappHref(whatsappNumber, plan.whatsappMessage));
 
   return (
     <motion.article

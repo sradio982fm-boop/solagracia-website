@@ -10,8 +10,11 @@ import {
   tapPress,
 } from "@/lib/motion";
 import { formatShowWindow } from "@/lib/schedule";
+import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { OnAirContent, ScheduleShow } from "@/types/schedule";
+
+const COVER_FALLBACK = "/cover-image.png";
 
 type OnAirNowProps = {
   content: OnAirContent;
@@ -36,8 +39,8 @@ export function OnAirNow({
   const title = show?.title ?? content.fallbackTitle;
   const host = show?.host ?? "Solagracia";
   const windowLabel = show ? formatShowWindow(show) : "—";
-  const imageSrc = show?.imageSrc ?? "/cover-image.png";
-  const href = show?.href ?? "#program";
+  const imageSrc = sanitizeAssetSrc(show?.imageSrc, COVER_FALLBACK);
+  const href = sanitizeHref(show?.href, "#program");
 
   return (
     <motion.div
@@ -122,14 +125,14 @@ export function OnAirNow({
         {upcoming.map((item) => (
           <motion.li key={item.id} variants={fadeUpSoft}>
             <motion.a
-              href={item.href ?? "#program"}
+              href={sanitizeHref(item.href, "#program")}
               whileHover={hoverLift}
               whileTap={tapPress}
               className="group grid grid-cols-[56px_1fr] items-center gap-3 border border-[var(--frame-line)] bg-black/35 px-2.5 py-2.5 no-underline transition-colors hover:bg-black/50 sm:grid-cols-[64px_1fr]"
             >
               <span className="relative aspect-square overflow-hidden bg-white/10">
                 <Image
-                  src={item.imageSrc}
+                  src={sanitizeAssetSrc(item.imageSrc, COVER_FALLBACK)}
                   alt={item.imageAlt}
                   fill
                   sizes="64px"

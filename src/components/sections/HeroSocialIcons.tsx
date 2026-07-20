@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { hoverIcon, tapPress } from "@/lib/motion";
+import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { SocialLink } from "@/types/site";
 
@@ -28,7 +29,7 @@ export function HeroSocialIcons({
       {links.map((link, index) => (
         <li key={link.label}>
           <motion.a
-            href={link.href}
+            href={sanitizeHref(link.href)}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={link.label}

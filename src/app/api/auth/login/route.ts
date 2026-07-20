@@ -41,6 +41,10 @@ export async function POST(request: NextRequest) {
     200,
   );
 
-  setAuthCookies(response, data.session.refresh_token);
+  await setAuthCookies(
+    response,
+    data.session.refresh_token,
+    data.user.id,
+  );
   return response;
 }

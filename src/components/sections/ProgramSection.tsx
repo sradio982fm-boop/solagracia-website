@@ -13,6 +13,7 @@ import {
   tapPress,
   viewportLoose,
 } from "@/lib/motion";
+import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import { formatShowWindow } from "@/lib/schedule";
 import type { AdPlaceholder } from "@/types/ads";
@@ -189,7 +190,7 @@ function ShowCard({
   return (
     <motion.a
       data-show-card
-      href={show.href ?? "#program"}
+      href={sanitizeHref(show.href, "#program")}
       whileHover={hoverLift}
       whileTap={tapPress}
       className={cn(

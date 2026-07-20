@@ -80,19 +80,6 @@ export function buildProgramFromSlots(
     );
   }
 
-  const hasAny = WEEKDAY_IDS.some((day) => byDay[day].length > 0);
-  if (!hasAny) {
-    return {
-      ...fallbackProgram,
-      ...(header?.eyebrow ? { eyebrow: header.eyebrow } : {}),
-      ...(header?.title ? { title: header.title } : {}),
-      ...(header?.description ? { description: header.description } : {}),
-      ...(header?.frequencyLabel
-        ? { frequencyLabel: header.frequencyLabel }
-        : {}),
-    };
-  }
-
   return {
     eyebrow: header?.eyebrow || fallbackProgram.eyebrow,
     title: header?.title || fallbackProgram.title,
@@ -125,6 +112,7 @@ export function buildOnAirFromSlots(
     label: labels?.label || fallbackOnAir.label,
     upcomingLabel: labels?.upcomingLabel || fallbackOnAir.upcomingLabel,
     fallbackTitle: labels?.fallbackTitle || fallbackOnAir.fallbackTitle,
-    shows: shows.length ? shows : fallbackOnAir.shows,
+    // Empty day = empty list (do not inject mock schedule shows)
+    shows,
   };
 }

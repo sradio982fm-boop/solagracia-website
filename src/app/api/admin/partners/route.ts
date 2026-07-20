@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
-import { httpUrl } from "@/lib/security";
+import { optionalAssetUrl, optionalHttpUrl } from "@/lib/security";
 import { revalidatePath } from "next/cache";
 
 const statusEnum = z.enum(["draft", "published"]);
@@ -12,8 +12,8 @@ const MAX_PARTNERS = 24;
 const createPartnerSchema = z.object({
   name: z.string().min(1).max(100),
   initials: z.string().min(1).max(4),
-  logoUrl: z.string().optional().or(z.literal("")),
-  href: httpUrl.optional().or(z.literal("")),
+  logoUrl: optionalAssetUrl.optional(),
+  href: optionalHttpUrl.optional(),
   sortOrder: z.number().int().min(0).optional().default(0),
   status: statusEnum.optional().default("published"),
 });
@@ -22,8 +22,8 @@ const updatePartnerSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(100).optional(),
   initials: z.string().min(1).max(4).optional(),
-  logoUrl: z.string().optional().or(z.literal("")),
-  href: httpUrl.optional().or(z.literal("")),
+  logoUrl: optionalAssetUrl.optional(),
+  href: optionalHttpUrl.optional(),
   sortOrder: z.number().int().min(0).optional(),
   status: statusEnum.optional(),
 });
