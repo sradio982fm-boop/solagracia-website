@@ -26,6 +26,8 @@ const createAdSchema = z.object({
   isVisible: z.boolean().optional().default(true),
   sortOrder: z.number().int().min(0).optional().default(0),
   status: statusEnum.optional().default("published"),
+  startsAt: z.string().datetime().optional().nullable().or(z.literal("")),
+  endsAt: z.string().datetime().optional().nullable().or(z.literal("")),
 });
 
 const updateAdSchema = z.object({
@@ -43,6 +45,8 @@ const updateAdSchema = z.object({
   isVisible: z.boolean().optional(),
   sortOrder: z.number().int().min(0).optional(),
   status: statusEnum.optional(),
+  startsAt: z.string().datetime().optional().nullable().or(z.literal("")),
+  endsAt: z.string().datetime().optional().nullable().or(z.literal("")),
 });
 
 function toDbFields(data: {
@@ -59,6 +63,8 @@ function toDbFields(data: {
   isVisible?: boolean;
   sortOrder?: number;
   status?: string;
+  startsAt?: string | null;
+  endsAt?: string | null;
 }): Record<string, unknown> {
   const updates: Record<string, unknown> = {};
   if (data.sectionId !== undefined) updates.section_id = data.sectionId;
@@ -74,6 +80,8 @@ function toDbFields(data: {
   if (data.isVisible !== undefined) updates.is_visible = data.isVisible;
   if (data.sortOrder !== undefined) updates.sort_order = data.sortOrder;
   if (data.status !== undefined) updates.status = data.status;
+  if (data.startsAt !== undefined) updates.starts_at = data.startsAt || null;
+  if (data.endsAt !== undefined) updates.ends_at = data.endsAt || null;
   return updates;
 }
 

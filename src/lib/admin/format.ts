@@ -5,6 +5,17 @@ export function formatHour(hour: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+/** Formats an ISO date string to Indonesian locale short format. */
+export function formatDateShort(dateStr: string | null): string {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleString("id-ID", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 /** Converts "HH:mm" string to decimal hour. */
 export function timeToHour(time: string): number {
   const [h, m] = time.split(":").map(Number);

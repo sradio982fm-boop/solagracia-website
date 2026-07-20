@@ -19,7 +19,7 @@ export type SectionConfigRow = {
   updatedAt?: string;
 };
 
-export const ALL_SECTION_KEYS = [
+export const CORE_SECTION_KEYS = [
   "home",
   "tentang",
   "program",
@@ -27,6 +27,10 @@ export const ALL_SECTION_KEYS = [
   "partner",
   "kontak",
 ] as const;
+
+export type CoreSectionKey = (typeof CORE_SECTION_KEYS)[number];
+
+export const ALL_SECTION_KEYS = [...CORE_SECTION_KEYS] as const;
 
 export type PublicSectionKey = (typeof ALL_SECTION_KEYS)[number];
 
@@ -45,7 +49,7 @@ export const REORDERABLE_SECTIONS: ReadonlyArray<{
 
 const fallbackNavBySection = Object.fromEntries(
   LETTER_NAV.map((link) => [link.sectionId, link]),
-) as Record<PublicSectionKey, NavLetter>;
+) as Record<CoreSectionKey, NavLetter>;
 
 function isValidSurface(value: string | null): value is SectionSurface {
   return value === "dark" || value === "smoke" || value === "white";
@@ -82,24 +86,26 @@ export type SectionConfigPayload = {
   surfaces: Record<SectionId, SectionSurface>;
 };
 
+function defaultCoreRow(key: CoreSectionKey, index: number): SectionConfigRow {
+  const fallback = fallbackNavBySection[key];
+  return {
+    id: "",
+    section: key,
+    isVisible: true,
+    sortOrder: index,
+    letter: fallback.letter,
+    navLabel: fallback.label,
+    menuLabel: fallback.menuLabel,
+    surface: SECTION_SURFACE[key],
+  };
+}
+
 function mergeWithFallback(rows: SectionConfigRow[]): SectionConfigRow[] {
   const bySection = new Map(rows.map((row) => [row.section, row]));
 
-  return ALL_SECTION_KEYS.map((key, index) => {
+  return CORE_SECTION_KEYS.map((key, index) => {
     const existing = bySection.get(key);
-    if (existing) return existing;
-
-    const fallback = fallbackNavBySection[key];
-    return {
-      id: "",
-      section: key,
-      isVisible: true,
-      sortOrder: index,
-      letter: fallback.letter,
-      navLabel: fallback.label,
-      menuLabel: fallback.menuLabel,
-      surface: SECTION_SURFACE[key],
-    };
+    return existing ?? defaultCoreRow(key, index);
   });
 }
 
@@ -112,16 +118,16 @@ export function buildSectionConfigPayload(
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
   const nav: NavLetter[] = visible.map((row) => {
-    const fallback = fallbackNavBySection[row.section as PublicSectionKey];
-    const sectionId = row.section as PublicSectionKey;
+    const sectionKey = row.section as PublicSectionKey;
+    const fallback = fallbackNavBySection[sectionKey as CoreSectionKey];
 
     return {
-      letter: row.letter?.trim() || fallback?.letter || sectionId[0].toUpperCase(),
-      label: row.navLabel?.trim() || fallback?.label || sectionId,
+      letter: row.letter?.trim() || fallback?.letter || sectionKey[0].toUpperCase(),
+      label: row.navLabel?.trim() || fallback?.label || sectionKey,
       menuLabel:
-        row.menuLabel?.trim() || fallback?.menuLabel || fallback?.label || sectionId,
-      href: `#${sectionId}`,
-      sectionId,
+        row.menuLabel?.trim() || fallback?.menuLabel || fallback?.label || sectionKey,
+      href: `#${sectionKey}`,
+      sectionId: sectionKey,
     };
   });
 
@@ -139,19 +145,7 @@ export function buildSectionConfigPayload(
 
 export function buildFallbackSectionConfig(): SectionConfigPayload {
   return buildSectionConfigPayload(
-    ALL_SECTION_KEYS.map((key, index) => {
-      const fallback = fallbackNavBySection[key];
-      return {
-        id: "",
-        section: key,
-        isVisible: true,
-        sortOrder: index,
-        letter: fallback.letter,
-        navLabel: fallback.label,
-        menuLabel: fallback.menuLabel,
-        surface: SECTION_SURFACE[key],
-      };
-    }),
+    CORE_SECTION_KEYS.map((key, index) => defaultCoreRow(key, index)),
   );
 }
 

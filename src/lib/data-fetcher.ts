@@ -6,6 +6,7 @@ import { site as fallbackSite } from "@/data/site";
 import type { SocialRow } from "@/lib/social";
 import { mapFooterFromConfig, mapMarqueeFromConfig } from "@/lib/footer";
 import { mapKontakFromConfig } from "@/lib/kontak";
+import { mapPrivacyFromConfig, type PrivacyContent } from "@/lib/legal";
 import {
   buildOnAirFromSlots,
   buildProgramFromSlots,
@@ -35,9 +36,11 @@ import type {
   BrandContent,
   FooterContent,
   FooterLink,
+  FrequencyOption,
   HeroContent,
   HeroCta,
   MediaPlayerContent,
+  PlayerPayload,
   SectionHeaderContent,
   SeoContent,
   SocialLink,
@@ -54,13 +57,57 @@ const WEEKDAY_TO_JS: Record<WeekdayId, number> = {
   sabtu: 6,
 };
 
-/**
- * Fetch default active frequency for the sticky player.
- * Falls back to static media.ts (siar.us seeds) on error/empty.
- */
-export async function fetchMediaPlayerContent(
+function toFrequencyOption(row: {
+  id: string;
+  label: string | null;
+  station_name: string | null;
+  audio_url: string | null;
+  video_url: string | null;
+  poster_url: string | null;
+  is_default: boolean | null;
+}): FrequencyOption {
+  return {
+    id: row.id,
+    label: row.label || fallbackMedia.frequency,
+    stationName: row.station_name || fallbackMedia.stationName,
+    audioSrc: row.audio_url || fallbackMedia.audioSrc,
+    videoSrc: row.video_url || fallbackMedia.videoSrc,
+    videoPoster: row.poster_url || fallbackMedia.videoPoster,
+    isDefault: Boolean(row.is_default),
+  };
+}
+
+function contentFromFrequency(
+  freq: FrequencyOption,
   liveShowTitle?: string | null,
-): Promise<MediaPlayerContent> {
+): MediaPlayerContent {
+  return {
+    stationName: freq.stationName,
+    showTitle: liveShowTitle || fallbackMedia.showTitle,
+    frequency: freq.label,
+    audioSrc: freq.audioSrc,
+    videoSrc: freq.videoSrc,
+    videoPoster: freq.videoPoster,
+  };
+}
+
+/**
+ * All active frequencies for the sticky player switcher.
+ * Falls back to static media.ts (siar.us) on error/empty.
+ */
+export async function fetchPlayerPayload(
+  liveShowTitle?: string | null,
+): Promise<PlayerPayload> {
+  const fallbackFreq: FrequencyOption = {
+    id: "fallback",
+    label: fallbackMedia.frequency,
+    stationName: fallbackMedia.stationName,
+    audioSrc: fallbackMedia.audioSrc,
+    videoSrc: fallbackMedia.videoSrc,
+    videoPoster: fallbackMedia.videoPoster,
+    isDefault: true,
+  };
+
   try {
     const supabase = createSupabaseAdmin();
     const { data, error } = await supabase
@@ -68,23 +115,39 @@ export async function fetchMediaPlayerContent(
       .select("*")
       .eq("is_active", true)
       .order("is_default", { ascending: false })
-      .order("sort_order", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .order("sort_order", { ascending: true });
 
-    if (error || !data) return withShowTitle(fallbackMedia, liveShowTitle);
+    if (error || !data?.length) {
+      return {
+        showTitle: liveShowTitle || fallbackMedia.showTitle,
+        frequencies: [fallbackFreq],
+        content: withShowTitle(fallbackMedia, liveShowTitle),
+      };
+    }
+
+    const frequencies = data.map(toFrequencyOption);
+    const selected = frequencies.find((f) => f.isDefault) || frequencies[0];
 
     return {
-      stationName: data.station_name || fallbackMedia.stationName,
       showTitle: liveShowTitle || fallbackMedia.showTitle,
-      frequency: data.label || fallbackMedia.frequency,
-      audioSrc: data.audio_url || fallbackMedia.audioSrc,
-      videoSrc: data.video_url || fallbackMedia.videoSrc,
-      videoPoster: data.poster_url || fallbackMedia.videoPoster,
+      frequencies,
+      content: contentFromFrequency(selected, liveShowTitle),
     };
   } catch {
-    return withShowTitle(fallbackMedia, liveShowTitle);
+    return {
+      showTitle: liveShowTitle || fallbackMedia.showTitle,
+      frequencies: [fallbackFreq],
+      content: withShowTitle(fallbackMedia, liveShowTitle),
+    };
   }
+}
+
+/** @deprecated Prefer fetchPlayerPayload — kept for callers that need one blob. */
+export async function fetchMediaPlayerContent(
+  liveShowTitle?: string | null,
+): Promise<MediaPlayerContent> {
+  const payload = await fetchPlayerPayload(liveShowTitle);
+  return payload.content;
 }
 
 /** Active social links — single source for hero / kontak / footer. */
@@ -286,6 +349,15 @@ export async function fetchMarqueeItems(): Promise<string[]> {
     return mapMarqueeFromConfig(config.marquee);
   } catch {
     return mapMarqueeFromConfig(undefined);
+  }
+}
+
+export async function fetchPrivacyContent(): Promise<PrivacyContent> {
+  try {
+    const config = await fetchRawSiteConfig();
+    return mapPrivacyFromConfig(config.legal);
+  } catch {
+    return mapPrivacyFromConfig(undefined);
   }
 }
 
@@ -564,3 +636,4 @@ export async function fetchSectionAds(): Promise<
     return buildSectionAdsFromRows([]);
   }
 }
+

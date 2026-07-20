@@ -25,6 +25,8 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const hasThumb = Boolean(ad.imageSrc) && !isFullImage;
   const hasCaption = Boolean(ad.sponsor || ad.line);
   const title = ad.sponsor ?? ad.imageAlt ?? label;
+  const linkHref =
+    ad.href && ad.id ? `/api/public/ad-click?id=${ad.id}` : ad.href;
 
   const plateClass = cn(
     "group relative block overflow-hidden transition-colors",
@@ -261,9 +263,9 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
         ) : null}
       </div>
 
-      {ad.href ? (
+      {linkHref ? (
         <motion.a
-          href={ad.href}
+          href={linkHref}
           rel="sponsored noopener noreferrer"
           whileHover={hoverLift}
           whileTap={tapPress}

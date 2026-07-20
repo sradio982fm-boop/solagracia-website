@@ -13,11 +13,12 @@ import {
 } from "@mantine/core";
 import type { SiteConfigMap } from "@/hooks/admin/useSiteConfig";
 import {
+  mapCmsTestimonial,
   testimonialToCms,
   type CmsTentangTestimonial,
 } from "@/lib/tentang";
 import { tentangContent as fallback } from "@/data/tentang";
-import type { TentangCta, TentangStat } from "@/types/site";
+import type { SocialQuotePart, TentangCta, TentangStat } from "@/types/site";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -71,13 +72,16 @@ function parseTestimonial(raw: string): CmsTentangTestimonial {
   if (!raw) return testimonialToCms(fallback.testimonial);
   try {
     const parsed = JSON.parse(raw) as CmsTentangTestimonial;
-    return {
-      ...testimonialToCms(fallback.testimonial),
-      ...parsed,
-    };
+    return testimonialToCms(mapCmsTestimonial(parsed));
   } catch {
     return testimonialToCms(fallback.testimonial);
   }
+}
+
+function emptyQuotePart(type: SocialQuotePart["type"]): SocialQuotePart {
+  if (type === "link") return { type: "link", value: "", href: "" };
+  if (type === "mention") return { type: "mention", value: "@" };
+  return { type: "text", value: "" };
 }
 
 export function TentangConfigPanel({ config, saving, onSave }: Props) {
@@ -288,53 +292,130 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
         }
         size="sm"
       />
-      <Textarea
-        label="Quote"
-        value={testimonial.quote_text}
-        onChange={(e) =>
-          setTestimonial((prev) => ({
-            ...prev,
-            quote_text: e.currentTarget.value,
-          }))
-        }
-        rows={3}
-        size="sm"
-      />
-      <TextInput
-        label="Mention (opsional)"
-        value={testimonial.mention || ""}
-        onChange={(e) =>
-          setTestimonial((prev) => ({
-            ...prev,
-            mention: e.currentTarget.value,
-          }))
-        }
-        size="sm"
-      />
-      <Group grow>
-        <TextInput
-          label="Link label"
-          value={testimonial.link_label || ""}
-          onChange={(e) =>
-            setTestimonial((prev) => ({
-              ...prev,
-              link_label: e.currentTarget.value,
-            }))
-          }
-          size="sm"
-        />
-        <TextInput
-          label="Link URL"
-          value={testimonial.link_url || ""}
-          onChange={(e) =>
-            setTestimonial((prev) => ({
-              ...prev,
-              link_url: e.currentTarget.value,
-            }))
-          }
-          size="sm"
-        />
-      </Group>
+      <div>
+        <Text size="xs" c="dimmed" mb={6}>
+          Quote parts (teks / mention / link)
+        </Text>
+        <Stack gap="xs">
+          {(testimonial.quote || []).map((part, index) => (
+            <Stack
+              key={index}
+              gap={6}
+              p="sm"
+              style={{ border: "1px solid var(--mantine-color-gray-3)" }}
+            >
+              <Group grow align="flex-end">
+                <Select
+                  label="Tipe"
+                  data={[
+                    { value: "text", label: "Text" },
+                    { value: "mention", label: "Mention" },
+                    { value: "link", label: "Link" },
+                  ]}
+                  value={part.type}
+                  onChange={(value) => {
+                    const type = (value || "text") as SocialQuotePart["type"];
+                    setTestimonial((prev) => ({
+                      ...prev,
+                      quote: (prev.quote || []).map((p, i) =>
+                        i === index ? emptyQuotePart(type) : p,
+                      ),
+                    }));
+                  }}
+                  size="xs"
+                />
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={() =>
+                    setTestimonial((prev) => ({
+                      ...prev,
+                      quote: (prev.quote || []).filter((_, i) => i !== index),
+                    }))
+                  }
+                  disabled={(testimonial.quote || []).length <= 1}
+                  aria-label="Hapus part"
+                >
+                  <i className="material-icons text-[18px]">close</i>
+                </ActionIcon>
+              </Group>
+              <TextInput
+                label={part.type === "mention" ? "Mention" : "Teks"}
+                value={part.value}
+                onChange={(e) =>
+                  setTestimonial((prev) => ({
+                    ...prev,
+                    quote: (prev.quote || []).map((p, i) =>
+                      i === index
+                        ? { ...p, value: e.currentTarget.value }
+                        : p,
+                    ),
+                  }))
+                }
+                size="xs"
+              />
+              {part.type === "link" ? (
+                <TextInput
+                  label="Href"
+                  value={part.href}
+                  onChange={(e) =>
+                    setTestimonial((prev) => ({
+                      ...prev,
+                      quote: (prev.quote || []).map((p, i) =>
+                        i === index && p.type === "link"
+                          ? { ...p, href: e.currentTarget.value }
+                          : p,
+                      ),
+                    }))
+                  }
+                  size="xs"
+                />
+              ) : null}
+            </Stack>
+          ))}
+          <Group gap="xs">
+            <Button
+              size="xs"
+              variant="light"
+              color="gray"
+              onClick={() =>
+                setTestimonial((prev) => ({
+                  ...prev,
+                  quote: [...(prev.quote || []), emptyQuotePart("text")],
+                }))
+              }
+            >
+              + Text
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="gray"
+              onClick={() =>
+                setTestimonial((prev) => ({
+                  ...prev,
+                  quote: [...(prev.quote || []), emptyQuotePart("mention")],
+                }))
+              }
+            >
+              + Mention
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="gray"
+              onClick={() =>
+                setTestimonial((prev) => ({
+                  ...prev,
+                  quote: [...(prev.quote || []), emptyQuotePart("link")],
+                }))
+              }
+            >
+              + Link
+            </Button>
+          </Group>
+        </Stack>
+      </div>
       <Group grow>
         <TextInput
           label="Author name"
@@ -442,7 +523,20 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
               {
                 section: "tentang",
                 key: "testimonial",
-                value: JSON.stringify(testimonial),
+                value: JSON.stringify({
+                  platform: testimonial.platform,
+                  date: testimonial.date,
+                  quote: (testimonial.quote || []).filter((part) => {
+                    if (part.type === "link") {
+                      return part.value.trim() && part.href.trim();
+                    }
+                    return part.value.trim();
+                  }),
+                  authorName: testimonial.authorName,
+                  authorHandle: testimonial.authorHandle,
+                  authorInitials: testimonial.authorInitials,
+                  href: testimonial.href,
+                }),
                 valueType: "json",
               },
             ]);

@@ -11,6 +11,8 @@ export type AdImageShape = "banner" | "portrait";
  * Other variants may include `imageSrc` as a thumb beside/above copy.
  */
 export type AdPlaceholder = {
+  /** CMS ad slot id — enables click tracking redirect */
+  id?: string;
   /** Quiet label — prefer Partner over “Iklan” */
   label?: string;
   sponsor?: string;

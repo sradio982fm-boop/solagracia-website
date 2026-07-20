@@ -48,7 +48,9 @@ export const LETTER_NAV: readonly NavLetter[] = [
   },
 ] as const;
 
-export type SectionId = (typeof LETTER_NAV)[number]["sectionId"];
+export type CoreSectionId = (typeof LETTER_NAV)[number]["sectionId"];
+
+export type SectionId = CoreSectionId;
 
 export const SECTION_IDS: readonly SectionId[] = LETTER_NAV.map(
   (link) => link.sectionId,

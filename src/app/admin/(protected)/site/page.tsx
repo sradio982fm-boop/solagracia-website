@@ -16,6 +16,7 @@ import {
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { FooterConfigPanel } from "@/components/admin/FooterConfigPanel";
 import { KontakConfigPanel } from "@/components/admin/KontakConfigPanel";
+import { PrivacyConfigPanel } from "@/components/admin/PrivacyConfigPanel";
 import { SectionOrderManager } from "@/components/admin/SectionOrderManager";
 import { TentangConfigPanel } from "@/components/admin/TentangConfigPanel";
 import {
@@ -60,9 +61,11 @@ const SEO_FIELDS: FieldDef[] = [
   },
   {
     key: "favicon_url",
-    label: "Favicon URL",
+    label: "Favicon",
+    image: true,
     valueType: "image",
-    description: "Path atau URL, mis. /favicon.ico",
+    aspectRatio: "square",
+    description: "Upload PNG/WebP/ICO — dipakai di tab browser",
   },
 ];
 
@@ -470,6 +473,28 @@ export default function SiteAdminPage() {
           </Accordion.Control>
           <Accordion.Panel>
             <FooterConfigPanel
+              config={data?.config}
+              saving={updateConfig.isPending}
+              onSave={async (updates) => {
+                await updateConfig.mutateAsync({ updates });
+              }}
+            />
+          </Accordion.Panel>
+        </Accordion.Item>
+        <Accordion.Item value="privacy">
+          <Accordion.Control
+            icon={
+              <ThemeIcon variant="light" color="gray" size="sm" radius="md">
+                <i className="material-icons text-[14px]">policy</i>
+              </ThemeIcon>
+            }
+          >
+            <Text size="sm" fw={500}>
+              Kebijakan Privasi
+            </Text>
+          </Accordion.Control>
+          <Accordion.Panel>
+            <PrivacyConfigPanel
               config={data?.config}
               saving={updateConfig.isPending}
               onSave={async (updates) => {

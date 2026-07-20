@@ -77,6 +77,24 @@ export type MediaPlayerContent = {
   videoPoster?: string;
 };
 
+/** Active stream option for the sticky player switcher. */
+export type FrequencyOption = {
+  id: string;
+  label: string;
+  stationName: string;
+  audioSrc: string;
+  videoSrc: string;
+  videoPoster?: string;
+  isDefault: boolean;
+};
+
+export type PlayerPayload = {
+  showTitle: string;
+  frequencies: FrequencyOption[];
+  /** Resolved default / first frequency as MediaPlayerContent. */
+  content: MediaPlayerContent;
+};
+
 export type TentangStat = {
   value: string;
   label: string;

@@ -23,7 +23,7 @@ export const footerContent: FooterContent = {
   })),
   legalLinks: [
     { href: "#tentang", label: "Tentang" },
-    { href: "#", label: "Privasi" },
+    { href: "/privasi", label: "Privasi" },
   ],
   socialLinks: [
     { label: "TikTok", href: "https://www.tiktok.com" },

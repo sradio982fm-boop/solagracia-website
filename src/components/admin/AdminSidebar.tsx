@@ -6,6 +6,7 @@ import { NavLink, Stack, Text, Divider } from "@mantine/core";
 
 const NAV_ITEMS = [
   { href: "/admin/dashboard", label: "Dashboard", icon: "dashboard" },
+  { href: "/admin/analytics", label: "Analytics", icon: "analytics" },
   { href: "/admin/schedule", label: "Jadwal", icon: "calendar_month" },
   { href: "/admin/hosts", label: "Penyiar", icon: "group" },
   { href: "/admin/partners", label: "Partner", icon: "handshake" },

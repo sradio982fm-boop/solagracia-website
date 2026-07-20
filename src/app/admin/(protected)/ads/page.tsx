@@ -55,6 +55,8 @@ interface AdFormState {
   isVisible: boolean;
   sortOrder: number;
   status: "draft" | "published";
+  startsAt: string;
+  endsAt: string;
 }
 
 const EMPTY_FORM: AdFormState = {
@@ -71,6 +73,8 @@ const EMPTY_FORM: AdFormState = {
   isVisible: true,
   sortOrder: 0,
   status: "published",
+  startsAt: "",
+  endsAt: "",
 };
 
 function formFromAd(ad: AdSlot): AdFormState {
@@ -88,7 +92,32 @@ function formFromAd(ad: AdSlot): AdFormState {
     isVisible: ad.isVisible,
     sortOrder: ad.sortOrder,
     status: ad.status,
+    startsAt: toDatetimeLocalValue(ad.startsAt),
+    endsAt: toDatetimeLocalValue(ad.endsAt),
   };
+}
+
+function toDatetimeLocalValue(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function toIsoOrNull(value: string): string | null {
+  if (!value.trim()) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toISOString();
+}
+
+function formatScheduleLabel(iso: string | null): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 }
 
 function uploadAspectRatio(
@@ -130,26 +159,29 @@ export default function AdsAdminPage() {
   const isImageVariant = form.variant === "image";
   const showCopyFields = !isImageVariant;
 
-  const previewAd = useMemo(
-    () =>
-      adSlotToPlaceholder({
-        id: "preview",
-        sectionId: form.sectionId,
-        label: form.label,
-        sponsor: form.sponsor,
-        line: form.line,
-        variant: form.variant,
-        tone: form.tone,
-        href: form.href,
-        imageUrl: form.imageUrl,
-        imageAlt: form.imageAlt,
-        imageShape: form.imageShape,
-        isVisible: form.isVisible,
-        sortOrder: form.sortOrder,
-        status: form.status,
-      }),
-    [form],
-  );
+  const previewAd = useMemo(() => {
+    const placeholder = adSlotToPlaceholder({
+      id: "preview",
+      sectionId: form.sectionId,
+      label: form.label,
+      sponsor: form.sponsor,
+      line: form.line,
+      variant: form.variant,
+      tone: form.tone,
+      href: form.href,
+      imageUrl: form.imageUrl,
+      imageAlt: form.imageAlt,
+      imageShape: form.imageShape,
+      isVisible: form.isVisible,
+      sortOrder: form.sortOrder,
+      status: form.status,
+      startsAt: form.startsAt ? toIsoOrNull(form.startsAt) : null,
+      endsAt: form.endsAt ? toIsoOrNull(form.endsAt) : null,
+      clickCount: 0,
+    });
+    const { id: _previewId, ...withoutId } = placeholder;
+    return withoutId;
+  }, [form]);
 
   function updateField<K extends keyof AdFormState>(key: K, value: AdFormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -184,6 +216,8 @@ export default function AdsAdminPage() {
       isVisible: form.isVisible,
       sortOrder: form.sortOrder,
       status: form.status,
+      startsAt: toIsoOrNull(form.startsAt),
+      endsAt: toIsoOrNull(form.endsAt),
     };
 
     if (editing) {
@@ -268,6 +302,21 @@ export default function AdsAdminPage() {
                       Creative: {ad.imageUrl}
                     </Text>
                   ) : null}
+                  <Group gap="xs">
+                    <Badge variant="light" color="dark" size="sm">
+                      {ad.clickCount} klik
+                    </Badge>
+                    {ad.startsAt || ad.endsAt ? (
+                      <Text size="xs" c="dimmed">
+                        Jadwal:{" "}
+                        {ad.startsAt
+                          ? formatScheduleLabel(ad.startsAt)
+                          : "—"}{" "}
+                        →{" "}
+                        {ad.endsAt ? formatScheduleLabel(ad.endsAt) : "—"}
+                      </Text>
+                    ) : null}
+                  </Group>
                 </Stack>
 
                 <Group gap="xs" wrap="nowrap">
@@ -396,6 +445,23 @@ export default function AdsAdminPage() {
             value={form.href}
             onChange={(e) => updateField("href", e.currentTarget.value)}
           />
+
+          <Group grow align="flex-end">
+            <TextInput
+              label="Mulai tayang"
+              description="Kosongkan = langsung aktif"
+              type="datetime-local"
+              value={form.startsAt}
+              onChange={(e) => updateField("startsAt", e.currentTarget.value)}
+            />
+            <TextInput
+              label="Selesai tayang"
+              description="Kosongkan = tanpa batas"
+              type="datetime-local"
+              value={form.endsAt}
+              onChange={(e) => updateField("endsAt", e.currentTarget.value)}
+            />
+          </Group>
 
           <div>
             <Text size="sm" fw={500} mb={6}>

@@ -27,6 +27,9 @@ export type AdSlotRow = {
   is_visible: boolean;
   sort_order: number;
   status: "draft" | "published";
+  starts_at: string | null;
+  ends_at: string | null;
+  click_count: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -46,9 +49,22 @@ export type AdSlot = {
   isVisible: boolean;
   sortOrder: number;
   status: "draft" | "published";
+  startsAt: string | null;
+  endsAt: string | null;
+  clickCount: number;
   createdAt?: string;
   updatedAt?: string;
 };
+
+/** True when now is within [starts_at, ends_at]; null bounds are open-ended. */
+export function isAdScheduledActive(
+  row: Pick<AdSlotRow, "starts_at" | "ends_at">,
+  now: Date = new Date(),
+): boolean {
+  if (row.starts_at && new Date(row.starts_at) > now) return false;
+  if (row.ends_at && new Date(row.ends_at) < now) return false;
+  return true;
+}
 
 export function mapAdSlot(row: Record<string, unknown>): AdSlot {
   return {
@@ -66,6 +82,9 @@ export function mapAdSlot(row: Record<string, unknown>): AdSlot {
     isVisible: Boolean(row.is_visible),
     sortOrder: (row.sort_order as number) ?? 0,
     status: row.status as "draft" | "published",
+    startsAt: (row.starts_at as string | null) ?? null,
+    endsAt: (row.ends_at as string | null) ?? null,
+    clickCount: (row.click_count as number) ?? 0,
     createdAt: row.created_at as string | undefined,
     updatedAt: row.updated_at as string | undefined,
   };
@@ -73,6 +92,7 @@ export function mapAdSlot(row: Record<string, unknown>): AdSlot {
 
 export function adSlotToPlaceholder(slot: AdSlot): AdPlaceholder {
   return {
+    id: slot.id,
     ...(slot.label ? { label: slot.label } : {}),
     ...(slot.sponsor ? { sponsor: slot.sponsor } : {}),
     ...(slot.line ? { line: slot.line } : {}),
@@ -108,7 +128,12 @@ export function buildSectionAdsFromRows(
     }
 
     const live = sectionRows
-      .filter((row) => row.status === "published" && row.is_visible)
+      .filter(
+        (row) =>
+          row.status === "published" &&
+          row.is_visible &&
+          isAdScheduledActive(row),
+      )
       .sort((a, b) => a.sort_order - b.sort_order)[0];
 
     if (live) {

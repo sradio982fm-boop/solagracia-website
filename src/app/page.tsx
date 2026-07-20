@@ -10,7 +10,6 @@ import { PartnerSection } from "@/components/sections/PartnerSection";
 import { PenyiarSection } from "@/components/sections/PenyiarSection";
 import { ProgramSection } from "@/components/sections/ProgramSection";
 import { TentangSection } from "@/components/sections/TentangSection";
-import type { SectionId } from "@/data/constants";
 import {
   applyHeader,
   fetchBrandContent,
@@ -18,7 +17,7 @@ import {
   fetchHeroContent,
   fetchKontakContent,
   fetchMarqueeItems,
-  fetchMediaPlayerContent,
+  fetchPlayerPayload,
   fetchOnAirContent,
   fetchPartnerContent,
   fetchPenyiarContent,
@@ -29,7 +28,11 @@ import {
   fetchSocialLinks,
   fetchTentangContent,
 } from "@/lib/data-fetcher";
-import { buildExploreLinks, orderedVisibleSectionKeys } from "@/lib/section-config";
+import {
+  buildExploreLinks,
+  orderedVisibleSectionKeys,
+  type PublicSectionKey,
+} from "@/lib/section-config";
 import { getOnAirShow, getUpcomingShows, getWeekdayId } from "@/lib/schedule";
 import { toFooterSocialLinks, toSocialLinks } from "@/lib/social";
 import type { ReactNode } from "react";
@@ -65,9 +68,9 @@ export default async function HomePage() {
   const footerSocials = toFooterSocialLinks(socialRows);
   const exploreLinks = buildExploreLinks(sectionConfig.nav);
 
-  const [mediaPlayerContent, hero, tentang, kontak, footer, marqueeItems] =
+  const [playerPayload, hero, tentang, kontak, footer, marqueeItems] =
     await Promise.all([
-      fetchMediaPlayerContent(onAirShow?.title),
+      fetchPlayerPayload(onAirShow?.title),
       fetchHeroContent(socialLinks),
       fetchTentangContent(brand.frequencyLabel),
       fetchKontakContent({
@@ -85,6 +88,7 @@ export default async function HomePage() {
   };
 
   const visibleSections = orderedVisibleSectionKeys(sectionConfig.sections);
+
   const sectionBlocks = visibleSections.flatMap((sectionId) =>
     renderSection(sectionId, {
       hero,
@@ -112,7 +116,10 @@ export default async function HomePage() {
         surfaces={sectionConfig.surfaces}
         logoSrc={hero.logoSrc}
       />
-      <StickyMediaPlayer content={mediaPlayerContent} />
+      <StickyMediaPlayer
+        content={playerPayload.content}
+        frequencies={playerPayload.frequencies}
+      />
       <FrequencyTuningLazy />
       <main className="w-full max-w-full overflow-x-hidden">{sectionBlocks}</main>
       <Footer content={footer} />
@@ -139,7 +146,7 @@ type SectionRenderContext = {
 };
 
 function renderSection(
-  sectionId: SectionId,
+  sectionId: PublicSectionKey,
   ctx: SectionRenderContext,
 ): ReactNode[] {
   switch (sectionId) {

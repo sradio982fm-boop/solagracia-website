@@ -2,12 +2,15 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { trackAnalyticsEvent } from "@/components/AnalyticsTracker";
 import { useHlsPlayer } from "@/hooks/useHlsPlayer";
 import { cn } from "@/lib/utils";
-import type { MediaPlayerContent } from "@/types/site";
+import type { FrequencyOption, MediaPlayerContent } from "@/types/site";
 
 type StickyMediaPlayerProps = {
   content: MediaPlayerContent;
+  /** When 2+ options, shows a frequency switcher on the bar. */
+  frequencies?: FrequencyOption[];
 };
 
 type PlayerMode = "audio" | "video-mini" | "video-max";
@@ -19,19 +22,34 @@ const DEFAULT_VOLUME = 0.8;
  * Sticky radio bar — audio by default; arrow expands a docked video popup
  * (mini ↔ maximized). Expanding video pauses audio; closing returns to audio.
  * HLS (.m3u8) video uses hls.js; Icecast audio uses native <audio>.
+ * Multiple active frequencies can be switched from the bar.
  */
-export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
-  const {
-    stationName,
-    showTitle,
-    frequency,
-    audioSrc,
-    videoSrc,
-    videoPoster,
-  } = content;
-
+export function StickyMediaPlayer({
+  content,
+  frequencies = [],
+}: StickyMediaPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const [selectedId, setSelectedId] = useState(() => {
+    const match = frequencies.find(
+      (f) => f.label === content.frequency || f.isDefault,
+    );
+    return match?.id || frequencies[0]?.id || "default";
+  });
+
+  const selected =
+    frequencies.find((f) => f.id === selectedId) ||
+    frequencies.find((f) => f.isDefault) ||
+    frequencies[0];
+
+  const stationName = selected?.stationName || content.stationName;
+  const showTitle = content.showTitle;
+  const frequency = selected?.label || content.frequency;
+  const audioSrc = selected?.audioSrc || content.audioSrc;
+  const videoSrc = selected?.videoSrc || content.videoSrc;
+  const videoPoster = selected?.videoPoster || content.videoPoster;
+  const canSwitch = frequencies.length > 1;
 
   const [mode, setMode] = useState<PlayerMode>("audio");
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -53,7 +71,10 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onPlay = () => setAudioPlaying(true);
+    const onPlay = () => {
+      setAudioPlaying(true);
+      trackAnalyticsEvent("ap", "audio");
+    };
     const onPause = () => setAudioPlaying(false);
     const onError = () => setAudioError(true);
 
@@ -85,7 +106,10 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
     const video = videoRef.current;
     if (!video || !videoOpen) return;
 
-    const onPlay = () => setVideoPlaying(true);
+    const onPlay = () => {
+      setVideoPlaying(true);
+      trackAnalyticsEvent("sp", "video");
+    };
     const onPause = () => setVideoPlaying(false);
 
     video.addEventListener("play", onPlay);
@@ -97,7 +121,27 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
       video.removeEventListener("pause", onPause);
       stopVideo();
     };
-  }, [videoOpen, startVideo, stopVideo]);
+  }, [videoOpen, startVideo, stopVideo, videoSrc]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.load();
+    setAudioPlaying(false);
+    setAudioError(false);
+  }, [audioSrc]);
+
+  const switchFrequency = (id: string) => {
+    if (id === selectedId) return;
+    const audio = audioRef.current;
+    if (audio && !audio.paused) audio.pause();
+    stopVideo();
+    setVideoPlaying(false);
+    setMode("audio");
+    setSelectedId(id);
+    trackAnalyticsEvent("cf", id);
+  };
 
   const toggleAudio = async () => {
     const audio = audioRef.current;
@@ -309,6 +353,33 @@ export function StickyMediaPlayer({ content }: StickyMediaPlayerProps) {
                       ? "Stream tidak tersedia"
                       : showTitle}
                 </p>
+                {canSwitch ? (
+                  <div
+                    className="mt-1 flex max-w-full gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    role="group"
+                    aria-label="Pilih frekuensi"
+                  >
+                    {frequencies.map((freq) => {
+                      const active = freq.id === selectedId;
+                      return (
+                        <button
+                          key={freq.id}
+                          type="button"
+                          onClick={() => switchFrequency(freq.id)}
+                          className={cn(
+                            "shrink-0 border px-1.5 py-0.5 text-[8px] font-bold tracking-[0.12em] uppercase transition-colors",
+                            active
+                              ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                              : "border-white/25 text-white/55 hover:border-white/50 hover:text-white",
+                          )}
+                          aria-pressed={active}
+                        >
+                          {freq.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
               </div>
 
               {audioPlaying && !videoOpen ? <Equalizer /> : null}

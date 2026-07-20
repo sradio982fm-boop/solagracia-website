@@ -7,11 +7,14 @@ import type {
 } from "@/types/site";
 import { tentangContent as fallback } from "@/data/tentang";
 
-/** Admin / CMS shape for social proof — mapper builds quote parts. */
+/** Admin / CMS shape for social proof. Prefer `quote` parts; legacy fields still map. */
 export type CmsTentangTestimonial = {
   platform: "x" | "threads";
   date: string;
-  quote_text: string;
+  /** Rich quote parts (Phase 2 editor). */
+  quote?: SocialQuotePart[];
+  /** Legacy simple fields — used when `quote` absent. */
+  quote_text?: string;
   mention?: string;
   link_label?: string;
   link_url?: string;
@@ -20,6 +23,12 @@ export type CmsTentangTestimonial = {
   authorInitials: string;
   href: string;
 };
+
+export function isRichTestimonial(
+  raw: CmsTentangTestimonial | SocialTestimonial,
+): raw is SocialTestimonial | (CmsTentangTestimonial & { quote: SocialQuotePart[] }) {
+  return "quote" in raw && Array.isArray(raw.quote) && raw.quote.length > 0;
+}
 
 export function buildQuoteParts(input: {
   quote_text: string;
@@ -61,11 +70,16 @@ export function mapCmsTestimonial(
 ): SocialTestimonial {
   if (!raw) return fallback.testimonial;
 
-  if ("quote" in raw && Array.isArray(raw.quote)) {
+  if (isRichTestimonial(raw)) {
     return {
       platform: raw.platform === "threads" ? "threads" : "x",
       date: raw.date || fallback.testimonial.date,
-      quote: raw.quote,
+      quote: raw.quote.filter((part) => {
+        if (part.type === "text" || part.type === "mention") {
+          return Boolean(part.value?.trim());
+        }
+        return Boolean(part.value?.trim() && part.href?.trim());
+      }),
       authorName: raw.authorName || fallback.testimonial.authorName,
       authorHandle: raw.authorHandle || fallback.testimonial.authorHandle,
       authorInitials: raw.authorInitials || fallback.testimonial.authorInitials,
@@ -77,7 +91,12 @@ export function mapCmsTestimonial(
   return {
     platform: cms.platform === "threads" ? "threads" : "x",
     date: cms.date || fallback.testimonial.date,
-    quote: buildQuoteParts(cms),
+    quote: buildQuoteParts({
+      quote_text: cms.quote_text || "",
+      mention: cms.mention,
+      link_label: cms.link_label,
+      link_url: cms.link_url,
+    }),
     authorName: cms.authorName || fallback.testimonial.authorName,
     authorHandle: cms.authorHandle || fallback.testimonial.authorHandle,
     authorInitials: cms.authorInitials || fallback.testimonial.authorInitials,
@@ -88,20 +107,10 @@ export function mapCmsTestimonial(
 export function testimonialToCms(
   testimonial: SocialTestimonial,
 ): CmsTentangTestimonial {
-  const textParts = testimonial.quote
-    .filter((p): p is Extract<SocialQuotePart, { type: "text" }> => p.type === "text")
-    .map((p) => p.value.trim())
-    .join(" ");
-  const mention = testimonial.quote.find((p) => p.type === "mention");
-  const link = testimonial.quote.find((p) => p.type === "link");
-
   return {
     platform: testimonial.platform,
     date: testimonial.date,
-    quote_text: textParts,
-    mention: mention && mention.type === "mention" ? mention.value : "",
-    link_label: link && link.type === "link" ? link.value : "",
-    link_url: link && link.type === "link" ? link.href : "",
+    quote: testimonial.quote,
     authorName: testimonial.authorName,
     authorHandle: testimonial.authorHandle,
     authorInitials: testimonial.authorInitials,

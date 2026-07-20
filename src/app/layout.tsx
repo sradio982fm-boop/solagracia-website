@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { AnalyticsRoot } from "@/components/AnalyticsRoot";
 import { fetchSeoContent } from "@/lib/data-fetcher";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -39,8 +40,12 @@ const montserrat = localFont({
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await fetchSeoContent();
+  const metadataBase = new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://solagracia.id",
+  );
 
   return {
+    metadataBase,
     title: {
       default: seo.title,
       template: `%s | ${seo.siteName}`,
@@ -84,7 +89,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={cn("antialiased", montserrat.variable)}>
       <body className="min-h-screen font-[family-name:var(--font-montserrat)]">
-        {children}
+        <AnalyticsRoot>{children}</AnalyticsRoot>
       </body>
     </html>
   );

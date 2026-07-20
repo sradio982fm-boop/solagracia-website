@@ -1,5 +1,6 @@
 import { footerContent as fallback } from "@/data/footer";
 import { marqueeItems as fallbackMarquee } from "@/data/marquee";
+import { ensurePrivacyLegalLink } from "@/lib/legal";
 import type { FooterContent, FooterLink } from "@/types/site";
 
 function parseJsonArray<T>(raw: string | null | undefined, fallbackValue: T[]): T[] {
@@ -29,10 +30,12 @@ export function mapFooterFromConfig(
 
   if (!section || Object.keys(section).length === 0) return base;
 
-  const legalLinks = parseJsonArray<FooterLink>(
-    section.legal_links,
-    fallback.legalLinks,
-  ).filter((l) => l?.label && l?.href);
+  const legalLinks = ensurePrivacyLegalLink(
+    parseJsonArray<FooterLink>(
+      section.legal_links,
+      fallback.legalLinks,
+    ).filter((l) => l?.label && l?.href),
+  );
 
   return {
     ...base,
