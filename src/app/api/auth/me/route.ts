@@ -25,10 +25,14 @@ export async function GET(request: NextRequest) {
     return errorResponse("Unauthorized", 401);
   }
 
+  if (user.app_metadata?.role !== "admin") {
+    return errorResponse("Forbidden", 403);
+  }
+
   return jsonResponse({
     id: user.id,
     email: user.email,
-    role: user.app_metadata?.role || "user",
+    role: "admin",
     lastSignIn: user.last_sign_in_at,
   });
 }

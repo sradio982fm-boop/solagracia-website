@@ -10,7 +10,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && (!user || user.role !== "admin")) {
       router.replace("/admin/login");
     }
   }, [user, isLoading, router]);
@@ -26,7 +26,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user) return null;
+  if (!user || user.role !== "admin") return null;
 
   return <>{children}</>;
 }

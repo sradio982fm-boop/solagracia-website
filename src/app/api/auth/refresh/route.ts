@@ -23,11 +23,17 @@ export async function POST(request: NextRequest) {
     refresh_token: refreshToken,
   });
 
-  if (error || !data.session) {
+  if (error || !data.session || !data.user) {
     const response = errorResponse(
       "Refresh token expired. Please login again.",
       401,
     );
+    clearAuthCookies(response);
+    return response;
+  }
+
+  if (data.user.app_metadata?.role !== "admin") {
+    const response = errorResponse("Forbidden", 403);
     clearAuthCookies(response);
     return response;
   }

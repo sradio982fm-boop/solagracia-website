@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/admin/auth-context";
 import {
@@ -23,7 +23,20 @@ function safeAdminNext(next: string | null): string {
   return "/admin/dashboard";
 }
 
-export default function AdminLoginPage() {
+function LoginLoading() {
+  return (
+    <Center h="100vh" bg={ADMIN_PAGE_BG}>
+      <Stack align="center" gap="sm">
+        <Loader color="sg" size="sm" />
+        <Text size="sm" c="dimmed">
+          Memuat…
+        </Text>
+      </Stack>
+    </Center>
+  );
+}
+
+function AdminLoginForm() {
   const { user, isLoading, login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -54,16 +67,7 @@ export default function AdminLoginPage() {
   }
 
   if (isLoading) {
-    return (
-      <Center h="100vh" bg={ADMIN_PAGE_BG}>
-        <Stack align="center" gap="sm">
-          <Loader color="sg" size="sm" />
-          <Text size="sm" c="dimmed">
-            Memuat…
-          </Text>
-        </Stack>
-      </Center>
-    );
+    return <LoginLoading />;
   }
 
   return (
@@ -114,5 +118,13 @@ export default function AdminLoginPage() {
         </Stack>
       </Paper>
     </Center>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <AdminLoginForm />
+    </Suspense>
   );
 }

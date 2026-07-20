@@ -19,8 +19,13 @@ export async function POST(request: NextRequest) {
     password: body.password,
   });
 
-  if (error) {
+  if (error || !data.session || !data.user) {
     return errorResponse("Invalid credentials", 401);
+  }
+
+  if (data.user.app_metadata?.role !== "admin") {
+    await supabase.auth.signOut();
+    return errorResponse("Forbidden", 403);
   }
 
   const response = jsonResponse(
@@ -30,7 +35,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: data.user.id,
         email: data.user.email,
-        role: data.user.app_metadata?.role || "user",
+        role: "admin",
       },
     },
     200,

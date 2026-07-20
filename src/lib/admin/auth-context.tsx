@@ -57,6 +57,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         });
         if (res.ok) {
           const data = await res.json();
+          if (data.role !== "admin") {
+            clearToken();
+            return;
+          }
           setUser(data);
         } else {
           clearToken();
