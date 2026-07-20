@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
-import { isSafeAssetUrl, isSafeHttpUrl, isSafeWebUrl } from "@/lib/security";
+import { isSafeAssetUrl, isSafeNavHref } from "@/lib/security";
 import { revalidatePath } from "next/cache";
 
 const valueTypeSchema = z.enum(["text", "image", "url", "json"]);
@@ -19,8 +19,9 @@ function isUrlKey(key: string): boolean {
 
 function isSafeConfigUrl(value: string, valueType: string): boolean {
   if (valueType === "image") return isSafeAssetUrl(value);
-  if (valueType === "url") return isSafeHttpUrl(value) || isSafeWebUrl(value);
-  return isSafeHttpUrl(value) || isSafeWebUrl(value) || isSafeAssetUrl(value);
+  // Nav hrefs: hash (#partner), same-origin path, http(s)/mailto/tel
+  if (valueType === "url") return isSafeNavHref(value);
+  return isSafeNavHref(value) || isSafeAssetUrl(value);
 }
 
 const singleUpdateSchema = z.object({
@@ -107,7 +108,7 @@ export async function PUT(request: NextRequest) {
       !isSafeConfigUrl(value, valueType ?? "url")
     ) {
       return errorResponse(
-        `Field "${section}.${key}" must be a safe http(s)/mailto/tel URL or path`,
+        `Field "${section}.${key}" must be a safe hash, path, or http(s)/mailto/tel URL`,
         400,
       );
     }

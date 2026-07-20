@@ -65,7 +65,14 @@ export function isSafeAssetUrl(value: unknown): value is string {
   return isSafeHttpUrl(value) || isSafeRelativePath(value);
 }
 
-function isSafeNavHref(trimmed: string): boolean {
+/**
+ * Hash anchors (`#kontak`), same-origin paths, or http(s)/mailto/tel.
+ * Rejects `javascript:` and other dangerous schemes.
+ */
+export function isSafeNavHref(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const trimmed = stripControl(value);
+  if (!trimmed) return false;
   return (
     HASH_HREF_PATTERN.test(trimmed) ||
     isSafeRelativePath(trimmed) ||
@@ -182,10 +189,9 @@ export const optionalWebHref = z
   .string()
   .trim()
   .max(2048)
-  .refine((v) => {
-    if (!v) return true;
-    return isSafeNavHref(stripControl(v));
-  }, { message: "Invalid or unsafe URL" });
+  .refine((v) => !v || isSafeNavHref(v), {
+    message: "Invalid or unsafe URL",
+  });
 
 /**
  * Strict allowlist-based HTML sanitizer for admin-authored rich text.
