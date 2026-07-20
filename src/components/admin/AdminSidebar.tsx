@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavLink, Stack, Text, Divider, ScrollArea } from "@mantine/core";
-import { ADMIN_BORDER } from "@/lib/admin/ui";
+import { ADMIN_BORDER, ADMIN_TEAL } from "@/lib/admin/ui";
 
 const NAV_GROUPS = [
   {
@@ -61,11 +61,12 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
             <Text
               size="xs"
               fw={600}
-              c="dimmed"
+              c={ADMIN_TEAL}
               tt="uppercase"
               lts={0.6}
               px="xs"
               mb={2}
+              style={{ opacity: 0.75 }}
             >
               {group.label}
             </Text>
@@ -83,7 +84,7 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
                 }
                 onClick={onNavigate}
                 variant="light"
-                color="dark"
+                color="sg"
                 aria-current={isActive(item.href) ? "page" : undefined}
               />
             ))}

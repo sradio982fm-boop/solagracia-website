@@ -14,7 +14,7 @@ import {
   Center,
   Loader,
 } from "@mantine/core";
-import { ADMIN_BORDER, ADMIN_PAGE_BG } from "@/lib/admin/ui";
+import { ADMIN_BORDER, ADMIN_PAGE_BG, ADMIN_TEAL } from "@/lib/admin/ui";
 
 function safeAdminNext(next: string | null): string {
   if (next && next.startsWith("/admin") && !next.startsWith("/admin/login")) {
@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
     return (
       <Center h="100vh" bg={ADMIN_PAGE_BG}>
         <Stack align="center" gap="sm">
-          <Loader color="dark" size="sm" />
+          <Loader color="sg" size="sm" />
           <Text size="sm" c="dimmed">
             Memuat…
           </Text>
@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
       >
         <Stack gap="md">
           <div>
-            <Title order={1} size="h3" fw={900} tt="uppercase">
+            <Title order={1} size="h3" fw={900} tt="uppercase" c={ADMIN_TEAL}>
               Solagracia
             </Title>
             <Text size="sm" c="dimmed" mt={4}>
@@ -108,13 +108,7 @@ export default function AdminLoginPage() {
               {error}
             </Text>
           ) : null}
-          <Button
-            type="submit"
-            color="dark"
-            loading={submitting}
-            fullWidth
-            size="md"
-          >
+          <Button type="submit" loading={submitting} fullWidth size="md">
             Masuk
           </Button>
         </Stack>

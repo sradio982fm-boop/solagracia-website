@@ -125,12 +125,15 @@ export function AnalyticsTracker() {
     sidRef.current = session.sid;
     sessionStartRef.current = session.ts;
 
+    // Public site only — never record admin paths as "sections".
+    if (window.location.pathname.startsWith("/admin")) {
+      return;
+    }
+
     pageViewsRef.current = 1;
     trackEvent(
       "sv",
-      window.location.hash?.replace("#", "") ||
-        window.location.pathname.replace(/^\//, "") ||
-        "home",
+      window.location.hash?.replace("#", "") || "home",
     );
 
     const initialFlushTimeout = setTimeout(() => {

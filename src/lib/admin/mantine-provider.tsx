@@ -5,15 +5,18 @@ import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 import {
   ADMIN_BORDER,
+  ADMIN_COLOR_SCALE,
   ADMIN_FOCUS_RING,
   ADMIN_INK,
   ADMIN_MUTED_BG,
   ADMIN_PAGE_BG,
+  ADMIN_PRIMARY,
   ADMIN_SURFACE,
+  ADMIN_TEAL,
 } from "./ui";
 
 const theme = createTheme({
-  primaryColor: "dark",
+  primaryColor: "sg",
   defaultRadius: "md",
   fontFamily: "inherit",
   black: ADMIN_INK,
@@ -26,23 +29,16 @@ const theme = createTheme({
     xl: rem(24),
   },
   colors: {
-    dark: [
-      ADMIN_MUTED_BG,
-      "#e8e6e2",
-      "#d0cec9",
-      "#a8a59e",
-      "#7a7771",
-      "#5c5a56",
-      "#45433f",
-      "#2f2e2b",
-      "#262523",
-      ADMIN_INK,
-    ],
+    sg: [...ADMIN_COLOR_SCALE],
+    // Remap legacy `color="dark"` usages to the same green/teal family
+    dark: [...ADMIN_COLOR_SCALE],
   },
+  primaryShade: { light: 5, dark: 5 },
   components: {
     Button: {
       defaultProps: {
         radius: "md",
+        color: "sg",
       },
       styles: {
         root: {
@@ -55,6 +51,7 @@ const theme = createTheme({
     ActionIcon: {
       defaultProps: {
         radius: "md",
+        color: "sg",
       },
       styles: {
         root: {
@@ -95,7 +92,7 @@ const theme = createTheme({
           borderColor: ADMIN_BORDER,
           transition: "border-color 150ms ease, box-shadow 150ms ease",
           "&:focus": {
-            borderColor: ADMIN_INK,
+            borderColor: ADMIN_PRIMARY,
             boxShadow: ADMIN_FOCUS_RING,
           },
         },
@@ -113,7 +110,7 @@ const theme = createTheme({
           borderColor: ADMIN_BORDER,
           transition: "border-color 150ms ease, box-shadow 150ms ease",
           "&:focus-within": {
-            borderColor: ADMIN_INK,
+            borderColor: ADMIN_PRIMARY,
             boxShadow: ADMIN_FOCUS_RING,
           },
         },
@@ -131,7 +128,7 @@ const theme = createTheme({
           borderColor: ADMIN_BORDER,
           transition: "border-color 150ms ease, box-shadow 150ms ease",
           "&:focus": {
-            borderColor: ADMIN_INK,
+            borderColor: ADMIN_PRIMARY,
             boxShadow: ADMIN_FOCUS_RING,
           },
         },
@@ -158,7 +155,7 @@ const theme = createTheme({
     NavLink: {
       defaultProps: {
         variant: "light",
-        color: "dark",
+        color: "sg",
       },
       styles: {
         root: {
@@ -171,7 +168,7 @@ const theme = createTheme({
     },
     Tabs: {
       defaultProps: {
-        color: "dark",
+        color: "sg",
       },
       styles: {
         tab: {
@@ -186,6 +183,27 @@ const theme = createTheme({
     Badge: {
       defaultProps: {
         radius: "sm",
+        color: "sg",
+      },
+    },
+    ThemeIcon: {
+      defaultProps: {
+        color: "sg",
+      },
+    },
+    Loader: {
+      defaultProps: {
+        color: "sg",
+      },
+    },
+    Checkbox: {
+      defaultProps: {
+        color: "sg",
+      },
+    },
+    Switch: {
+      defaultProps: {
+        color: "sg",
       },
     },
     Divider: {
@@ -198,6 +216,19 @@ const theme = createTheme({
         main: {
           background: ADMIN_PAGE_BG,
         },
+        header: {
+          background: ADMIN_SURFACE,
+          borderColor: ADMIN_BORDER,
+        },
+        navbar: {
+          background: ADMIN_SURFACE,
+          borderColor: ADMIN_BORDER,
+        },
+      },
+    },
+    Anchor: {
+      defaultProps: {
+        c: ADMIN_TEAL,
       },
     },
   },

@@ -8,6 +8,7 @@ import {
   type AnalyticsEvent,
   type Visitor,
 } from "@/hooks/admin/useAnalytics";
+import { getAccessToken } from "@/lib/admin/auth-context";
 import {
   Group,
   Stack,
@@ -20,7 +21,11 @@ import {
   Select,
   Button,
   ScrollArea,
+  Modal,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { DatePickerInput } from "@mantine/dates";
 import { formatDateShort } from "@/lib/admin/format";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -28,6 +33,7 @@ import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminSurface } from "@/components/admin/AdminSurface";
 import { ADMIN_BORDER, ADMIN_MUTED_BG } from "@/lib/admin/ui";
+import { toast } from "sonner";
 
 const EVENT_TYPE_MAP: Record<
   string,
@@ -58,11 +64,37 @@ function getDefaultDateRange(): [string, string] {
   return [toDateString(from), toDateString(to)];
 }
 
-function toDateString(d: Date): string {
-  return d.toISOString().split("T")[0];
+/** Formats a Date / ISO / date-only value to YYYY-MM-DD (local calendar day). */
+function toDateString(d: Date | string): string {
+  if (typeof d === "string") {
+    const match = d.trim().match(/^(\d{4}-\d{2}-\d{2})/);
+    if (match) return match[1];
+    d = new Date(d);
+  }
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function formatIdDate(ymd: string): string {
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 type DatesRangeValue = [string | null, string | null];
+
+function normalizeDateRange(value: DatesRangeValue): DatesRangeValue {
+  const [from, to] = value;
+  return [
+    from ? toDateString(from) : null,
+    to ? toDateString(to) : null,
+  ];
+}
 
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<string | null>("visitors");
@@ -86,18 +118,23 @@ export default function AnalyticsPage() {
         title="Analytics"
         description="Pengunjung, event log, dan breakdown geo."
         actions={
-          <DatePickerInput
-            type="range"
-            value={dateRange}
-            onChange={(v: DatesRangeValue) => setDateRange(v)}
-            placeholder="Pilih rentang tanggal"
-            size="sm"
-            maxDate={new Date()}
-            clearable={false}
-            valueFormat="D MMM YYYY"
-            w={240}
-            aria-label="Rentang tanggal analytics"
-          />
+          <>
+            <DatePickerInput
+              type="range"
+              value={dateRange}
+              onChange={(v: DatesRangeValue) =>
+                setDateRange(normalizeDateRange(v))
+              }
+              placeholder="Pilih rentang tanggal"
+              size="sm"
+              maxDate={new Date()}
+              clearable={false}
+              valueFormat="D MMM YYYY"
+              w={240}
+              aria-label="Rentang tanggal analytics"
+            />
+            <ExportButton dateRange={dateRange} />
+          </>
         }
       />
 
@@ -198,6 +235,12 @@ function VisitorsTab({ filters }: { filters: { from?: string; to?: string } }) {
     [data],
   );
 
+  const countryOptions = useMemo(
+    () => getUniqueCountries(visitors),
+    [visitors],
+  );
+  const hasCountryData = countryOptions.length > 0;
+
   if (isLoading) return <VisitorsSkeleton />;
 
   if (visitors.length === 0) {
@@ -213,15 +256,25 @@ function VisitorsTab({ filters }: { filters: { from?: string; to?: string } }) {
   return (
     <Stack gap="sm">
       <Group gap="sm">
-        <Select
-          placeholder="Semua Negara"
-          data={getUniqueCountries(visitors)}
-          value={countryFilter}
-          onChange={setCountryFilter}
-          clearable
-          size="sm"
-          w={160}
-        />
+        <Tooltip
+          label="Belum ada data negara pada pengunjung periode ini"
+          disabled={hasCountryData}
+        >
+          <span>
+            <Select
+              placeholder="Semua Negara"
+              data={countryOptions}
+              value={countryFilter}
+              onChange={setCountryFilter}
+              clearable
+              size="sm"
+              w={160}
+              disabled={!hasCountryData}
+              nothingFoundMessage="Tidak ada negara"
+              aria-label="Filter negara pengunjung"
+            />
+          </span>
+        </Tooltip>
         <Badge variant="light" color="gray" size="sm" tt="none">
           {visitors.length} pengunjung
         </Badge>
@@ -374,18 +427,6 @@ function EventsTab({ filters }: { filters: { from?: string; to?: string } }) {
     [data],
   );
 
-  if (isLoading) return <EventsSkeleton />;
-
-  if (events.length === 0) {
-    return (
-      <AdminEmptyState
-        icon="event_busy"
-        title="Belum ada event"
-        description="Belum ada event pada periode ini."
-      />
-    );
-  }
-
   return (
     <Stack gap="sm">
       <Group gap="sm">
@@ -397,59 +438,76 @@ function EventsTab({ filters }: { filters: { from?: string; to?: string } }) {
           clearable
           size="sm"
           w={160}
+          aria-label="Filter tipe event"
         />
         <Badge variant="light" color="gray" size="sm" tt="none">
-          {events.length} event
+          {isLoading ? "…" : `${events.length} event`}
         </Badge>
       </Group>
 
-      <ScrollArea type="auto" offsetScrollbars>
-        <AdminSurface style={{ overflow: "hidden", minWidth: 640 }}>
-          <Group
-            px="md"
-            py="xs"
-            gap="xs"
-            style={{
-              borderBottom: `1px solid ${ADMIN_BORDER}`,
-              background: ADMIN_MUTED_BG,
-            }}
-          >
-            <Text size="xs" fw={600} c="dimmed" w={130}>
-              Waktu
-            </Text>
-            <Text size="xs" fw={600} c="dimmed" w={120}>
-              Tipe
-            </Text>
-            <Text size="xs" fw={600} c="dimmed" w={100}>
-              Data
-            </Text>
-            <Text size="xs" fw={600} c="dimmed" w={100}>
-              Visitor
-            </Text>
-            <Text size="xs" fw={600} c="dimmed" style={{ flex: 1 }}>
-              Session
-            </Text>
-          </Group>
+      {isLoading ? (
+        <EventsSkeleton />
+      ) : events.length === 0 ? (
+        <AdminEmptyState
+          icon="event_busy"
+          title="Belum ada event"
+          description="Belum ada event pada periode ini."
+        />
+      ) : (
+        <>
+          <ScrollArea type="auto" offsetScrollbars>
+            <AdminSurface style={{ overflow: "hidden", minWidth: 640 }}>
+              <Group
+                px="md"
+                py="xs"
+                gap="xs"
+                style={{
+                  borderBottom: `1px solid ${ADMIN_BORDER}`,
+                  background: ADMIN_MUTED_BG,
+                }}
+              >
+                <Text size="xs" fw={600} c="dimmed" w={130}>
+                  Waktu
+                </Text>
+                <Text size="xs" fw={600} c="dimmed" w={120}>
+                  Tipe
+                </Text>
+                <Text size="xs" fw={600} c="dimmed" w={100}>
+                  Data
+                </Text>
+                <Text size="xs" fw={600} c="dimmed" w={100}>
+                  Visitor
+                </Text>
+                <Text size="xs" fw={600} c="dimmed" style={{ flex: 1 }}>
+                  Session
+                </Text>
+              </Group>
 
-          {events.map((ev, i) => (
-            <EventRow key={ev.id} event={ev} isLast={i === events.length - 1} />
-          ))}
-        </AdminSurface>
-      </ScrollArea>
+              {events.map((ev, i) => (
+                <EventRow
+                  key={ev.id}
+                  event={ev}
+                  isLast={i === events.length - 1}
+                />
+              ))}
+            </AdminSurface>
+          </ScrollArea>
 
-      {hasNextPage ? (
-        <Group justify="center">
-          <Button
-            variant="subtle"
-            color="dark"
-            size="sm"
-            onClick={() => fetchNextPage()}
-            loading={isFetchingNextPage}
-          >
-            Muat Selanjutnya
-          </Button>
-        </Group>
-      ) : null}
+          {hasNextPage ? (
+            <Group justify="center">
+              <Button
+                variant="subtle"
+                color="sg"
+                size="sm"
+                onClick={() => fetchNextPage()}
+                loading={isFetchingNextPage}
+              >
+                Muat Selanjutnya
+              </Button>
+            </Group>
+          ) : null}
+        </>
+      )}
     </Stack>
   );
 }
@@ -558,4 +616,121 @@ function getUniqueCountries(
   return Array.from(set)
     .sort()
     .map((c) => ({ value: c, label: c }));
+}
+
+function ExportButton({ dateRange }: { dateRange: DatesRangeValue }) {
+  const [opened, { open, close }] = useDisclosure(false);
+  const [exportType, setExportType] = useState<string>("events");
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleExport() {
+    const [from, to] = dateRange;
+    if (!from || !to) return;
+
+    setDownloading(true);
+    try {
+      const token = getAccessToken();
+      const params = new URLSearchParams({
+        type: exportType,
+        from,
+        to,
+      });
+
+      const res = await fetch(`/api/admin/analytics/export?${params}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(data?.error || "Export gagal");
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `solagracia-${exportType}-${from}-to-${to}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("CSV berhasil diunduh");
+      close();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Export gagal");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  return (
+    <>
+      <Tooltip label="Export ke CSV">
+        <ActionIcon
+          variant="default"
+          size="lg"
+          onClick={open}
+          aria-label="Export analytics ke CSV"
+        >
+          <i className="material-icons text-[18px]">download</i>
+        </ActionIcon>
+      </Tooltip>
+
+      <Modal
+        opened={opened}
+        onClose={close}
+        title="Export Analytics"
+        size="sm"
+        centered
+      >
+        <Stack gap="md">
+          <Select
+            label="Data"
+            data={[
+              { value: "events", label: "Events" },
+              { value: "visitors", label: "Visitors" },
+              { value: "sessions", label: "Sessions" },
+            ]}
+            value={exportType}
+            onChange={(v) => v && setExportType(v)}
+          />
+
+          <div>
+            <Text size="sm" fw={500} mb={4}>
+              Periode
+            </Text>
+            <Text size="xs" c="dimmed" ff="monospace">
+              {dateRange[0] ? formatIdDate(dateRange[0]) : "—"}
+              {" — "}
+              {dateRange[1] ? formatIdDate(dateRange[1]) : "—"}
+            </Text>
+            <Text size="xs" c="dimmed" mt={4}>
+              Rentang memakai awal–akhir hari (00:00–23:59:59) agar semua data
+              pada tanggal terpilih ikut terhitung.
+            </Text>
+          </div>
+
+          <Text size="xs" c="dimmed">
+            Maks. 31 hari. Export mungkin membutuhkan waktu hingga 30 detik.
+          </Text>
+
+          <Group justify="flex-end">
+            <Button variant="subtle" color="gray" onClick={close}>
+              Batal
+            </Button>
+            <Button
+              onClick={handleExport}
+              loading={downloading}
+              disabled={!dateRange[0] || !dateRange[1]}
+              leftSection={
+                <i className="material-icons text-[14px]">download</i>
+              }
+            >
+              Download .csv
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+    </>
+  );
 }

@@ -49,7 +49,7 @@ export function AdminEmptyState({
           </Text>
         ) : null}
         {actionLabel && onAction ? (
-          <Button color="dark" size="sm" mt="xs" onClick={onAction}>
+          <Button size="sm" mt="xs" onClick={onAction}>
             {actionLabel}
           </Button>
         ) : null}

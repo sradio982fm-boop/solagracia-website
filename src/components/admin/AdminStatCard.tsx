@@ -48,7 +48,7 @@ export function AdminStatCard({
           ) : null}
         </Stack>
         {icon ? (
-          <ThemeIcon variant="light" color="dark" size="lg" radius="md">
+          <ThemeIcon variant="light" color="sg" size="lg" radius="md">
             <i className="material-icons text-[18px]" aria-hidden>
               {icon}
             </i>

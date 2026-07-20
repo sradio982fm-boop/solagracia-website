@@ -119,6 +119,8 @@ function computeTopSections(events: EventRow[]) {
 
   for (const ev of sectionViews) {
     const section = ev.event_data || "unknown";
+    // Ignore admin CMS routes accidentally logged as section views
+    if (section === "unknown" || section.startsWith("admin")) continue;
     sectionMap[section] = (sectionMap[section] || 0) + 1;
   }
 

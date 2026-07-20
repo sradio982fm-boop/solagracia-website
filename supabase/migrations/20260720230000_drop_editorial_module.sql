@@ -1,4 +1,5 @@
--- Remove Phase 3 editorial module (picks / chart / news) — not used on Solagracia public site
+-- Idempotent cleanup: editorial CMS (picks / chart / news) is not part of Solagracia.
+-- Safe if tables/rows were never created.
 
 DELETE FROM section_config WHERE section IN ('picks', 'chart', 'news');
 DELETE FROM section_headers WHERE section IN ('picks', 'chart', 'news');

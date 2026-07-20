@@ -20,7 +20,7 @@ import {
   strongPasswordSchema,
   passwordRequirementsText,
 } from "@/lib/schemas/password";
-import { ADMIN_INK } from "@/lib/admin/ui";
+import { ADMIN_HIGHLIGHT, ADMIN_INK, ADMIN_TEAL } from "@/lib/admin/ui";
 
 interface AdminHeaderProps {
   navOpened: boolean;
@@ -47,17 +47,18 @@ export function AdminHeader({ navOpened, onNavToggle }: AdminHeaderProps) {
             aria-label={navOpened ? "Tutup navigasi" : "Buka navigasi"}
           />
           <Group gap={6} align="baseline">
-            <Text size="lg" fw={900} tt="uppercase" lts={-0.5} c={ADMIN_INK}>
+            <Text size="lg" fw={900} tt="uppercase" lts={-0.5} c={ADMIN_TEAL}>
               Solagracia
             </Text>
             <Text
               size="xs"
               fw={700}
-              c="dimmed"
+              c={ADMIN_INK}
               style={{
-                border: "1px solid var(--mantine-color-dark-2)",
+                border: `1px solid ${ADMIN_TEAL}`,
                 borderRadius: 4,
                 padding: "1px 6px",
+                background: ADMIN_HIGHLIGHT,
               }}
             >
               Admin

@@ -1,7 +1,7 @@
 import type { TentangContent } from "@/types/site";
 
 /**
- * Tentang Kami — placeholder copy until CMS / editorial lands.
+ * Tentang Kami — fallback copy when CMS is unavailable.
  */
 export const tentangContent: TentangContent = {
   headline: "Studio yang hidup,",

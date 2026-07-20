@@ -93,7 +93,7 @@ export default function AdminDashboardPage() {
           {warnings.map((issue) => (
             <Alert
               key={issue.message}
-              color="yellow"
+              color="sg"
               variant="light"
               title="Saran"
               icon={
@@ -185,7 +185,7 @@ export default function AdminDashboardPage() {
         <Group justify="space-between" mb="sm" wrap="wrap" gap="sm">
           <Text fw={600}>Section homepage</Text>
           <Badge
-            color={counts.sections.hidden > 0 ? "yellow" : "teal"}
+            color={counts.sections.hidden > 0 ? "sg" : "teal"}
             variant="light"
             leftSection={
               <i className="material-icons text-[12px]" aria-hidden>
