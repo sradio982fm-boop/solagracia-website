@@ -144,12 +144,14 @@ Keep the fragment when saving URLs back to Postgres after upload + focus edit.
 
 `ImageUpload` supports aspect presets (UI crop framing), including:
 
-| Aspect | Typical use |
-|--------|-------------|
-| `square` | Logos, favicon, host headshots framing |
-| `portrait` | Hero cover, show art |
-| `video` / wide | OG image |
-| `banner` | Ad creatives (~4:1) |
+| Aspect | Ratio | Typical use |
+|--------|-------|-------------|
+| `square` | 1:1 | Logos, favicon, inline ad thumb |
+| `photo` | 4:3 | Show / program cards |
+| `video` | 16:9 | Hero cover, OG image, video poster |
+| `wide` | 16:7 | Strip ad thumbs |
+| `portrait` | 3:4 | Host photos, panel / portrait ads |
+| `banner` | 4:1 | Full-bleed banner ads |
 
 These are **UI helpers**; Storage still stores the full uploaded file. Public crop honor is via focal point + `object-fit: cover`.
 

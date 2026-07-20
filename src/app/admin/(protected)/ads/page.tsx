@@ -124,12 +124,14 @@ function formatScheduleLabel(iso: string | null): string {
 function uploadAspectRatio(
   variant: AdSlotVariant,
   imageShape: AdImageShape | "",
-): "banner" | "portrait" | "video" | "square" {
+): "banner" | "portrait" | "wide" | "square" {
   if (variant === "image") {
     return imageShape === "portrait" ? "portrait" : "banner";
   }
   if (variant === "panel") return "portrait";
   if (variant === "inline") return "square";
+  // strip thumb on public = aspect-[16/7]
+  if (variant === "strip") return "wide";
   return "banner";
 }
 

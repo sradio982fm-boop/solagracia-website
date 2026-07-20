@@ -3,8 +3,12 @@
 import Image from "next/image";
 import type { SectionId } from "@/data/constants";
 import { useActiveSection } from "@/hooks/useActiveSection";
+import { parseFocalUrl } from "@/lib/focal-point";
+import { sanitizeAssetSrc } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { NavLetter } from "@/types/site";
+
+const LOGO_FALLBACK = "/logo.png";
 
 type LetterRailProps = {
   links: readonly NavLetter[];
@@ -14,6 +18,8 @@ type LetterRailProps = {
 
 export function LetterRail({ links, sectionIds, logoSrc }: LetterRailProps) {
   const activeId = useActiveSection(sectionIds, "home");
+  const { cleanUrl: logoClean } = parseFocalUrl(logoSrc);
+  const safeLogoSrc = sanitizeAssetSrc(logoClean, LOGO_FALLBACK);
 
   return (
     <aside
@@ -31,7 +37,7 @@ export function LetterRail({ links, sectionIds, logoSrc }: LetterRailProps) {
           aria-label="Solagracia — beranda"
         >
           <Image
-            src={logoSrc}
+            src={safeLogoSrc}
             alt=""
             fill
             sizes="64px"

@@ -6,28 +6,41 @@ import { buildFocalUrl, parseFocalUrl } from "@/lib/focal-point";
 import { sanitizeAssetSrc } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
+/** Crop-frame presets — must match public `object-cover` containers. */
+export type ImageAspectRatio =
+  | "square" // 1:1 — logos, favicon, inline ad thumb, upcoming show thumb
+  | "photo" // 4:3 — program / show cards
+  | "video" // 16:9 — hero cover, OG, frequency video poster
+  | "wide" // 16:7 — strip ad thumb
+  | "portrait" // 3:4 — host photo, panel/portrait ads
+  | "banner"; // 4:1 — full-bleed banner ads
+
 interface ImageUploadProps {
   value?: string;
   onChange: (url: string) => void;
   bucket: string;
   subpath?: string;
   className?: string;
-  aspectRatio?: "square" | "video" | "portrait" | "banner";
+  aspectRatio?: ImageAspectRatio;
 }
 
-const ASPECT_CLASS = {
+const ASPECT_CLASS: Record<ImageAspectRatio, string> = {
   square: "aspect-square",
+  photo: "aspect-[4/3]",
   video: "aspect-video",
+  wide: "aspect-[16/7]",
   portrait: "aspect-[3/4]",
   banner: "aspect-[4/1]",
-} as const;
+};
 
-const ASPECT_RATIO_VALUE = {
+const ASPECT_RATIO_VALUE: Record<ImageAspectRatio, number> = {
   square: 1,
+  photo: 4 / 3,
   video: 16 / 9,
+  wide: 16 / 7,
   portrait: 3 / 4,
   banner: 4,
-} as const;
+};
 
 export function ImageUpload({
   value,

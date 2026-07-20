@@ -9,12 +9,21 @@ import {
   staggerContainer,
   tapPress,
 } from "@/lib/motion";
+import { parseFocalUrl } from "@/lib/focal-point";
 import { formatShowWindow } from "@/lib/schedule";
 import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { OnAirContent, ScheduleShow } from "@/types/schedule";
 
 const COVER_FALLBACK = "/cover-image.png";
+
+function coverImage(src: string | null | undefined) {
+  const { cleanUrl, objectPosition } = parseFocalUrl(src);
+  return {
+    src: sanitizeAssetSrc(cleanUrl, COVER_FALLBACK),
+    objectPosition,
+  };
+}
 
 type OnAirNowProps = {
   content: OnAirContent;
@@ -39,7 +48,7 @@ export function OnAirNow({
   const title = show?.title ?? content.fallbackTitle;
   const host = show?.host ?? "Solagracia";
   const windowLabel = show ? formatShowWindow(show) : "—";
-  const imageSrc = sanitizeAssetSrc(show?.imageSrc, COVER_FALLBACK);
+  const featuredCover = coverImage(show?.imageSrc);
   const href = sanitizeHref(show?.href, "#program");
 
   return (
@@ -72,11 +81,12 @@ export function OnAirNow({
       >
         <span className="pointer-events-none absolute inset-0">
           <Image
-            src={imageSrc}
+            src={featuredCover.src}
             alt=""
             fill
             sizes="24rem"
             className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+            style={{ objectPosition: featuredCover.objectPosition }}
           />
           <span
             className="absolute inset-0 bg-[linear-gradient(160deg,rgba(8,10,16,0.55)_0%,rgba(8,10,16,0.72)_45%,rgba(196,92,38,0.35)_100%)]"
@@ -122,37 +132,41 @@ export function OnAirNow({
           layout === "rail" && "min-h-0 flex-1 overflow-y-auto pr-0.5",
         )}
       >
-        {upcoming.map((item) => (
-          <motion.li key={item.id} variants={fadeUpSoft}>
-            <motion.a
-              href={sanitizeHref(item.href, "#program")}
-              whileHover={hoverLift}
-              whileTap={tapPress}
-              className="group grid grid-cols-[56px_1fr] items-center gap-3 border border-[var(--frame-line)] bg-black/35 px-2.5 py-2.5 no-underline transition-colors hover:bg-black/50 sm:grid-cols-[64px_1fr]"
-            >
-              <span className="relative aspect-square overflow-hidden bg-white/10">
-                <Image
-                  src={sanitizeAssetSrc(item.imageSrc, COVER_FALLBACK)}
-                  alt={item.imageAlt}
-                  fill
-                  sizes="64px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                />
-              </span>
-              <span className="min-w-0 py-0.5 pr-1">
-                <span className="block truncate text-[13px] font-bold tracking-tight text-white">
-                  {item.title}
+        {upcoming.map((item) => {
+          const thumb = coverImage(item.imageSrc);
+          return (
+            <motion.li key={item.id} variants={fadeUpSoft}>
+              <motion.a
+                href={sanitizeHref(item.href, "#program")}
+                whileHover={hoverLift}
+                whileTap={tapPress}
+                className="group grid grid-cols-[56px_1fr] items-center gap-3 border border-[var(--frame-line)] bg-black/35 px-2.5 py-2.5 no-underline transition-colors hover:bg-black/50 sm:grid-cols-[64px_1fr]"
+              >
+                <span className="relative aspect-square overflow-hidden bg-white/10">
+                  <Image
+                    src={thumb.src}
+                    alt={item.imageAlt}
+                    fill
+                    sizes="64px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    style={{ objectPosition: thumb.objectPosition }}
+                  />
                 </span>
-                <span className="mt-0.5 block truncate text-[10px] tracking-[0.12em] text-white/45 uppercase">
-                  {item.host}
+                <span className="min-w-0 py-0.5 pr-1">
+                  <span className="block truncate text-[13px] font-bold tracking-tight text-white">
+                    {item.title}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[10px] tracking-[0.12em] text-white/45 uppercase">
+                    {item.host}
+                  </span>
+                  <span className="mt-1 block text-[11px] text-white/70 tabular-nums">
+                    {formatShowWindow(item)}
+                  </span>
                 </span>
-                <span className="mt-1 block text-[11px] text-white/70 tabular-nums">
-                  {formatShowWindow(item)}
-                </span>
-              </span>
-            </motion.a>
-          </motion.li>
-        ))}
+              </motion.a>
+            </motion.li>
+          );
+        })}
       </motion.ul>
     </motion.div>
   );

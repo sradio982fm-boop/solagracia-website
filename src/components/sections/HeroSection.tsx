@@ -13,6 +13,7 @@ import {
   hoverLift,
   tapPress,
 } from "@/lib/motion";
+import { parseFocalUrl } from "@/lib/focal-point";
 import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { HeroContent } from "@/types/site";
@@ -46,7 +47,9 @@ export function HeroSection({
     verticalTagline,
   } = content;
 
-  const safeCoverSrc = sanitizeAssetSrc(coverSrc, HERO_COVER_FALLBACK);
+  const { cleanUrl: coverCleanUrl, objectPosition: coverPosition } =
+    parseFocalUrl(coverSrc);
+  const safeCoverSrc = sanitizeAssetSrc(coverCleanUrl, HERO_COVER_FALLBACK);
   const safeMobileCtaHref = sanitizeHref(mobileCtaHref, "#kontak");
 
   return (
@@ -67,7 +70,8 @@ export function HeroSection({
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center"
+          className="object-cover"
+          style={{ objectPosition: coverPosition }}
         />
         <div
           className="absolute inset-0 bg-[rgba(8,10,16,0.08)]"

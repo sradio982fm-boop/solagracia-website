@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Button, Group, Stack, Text, Textarea, TextInput } from "@mantine/core";
-import { ImageUpload } from "@/components/admin/ImageUpload";
+import {
+  ImageUpload,
+  type ImageAspectRatio,
+} from "@/components/admin/ImageUpload";
 import { changeValue } from "@/lib/admin/form";
 import type {
   SiteConfigEntry,
@@ -16,7 +19,7 @@ export type SiteFieldDef = {
   multiline?: boolean;
   valueType?: SiteConfigValueType;
   image?: boolean;
-  aspectRatio?: "square" | "video" | "portrait" | "banner";
+  aspectRatio?: ImageAspectRatio;
   description?: string;
   maxLength?: number;
 };
@@ -68,7 +71,8 @@ export const HERO_FIELDS: SiteFieldDef[] = [
     label: "Cover image",
     image: true,
     valueType: "image",
-    aspectRatio: "portrait",
+    // Match full-bleed hero (~16:9 viewport), not portrait crop
+    aspectRatio: "video",
   },
   { key: "cover_alt", label: "Cover alt text", multiline: true },
   {

@@ -239,7 +239,7 @@ function ShowsTab() {
               onChange={(url) => updateField("coverUrl", url)}
               bucket="shows"
               subpath="covers"
-              aspectRatio="video"
+              aspectRatio="photo"
             />
           </div>
 

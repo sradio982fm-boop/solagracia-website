@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { trackAnalyticsEvent } from "@/components/AnalyticsTracker";
 import { useHlsPlayer } from "@/hooks/useHlsPlayer";
+import { parseFocalUrl } from "@/lib/focal-point";
 import { sanitizeAssetSrc, sanitizeHttpHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { FrequencyOption, MediaPlayerContent } from "@/types/site";
@@ -56,7 +57,7 @@ export function StickyMediaPlayer({
     "",
   );
   const videoPoster = sanitizeAssetSrc(
-    selected?.videoPoster || content.videoPoster,
+    parseFocalUrl(selected?.videoPoster || content.videoPoster).cleanUrl,
   );
   const canSwitch = frequencies.length > 1;
 

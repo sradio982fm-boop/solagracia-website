@@ -11,6 +11,7 @@ import {
   tapPress,
   viewportOnce,
 } from "@/lib/motion";
+import { parseFocalUrl } from "@/lib/focal-point";
 import { sanitizeAssetSrc, sanitizeHref, sanitizeHttpHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { PartnerContent, PartnerLogo, SponsorshipPlan } from "@/types/partner";
@@ -136,7 +137,8 @@ export function PartnerSection({ content }: PartnerSectionProps) {
 }
 
 function PartnerMarqueeItem({ partner }: { partner: PartnerLogo }) {
-  const safeLogo = sanitizeAssetSrc(partner.logoUrl);
+  const { cleanUrl: logoClean } = parseFocalUrl(partner.logoUrl);
+  const safeLogo = sanitizeAssetSrc(logoClean);
   const safeHref = partner.href ? sanitizeHttpHref(partner.href, "") : "";
 
   const inner = (

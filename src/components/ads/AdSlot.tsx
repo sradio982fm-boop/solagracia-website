@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { parseFocalUrl } from "@/lib/focal-point";
 import { hoverLift, tapPress } from "@/lib/motion";
 import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,10 @@ type AdSlotProps = {
 export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const label = ad.label ?? "Partner";
   const ink = ad.tone === "ink";
-  const safeImageSrc = sanitizeAssetSrc(ad.imageSrc);
+  const { cleanUrl: adCleanUrl, objectPosition: adPosition } = parseFocalUrl(
+    ad.imageSrc,
+  );
+  const safeImageSrc = sanitizeAssetSrc(adCleanUrl);
   const isFullImage = ad.variant === "image" && Boolean(safeImageSrc);
   const isPortrait = ad.imageShape === "portrait";
   const hasThumb = Boolean(safeImageSrc) && !isFullImage;
@@ -114,7 +118,8 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
               ? "(max-width: 1280px) 100vw, 200px"
               : "(max-width: 768px) 100vw, min(1120px, 100vw)"
           }
-          className="object-cover object-center transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
+          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.02]"
+          style={{ objectPosition: adPosition }}
         />
         {hasCaption ? (
           <>
@@ -177,6 +182,7 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
             fill
             sizes={ad.variant === "inline" ? "64px" : "280px"}
             className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+            style={{ objectPosition: adPosition }}
           />
         </span>
       ) : null}
