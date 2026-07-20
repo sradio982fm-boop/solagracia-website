@@ -14,6 +14,7 @@ import { footerContent as fallback } from "@/data/footer";
 import { marqueeItems as fallbackMarquee } from "@/data/marquee";
 import type { SiteConfigMap } from "@/hooks/admin/useSiteConfig";
 import type { FooterLink } from "@/types/site";
+import { changeValue } from "@/lib/admin/form";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -121,14 +122,14 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         label="Brand title"
         description="Gunakan baris baru untuk pecah baris"
         value={brandTitle}
-        onChange={(e) => setBrandTitle(e.currentTarget.value)}
+        onChange={(e) => setBrandTitle(changeValue(e))}
         rows={3}
         size="sm"
       />
       <Textarea
         label="Brand description"
         value={brandDescription}
-        onChange={(e) => setBrandDescription(e.currentTarget.value)}
+        onChange={(e) => setBrandDescription(changeValue(e))}
         rows={3}
         size="sm"
       />
@@ -136,20 +137,20 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         label="Copyright"
         description="Gunakan {year} untuk tahun dinamis"
         value={copyrightText}
-        onChange={(e) => setCopyrightText(e.currentTarget.value)}
+        onChange={(e) => setCopyrightText(changeValue(e))}
         size="sm"
       />
       <Group grow>
         <TextInput
           label="Listen label"
           value={listenLabel}
-          onChange={(e) => setListenLabel(e.currentTarget.value)}
+          onChange={(e) => setListenLabel(changeValue(e))}
           size="sm"
         />
         <TextInput
           label="Listen href"
           value={listenHref}
-          onChange={(e) => setListenHref(e.currentTarget.value)}
+          onChange={(e) => setListenHref(changeValue(e))}
           size="sm"
         />
       </Group>
@@ -157,13 +158,13 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         <TextInput
           label="Contact label"
           value={contactLabel}
-          onChange={(e) => setContactLabel(e.currentTarget.value)}
+          onChange={(e) => setContactLabel(changeValue(e))}
           size="sm"
         />
         <TextInput
           label="Contact href"
           value={contactHref}
-          onChange={(e) => setContactHref(e.currentTarget.value)}
+          onChange={(e) => setContactHref(changeValue(e))}
           size="sm"
         />
       </Group>
@@ -171,13 +172,13 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         <TextInput
           label="Column Ikuti"
           value={columnIkuti}
-          onChange={(e) => setColumnIkuti(e.currentTarget.value)}
+          onChange={(e) => setColumnIkuti(changeValue(e))}
           size="sm"
         />
         <TextInput
           label="Column Jelajahi"
           value={columnJelajahi}
-          onChange={(e) => setColumnJelajahi(e.currentTarget.value)}
+          onChange={(e) => setColumnJelajahi(changeValue(e))}
           size="sm"
         />
       </Group>
@@ -185,13 +186,13 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         <TextInput
           label="Wordmark"
           value={wordmark}
-          onChange={(e) => setWordmark(e.currentTarget.value)}
+          onChange={(e) => setWordmark(changeValue(e))}
           size="sm"
         />
         <TextInput
           label="Wordmark sub"
           value={wordmarkSub}
-          onChange={(e) => setWordmarkSub(e.currentTarget.value)}
+          onChange={(e) => setWordmarkSub(changeValue(e))}
           size="sm"
         />
       </Group>
@@ -209,7 +210,7 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
                 setLegalLinks((prev) =>
                   prev.map((l, i) =>
                     i === index
-                      ? { ...l, label: e.currentTarget.value }
+                      ? { ...l, label: changeValue(e) }
                       : l,
                   ),
                 )
@@ -223,7 +224,7 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
                 setLegalLinks((prev) =>
                   prev.map((l, i) =>
                     i === index
-                      ? { ...l, href: e.currentTarget.value }
+                      ? { ...l, href: changeValue(e) }
                       : l,
                   ),
                 )
@@ -258,7 +259,7 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         label="Radio marquee items"
         description="Satu item per baris"
         value={marquee}
-        onChange={(e) => setMarquee(e.currentTarget.value)}
+        onChange={(e) => setMarquee(changeValue(e))}
         rows={8}
         size="sm"
       />

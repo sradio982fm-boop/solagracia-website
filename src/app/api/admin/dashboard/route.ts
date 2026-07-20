@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
     issues.push({
       severity: "warning",
       message: "Judul hero belum diisi di CMS — masih memakai fallback lokal.",
-      href: "/admin/site",
+      href: "/admin/site/hero",
     });
   }
 
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
     issues.push({
       severity: "warning",
       message: "Title SEO belum diisi di konfigurasi situs.",
-      href: "/admin/site",
+      href: "/admin/site/seo",
     });
   }
 
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
     issues.push({
       severity: "warning",
       message: "Label frekuensi brand belum diatur (Studio · 98.2 FM).",
-      href: "/admin/site",
+      href: "/admin/site/brand",
     });
   }
 
@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
     issues.push({
       severity: "warning",
       message: "Logo atau cover hero belum diunggah ke CMS.",
-      href: "/admin/site",
+      href: "/admin/site/hero",
     });
   }
 
@@ -218,7 +218,7 @@ export async function GET(request: NextRequest) {
     issues.push({
       severity: "warning",
       message: `Seksi "${row.section}" disembunyikan dari homepage.`,
-      href: "/admin/site",
+      href: "/admin/site/sections",
     });
   }
 

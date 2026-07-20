@@ -33,7 +33,7 @@ export function useSiteConfig() {
   });
 }
 
-type SiteConfigUpdate = {
+export type SiteConfigUpdate = {
   section: string;
   key: string;
   value: string | null;

@@ -14,6 +14,7 @@ import {
   Center,
   Loader,
 } from "@mantine/core";
+import { changeValue } from "@/lib/admin/form";
 import { ADMIN_BORDER, ADMIN_PAGE_BG, ADMIN_TEAL } from "@/lib/admin/ui";
 
 function safeAdminNext(next: string | null): string {
@@ -95,7 +96,7 @@ function AdminLoginForm() {
             label="Email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.currentTarget.value)}
+            onChange={(e) => setEmail(changeValue(e))}
             required
             autoComplete="username"
             inputMode="email"
@@ -103,7 +104,7 @@ function AdminLoginForm() {
           <PasswordInput
             label="Password"
             value={password}
-            onChange={(e) => setPassword(e.currentTarget.value)}
+            onChange={(e) => setPassword(changeValue(e))}
             required
             autoComplete="current-password"
           />

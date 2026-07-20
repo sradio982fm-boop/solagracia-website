@@ -40,6 +40,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { AdSlot as AdSlotPreview } from "@/components/ads/AdSlot";
 import type { AdImageShape, AdSlotTone, AdSlotVariant } from "@/types/ads";
+import { changeValue } from "@/lib/admin/form";
 
 interface AdFormState {
   sectionId: AdCapableSectionId;
@@ -401,7 +402,7 @@ export default function AdsAdminPage() {
               label="Label"
               description="Quiet plate label — e.g. Partner"
               value={form.label}
-              onChange={(e) => updateField("label", e.currentTarget.value)}
+              onChange={(e) => updateField("label", changeValue(e))}
             />
             <Select
               label="Tone"
@@ -422,12 +423,12 @@ export default function AdsAdminPage() {
               <TextInput
                 label="Sponsor / headline"
                 value={form.sponsor}
-                onChange={(e) => updateField("sponsor", e.currentTarget.value)}
+                onChange={(e) => updateField("sponsor", changeValue(e))}
               />
               <Textarea
                 label="Supporting line"
                 value={form.line}
-                onChange={(e) => updateField("line", e.currentTarget.value)}
+                onChange={(e) => updateField("line", changeValue(e))}
                 minRows={2}
                 autosize
               />
@@ -452,7 +453,7 @@ export default function AdsAdminPage() {
             label="Link (href)"
             description="URL atau anchor — e.g. #kontak"
             value={form.href}
-            onChange={(e) => updateField("href", e.currentTarget.value)}
+            onChange={(e) => updateField("href", changeValue(e))}
           />
 
           <Group grow align="flex-end">
@@ -461,14 +462,14 @@ export default function AdsAdminPage() {
               description="Kosongkan = langsung aktif"
               type="datetime-local"
               value={form.startsAt}
-              onChange={(e) => updateField("startsAt", e.currentTarget.value)}
+              onChange={(e) => updateField("startsAt", changeValue(e))}
             />
             <TextInput
               label="Selesai tayang"
               description="Kosongkan = tanpa batas"
               type="datetime-local"
               value={form.endsAt}
-              onChange={(e) => updateField("endsAt", e.currentTarget.value)}
+              onChange={(e) => updateField("endsAt", changeValue(e))}
             />
           </Group>
 
@@ -488,7 +489,7 @@ export default function AdsAdminPage() {
           <TextInput
             label="Image alt"
             value={form.imageAlt}
-            onChange={(e) => updateField("imageAlt", e.currentTarget.value)}
+            onChange={(e) => updateField("imageAlt", changeValue(e))}
           />
 
           <Group grow>

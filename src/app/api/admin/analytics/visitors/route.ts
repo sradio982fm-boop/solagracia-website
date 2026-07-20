@@ -3,6 +3,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
 import { parseDateRange } from "@/lib/analytics-dates";
+import { decodeGeoValue } from "@/lib/request-helpers";
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin(request);
@@ -39,9 +40,9 @@ export async function GET(request: NextRequest) {
     id: v.id,
     uid: v.uid,
     ip: v.ip,
-    city: v.city,
-    region: v.region,
-    country: v.country,
+    city: decodeGeoValue(v.city) ?? null,
+    region: decodeGeoValue(v.region) ?? null,
+    country: decodeGeoValue(v.country) ?? null,
     viewport: v.viewport,
     firstSeen: v.first_seen,
     lastSeen: v.last_seen_at,

@@ -3,6 +3,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { errorResponse } from "@/lib/api-helpers";
 import { parseDateRange } from "@/lib/analytics-dates";
+import { decodeGeoValue } from "@/lib/request-helpers";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -85,7 +86,12 @@ export async function GET(request: NextRequest) {
       .lte("last_seen_at", to)
       .order("last_seen_at", { ascending: false })
       .limit(MAX_EXPORT_ROWS);
-    rows = data || [];
+    rows = (data || []).map((v) => ({
+      ...v,
+      city: decodeGeoValue(v.city) ?? null,
+      region: decodeGeoValue(v.region) ?? null,
+      country: decodeGeoValue(v.country) ?? null,
+    }));
   } else {
     headers = ["SID", "Started At", "Duration (s)", "Page Views", "Referrer"];
     const { data } = await supabase

@@ -3,6 +3,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse, errorResponse } from "@/lib/api-helpers";
 import { parseDateRange } from "@/lib/analytics-dates";
+import { decodeGeoValue } from "@/lib/request-helpers";
 
 const ISO_TIMESTAMP_PATTERN =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/;
@@ -89,7 +90,11 @@ export async function GET(request: NextRequest) {
       eventData: e.event_data,
       occurredAt: e.occurred_at,
       visitor: visitor
-        ? { uid: visitor.uid, city: visitor.city, country: visitor.country }
+        ? {
+            uid: visitor.uid,
+            city: decodeGeoValue(visitor.city) ?? null,
+            country: decodeGeoValue(visitor.country) ?? null,
+          }
         : null,
       sessionSid: e.session_sid,
     };

@@ -17,6 +17,8 @@ export interface DailyEntry {
   day: string;
   streamPlays: number;
   audioPlays: number;
+  pageViews: number;
+  sectionViews: number;
 }
 
 export interface SectionEntry {

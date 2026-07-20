@@ -18,6 +18,7 @@ import type {
   KontakFormCopy,
   KontakHotline,
 } from "@/types/kontak";
+import { changeValue } from "@/lib/admin/form";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -92,34 +93,34 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
       <TextInput
         label="Studio label"
         value={studioLabel}
-        onChange={(e) => setStudioLabel(e.currentTarget.value)}
+        onChange={(e) => setStudioLabel(changeValue(e))}
         size="sm"
       />
       <Textarea
         label="Address"
         value={address}
-        onChange={(e) => setAddress(e.currentTarget.value)}
+        onChange={(e) => setAddress(changeValue(e))}
         rows={3}
         size="sm"
       />
       <TextInput
         label="Operating hours"
         value={operatingHours}
-        onChange={(e) => setOperatingHours(e.currentTarget.value)}
+        onChange={(e) => setOperatingHours(changeValue(e))}
         size="sm"
       />
       <Group grow>
         <TextInput
           label="Email"
           value={email}
-          onChange={(e) => setEmail(e.currentTarget.value)}
+          onChange={(e) => setEmail(changeValue(e))}
           size="sm"
         />
         <TextInput
           label="Frequency"
           description="Bisa dikosongkan — brand.frequency_label jadi fallback"
           value={frequency}
-          onChange={(e) => setFrequency(e.currentTarget.value)}
+          onChange={(e) => setFrequency(changeValue(e))}
           size="sm"
         />
       </Group>
@@ -127,7 +128,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
         label="WhatsApp number"
         description="Digits only, mis. 628811982982"
         value={whatsappNumber}
-        onChange={(e) => setWhatsappNumber(e.currentTarget.value)}
+        onChange={(e) => setWhatsappNumber(changeValue(e))}
         size="sm"
       />
 
@@ -150,7 +151,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                   setChannels((prev) =>
                     prev.map((c, i) =>
                       i === index
-                        ? { ...c, id: e.currentTarget.value }
+                        ? { ...c, id: changeValue(e) }
                         : c,
                     ),
                   )
@@ -164,7 +165,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                   setChannels((prev) =>
                     prev.map((c, i) =>
                       i === index
-                        ? { ...c, label: e.currentTarget.value }
+                        ? { ...c, label: changeValue(e) }
                         : c,
                     ),
                   )
@@ -179,7 +180,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 setChannels((prev) =>
                   prev.map((c, i) =>
                     i === index
-                      ? { ...c, detail: e.currentTarget.value }
+                      ? { ...c, detail: changeValue(e) }
                       : c,
                   ),
                 )
@@ -194,7 +195,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                   setChannels((prev) =>
                     prev.map((c, i) =>
                       i === index
-                        ? { ...c, href: e.currentTarget.value }
+                        ? { ...c, href: changeValue(e) }
                         : c,
                     ),
                   )
@@ -261,7 +262,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 setHotlines((prev) =>
                   prev.map((h, i) =>
                     i === index
-                      ? { ...h, label: e.currentTarget.value }
+                      ? { ...h, label: changeValue(e) }
                       : h,
                   ),
                 )
@@ -275,7 +276,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 setHotlines((prev) =>
                   prev.map((h, i) =>
                     i === index
-                      ? { ...h, number: e.currentTarget.value }
+                      ? { ...h, number: changeValue(e) }
                       : h,
                   ),
                 )
@@ -289,7 +290,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 setHotlines((prev) =>
                   prev.map((h, i) =>
                     i === index
-                      ? { ...h, href: e.currentTarget.value }
+                      ? { ...h, href: changeValue(e) }
                       : h,
                   ),
                 )
@@ -331,7 +332,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           label="Name label"
           value={form.nameLabel}
           onChange={(e) =>
-            setForm((prev) => ({ ...prev, nameLabel: e.currentTarget.value }))
+            setForm((prev) => ({ ...prev, nameLabel: changeValue(e) }))
           }
           size="sm"
         />
@@ -341,7 +342,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           onChange={(e) =>
             setForm((prev) => ({
               ...prev,
-              namePlaceholder: e.currentTarget.value,
+              namePlaceholder: changeValue(e),
             }))
           }
           size="sm"
@@ -354,7 +355,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           onChange={(e) =>
             setForm((prev) => ({
               ...prev,
-              messageLabel: e.currentTarget.value,
+              messageLabel: changeValue(e),
             }))
           }
           size="sm"
@@ -365,7 +366,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           onChange={(e) =>
             setForm((prev) => ({
               ...prev,
-              messagePlaceholder: e.currentTarget.value,
+              messagePlaceholder: changeValue(e),
             }))
           }
           size="sm"
@@ -375,7 +376,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
         label="Submit label"
         value={form.submitLabel}
         onChange={(e) =>
-          setForm((prev) => ({ ...prev, submitLabel: e.currentTarget.value }))
+          setForm((prev) => ({ ...prev, submitLabel: changeValue(e) }))
         }
         size="sm"
       />
@@ -386,7 +387,7 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
         onChange={(e) =>
           setForm((prev) => ({
             ...prev,
-            whatsappTemplate: e.currentTarget.value,
+            whatsappTemplate: changeValue(e),
           }))
         }
         rows={3}

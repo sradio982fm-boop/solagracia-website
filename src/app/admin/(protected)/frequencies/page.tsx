@@ -26,6 +26,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminSurface } from "@/components/admin/AdminSurface";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
+import { changeValue } from "@/lib/admin/form";
 
 interface FrequencyFormState {
   label: string;
@@ -192,7 +193,7 @@ export default function FrequenciesPage() {
             label="Label"
             value={form.label}
             onChange={(e) =>
-              setForm((p) => ({ ...p, label: e.currentTarget.value }))
+              setForm((p) => ({ ...p, label: changeValue(e) }))
             }
             required
           />
@@ -200,14 +201,14 @@ export default function FrequenciesPage() {
             label="Station name"
             value={form.stationName}
             onChange={(e) =>
-              setForm((p) => ({ ...p, stationName: e.currentTarget.value }))
+              setForm((p) => ({ ...p, stationName: changeValue(e) }))
             }
           />
           <TextInput
             label="Audio URL"
             value={form.audioUrl}
             onChange={(e) =>
-              setForm((p) => ({ ...p, audioUrl: e.currentTarget.value }))
+              setForm((p) => ({ ...p, audioUrl: changeValue(e) }))
             }
             required
           />
@@ -215,7 +216,7 @@ export default function FrequenciesPage() {
             label="Video URL (HLS/MP4)"
             value={form.videoUrl}
             onChange={(e) =>
-              setForm((p) => ({ ...p, videoUrl: e.currentTarget.value }))
+              setForm((p) => ({ ...p, videoUrl: changeValue(e) }))
             }
           />
           <div>

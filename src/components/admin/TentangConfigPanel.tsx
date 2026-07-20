@@ -19,6 +19,7 @@ import {
 } from "@/lib/tentang";
 import { tentangContent as fallback } from "@/data/tentang";
 import type { SocialQuotePart, TentangCta, TentangStat } from "@/types/site";
+import { changeValue } from "@/lib/admin/form";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -112,13 +113,13 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
       <TextInput
         label="Headline"
         value={headline}
-        onChange={(e) => setHeadline(e.currentTarget.value)}
+        onChange={(e) => setHeadline(changeValue(e))}
         size="sm"
       />
       <TextInput
         label="Headline accent"
         value={headlineAccent}
-        onChange={(e) => setHeadlineAccent(e.currentTarget.value)}
+        onChange={(e) => setHeadlineAccent(changeValue(e))}
         size="sm"
       />
 
@@ -136,7 +137,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                   setStats((prev) =>
                     prev.map((s, i) =>
                       i === index
-                        ? { ...s, value: e.currentTarget.value }
+                        ? { ...s, value: changeValue(e) }
                         : s,
                     ),
                   )
@@ -150,7 +151,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                   setStats((prev) =>
                     prev.map((s, i) =>
                       i === index
-                        ? { ...s, label: e.currentTarget.value }
+                        ? { ...s, label: changeValue(e) }
                         : s,
                     ),
                   )
@@ -187,7 +188,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
         label="Body"
         description="Pisahkan paragraf dengan baris kosong"
         value={body}
-        onChange={(e) => setBody(e.currentTarget.value)}
+        onChange={(e) => setBody(changeValue(e))}
         rows={6}
         size="sm"
       />
@@ -206,7 +207,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                   setCtas((prev) =>
                     prev.map((c, i) =>
                       i === index
-                        ? { ...c, label: e.currentTarget.value }
+                        ? { ...c, label: changeValue(e) }
                         : c,
                     ),
                   )
@@ -220,7 +221,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                   setCtas((prev) =>
                     prev.map((c, i) =>
                       i === index
-                        ? { ...c, href: e.currentTarget.value }
+                        ? { ...c, href: changeValue(e) }
                         : c,
                     ),
                   )
@@ -259,7 +260,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
       <TextInput
         label="Social proof label"
         value={socialLabel}
-        onChange={(e) => setSocialLabel(e.currentTarget.value)}
+        onChange={(e) => setSocialLabel(changeValue(e))}
         size="sm"
       />
 
@@ -287,7 +288,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
         onChange={(e) =>
           setTestimonial((prev) => ({
             ...prev,
-            date: e.currentTarget.value,
+            date: changeValue(e),
           }))
         }
         size="sm"
@@ -347,7 +348,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                     ...prev,
                     quote: (prev.quote || []).map((p, i) =>
                       i === index
-                        ? { ...p, value: e.currentTarget.value }
+                        ? { ...p, value: changeValue(e) }
                         : p,
                     ),
                   }))
@@ -363,7 +364,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                       ...prev,
                       quote: (prev.quote || []).map((p, i) =>
                         i === index && p.type === "link"
-                          ? { ...p, href: e.currentTarget.value }
+                          ? { ...p, href: changeValue(e) }
                           : p,
                       ),
                     }))
@@ -423,7 +424,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
           onChange={(e) =>
             setTestimonial((prev) => ({
               ...prev,
-              authorName: e.currentTarget.value,
+              authorName: changeValue(e),
             }))
           }
           size="sm"
@@ -434,7 +435,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
           onChange={(e) =>
             setTestimonial((prev) => ({
               ...prev,
-              authorHandle: e.currentTarget.value,
+              authorHandle: changeValue(e),
             }))
           }
           size="sm"
@@ -445,7 +446,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
           onChange={(e) =>
             setTestimonial((prev) => ({
               ...prev,
-              authorInitials: e.currentTarget.value,
+              authorInitials: changeValue(e),
             }))
           }
           size="sm"
@@ -457,7 +458,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
         onChange={(e) =>
           setTestimonial((prev) => ({
             ...prev,
-            href: e.currentTarget.value,
+            href: changeValue(e),
           }))
         }
         size="sm"

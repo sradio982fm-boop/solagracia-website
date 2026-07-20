@@ -3,9 +3,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavLink, Stack, Text, Divider, ScrollArea } from "@mantine/core";
+import { SITE_NAV_CHILDREN } from "@/lib/admin/site-nav";
 import { ADMIN_BORDER, ADMIN_TEAL } from "@/lib/admin/ui";
 
-const NAV_GROUPS = [
+type NavChild = {
+  href: string;
+  label: string;
+  icon: string;
+};
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: string;
+  children?: ReadonlyArray<NavChild>;
+};
+
+type NavGroup = {
+  label: string;
+  items: ReadonlyArray<NavItem>;
+};
+
+const NAV_GROUPS: ReadonlyArray<NavGroup> = [
   {
     label: "Overview",
     items: [
@@ -31,10 +50,19 @@ const NAV_GROUPS = [
   {
     label: "Sistem",
     items: [
-      { href: "/admin/site", label: "Konfigurasi Situs", icon: "settings" },
+      {
+        href: "/admin/site",
+        label: "Konfigurasi Situs",
+        icon: "settings",
+        children: SITE_NAV_CHILDREN.map((child) => ({
+          href: child.href,
+          label: child.label,
+          icon: child.icon,
+        })),
+      },
     ],
   },
-] as const;
+];
 
 interface AdminSidebarProps {
   onNavigate?: () => void;
@@ -42,12 +70,20 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
   const pathname = usePathname();
+  const siteBranchActive = pathname.startsWith("/admin/site");
 
-  function isActive(href: string) {
+  function isExactActive(href: string) {
     if (href === "/admin/dashboard") {
       return pathname === "/admin/dashboard" || pathname === "/admin";
     }
-    return pathname.startsWith(href);
+    return pathname === href;
+  }
+
+  function isBranchActive(href: string) {
+    if (href === "/admin/dashboard") {
+      return pathname === "/admin/dashboard" || pathname === "/admin";
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
   }
 
   return (
@@ -70,24 +106,71 @@ export function AdminSidebar({ onNavigate }: AdminSidebarProps) {
             >
               {group.label}
             </Text>
-            {group.items.map((item) => (
-              <NavLink
-                key={item.href}
-                component={Link}
-                href={item.href}
-                label={item.label}
-                active={isActive(item.href)}
-                leftSection={
-                  <i className="material-icons text-[18px]" aria-hidden>
-                    {item.icon}
-                  </i>
-                }
-                onClick={onNavigate}
-                variant="light"
-                color="sg"
-                aria-current={isActive(item.href) ? "page" : undefined}
-              />
-            ))}
+            {group.items.map((item) => {
+              if (item.children?.length) {
+                return (
+                  <NavLink
+                    key={item.href}
+                    label={item.label}
+                    leftSection={
+                      <i className="material-icons text-[18px]" aria-hidden>
+                        {item.icon}
+                      </i>
+                    }
+                    childrenOffset={28}
+                    opened
+                    active={siteBranchActive}
+                    variant="light"
+                    color="sg"
+                  >
+                    {item.children.map((child) => (
+                      <NavLink
+                        key={child.href}
+                        component={Link}
+                        href={child.href}
+                        label={child.label}
+                        active={isExactActive(child.href)}
+                        leftSection={
+                          <i
+                            className="material-icons text-[16px]"
+                            aria-hidden
+                          >
+                            {child.icon}
+                          </i>
+                        }
+                        onClick={onNavigate}
+                        variant="light"
+                        color="sg"
+                        aria-current={
+                          isExactActive(child.href) ? "page" : undefined
+                        }
+                      />
+                    ))}
+                  </NavLink>
+                );
+              }
+
+              return (
+                <NavLink
+                  key={item.href}
+                  component={Link}
+                  href={item.href}
+                  label={item.label}
+                  active={isBranchActive(item.href)}
+                  leftSection={
+                    <i className="material-icons text-[18px]" aria-hidden>
+                      {item.icon}
+                    </i>
+                  }
+                  onClick={onNavigate}
+                  variant="light"
+                  color="sg"
+                  aria-current={
+                    isBranchActive(item.href) ? "page" : undefined
+                  }
+                />
+              );
+            })}
           </Stack>
         ))}
       </Stack>

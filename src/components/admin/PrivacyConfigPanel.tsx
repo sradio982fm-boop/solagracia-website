@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, Group, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import type { SiteConfigMap } from "@/hooks/admin/useSiteConfig";
 import { FALLBACK_PRIVACY } from "@/lib/legal";
+import { changeValue } from "@/lib/admin/form";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -54,20 +55,20 @@ export function PrivacyConfigPanel({ config, saving, onSave }: Props) {
       <TextInput
         label="Title"
         value={title}
-        onChange={(e) => setTitle(e.currentTarget.value)}
+        onChange={(e) => setTitle(changeValue(e))}
         size="sm"
       />
       <TextInput
         label="Updated label"
         value={updatedLabel}
-        onChange={(e) => setUpdatedLabel(e.currentTarget.value)}
+        onChange={(e) => setUpdatedLabel(changeValue(e))}
         size="sm"
       />
       <Textarea
         label="Body"
         description="Pisahkan paragraf dengan baris kosong"
         value={body}
-        onChange={(e) => setBody(e.currentTarget.value)}
+        onChange={(e) => setBody(changeValue(e))}
         rows={10}
         size="sm"
       />

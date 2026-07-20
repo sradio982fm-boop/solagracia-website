@@ -33,6 +33,7 @@ import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminSurface } from "@/components/admin/AdminSurface";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { FIELD_LIMITS } from "@/lib/admin/constants";
+import { changeValue } from "@/lib/admin/form";
 
 interface HostFormState {
   name: string;
@@ -257,7 +258,7 @@ export default function HostsAdminPage() {
           <TextInput
             label="Alt teks foto"
             value={form.photoAlt}
-            onChange={(e) => updateField("photoAlt", e.currentTarget.value)}
+            onChange={(e) => updateField("photoAlt", changeValue(e))}
             maxLength={200}
           />
 
@@ -265,14 +266,14 @@ export default function HostsAdminPage() {
             <TextInput
               label="Nama"
               value={form.name}
-              onChange={(e) => updateField("name", e.currentTarget.value)}
+              onChange={(e) => updateField("name", changeValue(e))}
               required
               maxLength={FIELD_LIMITS.NAME_MAX}
             />
             <TextInput
               label="Peran / Role"
               value={form.roleTitle}
-              onChange={(e) => updateField("roleTitle", e.currentTarget.value)}
+              onChange={(e) => updateField("roleTitle", changeValue(e))}
               required
               maxLength={FIELD_LIMITS.ROLE_MAX}
             />
@@ -281,7 +282,7 @@ export default function HostsAdminPage() {
           <TextInput
             label="Tagline"
             value={form.tagline}
-            onChange={(e) => updateField("tagline", e.currentTarget.value)}
+            onChange={(e) => updateField("tagline", changeValue(e))}
             required
             maxLength={FIELD_LIMITS.TAGLINE_MAX}
           />
@@ -292,7 +293,7 @@ export default function HostsAdminPage() {
               placeholder="#01"
               value={form.displayNumber}
               onChange={(e) =>
-                updateField("displayNumber", e.currentTarget.value)
+                updateField("displayNumber", changeValue(e))
               }
               maxLength={FIELD_LIMITS.DISPLAY_NUMBER_MAX}
             />
@@ -300,7 +301,7 @@ export default function HostsAdminPage() {
               label="Link (href)"
               placeholder="#program"
               value={form.href}
-              onChange={(e) => updateField("href", e.currentTarget.value)}
+              onChange={(e) => updateField("href", changeValue(e))}
             />
           </Group>
 
@@ -319,7 +320,7 @@ export default function HostsAdminPage() {
           <Textarea
             label="Bio"
             value={form.bio}
-            onChange={(e) => updateField("bio", e.currentTarget.value)}
+            onChange={(e) => updateField("bio", changeValue(e))}
             maxLength={FIELD_LIMITS.BIO_MAX}
             autosize
             minRows={2}

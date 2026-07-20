@@ -3,14 +3,12 @@
 import { MantineProvider, createTheme, rem } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
+import "./mantine-overrides.css";
 import {
   ADMIN_BORDER,
   ADMIN_COLOR_SCALE,
-  ADMIN_FOCUS_RING,
   ADMIN_INK,
-  ADMIN_MUTED_BG,
   ADMIN_PAGE_BG,
-  ADMIN_PRIMARY,
   ADMIN_SURFACE,
   ADMIN_TEAL,
 } from "./ui";
@@ -91,10 +89,6 @@ const theme = createTheme({
           background: ADMIN_SURFACE,
           borderColor: ADMIN_BORDER,
           transition: "border-color 150ms ease, box-shadow 150ms ease",
-          "&:focus": {
-            borderColor: ADMIN_PRIMARY,
-            boxShadow: ADMIN_FOCUS_RING,
-          },
         },
         label: {
           fontWeight: 600,
@@ -109,10 +103,6 @@ const theme = createTheme({
           background: ADMIN_SURFACE,
           borderColor: ADMIN_BORDER,
           transition: "border-color 150ms ease, box-shadow 150ms ease",
-          "&:focus-within": {
-            borderColor: ADMIN_PRIMARY,
-            boxShadow: ADMIN_FOCUS_RING,
-          },
         },
         label: {
           fontWeight: 600,
@@ -127,10 +117,6 @@ const theme = createTheme({
           background: ADMIN_SURFACE,
           borderColor: ADMIN_BORDER,
           transition: "border-color 150ms ease, box-shadow 150ms ease",
-          "&:focus": {
-            borderColor: ADMIN_PRIMARY,
-            boxShadow: ADMIN_FOCUS_RING,
-          },
         },
         label: {
           fontWeight: 600,

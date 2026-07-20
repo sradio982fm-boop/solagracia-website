@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "@/lib/admin/auth-context";
 import {
   Group,
@@ -21,6 +21,7 @@ import {
   passwordRequirementsText,
 } from "@/lib/schemas/password";
 import { ADMIN_HIGHLIGHT, ADMIN_INK, ADMIN_TEAL } from "@/lib/admin/ui";
+import { changeValue } from "@/lib/admin/form";
 
 interface AdminHeaderProps {
   navOpened: boolean;
@@ -33,6 +34,7 @@ export function AdminHeader({ navOpened, onNavToggle }: AdminHeaderProps) {
     passwordModalOpened,
     { open: openPasswordModal, close: closePasswordModal },
   ] = useDisclosure(false);
+  const openPasswordAfterMenuClose = useRef(false);
 
   return (
     <>
@@ -65,7 +67,16 @@ export function AdminHeader({ navOpened, onNavToggle }: AdminHeaderProps) {
             </Text>
           </Group>
         </Group>
-        <Menu position="bottom-end" shadow="md" width={200}>
+        <Menu
+          position="bottom-end"
+          shadow="md"
+          width={200}
+          onClose={() => {
+            if (!openPasswordAfterMenuClose.current) return;
+            openPasswordAfterMenuClose.current = false;
+            openPasswordModal();
+          }}
+        >
           <Menu.Target>
             <UnstyledButton
               px="sm"
@@ -101,7 +112,9 @@ export function AdminHeader({ navOpened, onNavToggle }: AdminHeaderProps) {
           <Menu.Dropdown>
             <Menu.Item
               leftSection={<i className="material-icons text-[16px]">lock</i>}
-              onClick={openPasswordModal}
+              onClick={() => {
+                openPasswordAfterMenuClose.current = true;
+              }}
             >
               Ubah Password
             </Menu.Item>
@@ -205,7 +218,7 @@ function ChangePasswordModal({
           label="Password Lama"
           placeholder="Masukkan password saat ini"
           value={oldPassword}
-          onChange={(e) => setOldPassword(e.currentTarget.value)}
+          onChange={(e) => setOldPassword(changeValue(e))}
           required
         />
         <PasswordInput
@@ -213,7 +226,7 @@ function ChangePasswordModal({
           placeholder="Minimal 12 karakter dengan variasi"
           description={passwordRequirementsText}
           value={newPassword}
-          onChange={(e) => setNewPassword(e.currentTarget.value)}
+          onChange={(e) => setNewPassword(changeValue(e))}
           required
           minLength={12}
         />
@@ -221,7 +234,7 @@ function ChangePasswordModal({
           label="Konfirmasi Password Baru"
           placeholder="Ulangi password baru"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.currentTarget.value)}
+          onChange={(e) => setConfirmPassword(changeValue(e))}
           required
         />
         {error ? (

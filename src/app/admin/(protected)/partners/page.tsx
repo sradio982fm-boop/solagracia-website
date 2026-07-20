@@ -47,6 +47,7 @@ import { AdminSurface } from "@/components/admin/AdminSurface";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { TagInput } from "@/components/admin/TagInput";
 import { partnerContent as defaults } from "@/data/partner";
+import { changeValue } from "@/lib/admin/form";
 
 type TabId = "history" | "plans";
 
@@ -314,7 +315,7 @@ export default function PartnersAdminPage() {
                 onChange={(e) =>
                   setConfigDraft((prev) => ({
                     ...prev,
-                    [field.key]: e.currentTarget.value,
+                    [field.key]: changeValue(e),
                   }))
                 }
               />
@@ -499,7 +500,7 @@ export default function PartnersAdminPage() {
             label="Nama"
             value={partnerForm.name}
             onChange={(e) => {
-              const name = e.currentTarget.value;
+              const name = changeValue(e);
               setPartnerForm((prev) => ({
                 ...prev,
                 name,
@@ -517,7 +518,7 @@ export default function PartnersAdminPage() {
             onChange={(e) =>
               setPartnerForm((prev) => ({
                 ...prev,
-                initials: e.currentTarget.value.toUpperCase().slice(0, 4),
+                initials: changeValue(e).toUpperCase().slice(0, 4),
               }))
             }
             maxLength={4}
@@ -539,7 +540,7 @@ export default function PartnersAdminPage() {
             label="Link website (opsional)"
             value={partnerForm.href}
             onChange={(e) =>
-              setPartnerForm((prev) => ({ ...prev, href: e.currentTarget.value }))
+              setPartnerForm((prev) => ({ ...prev, href: changeValue(e) }))
             }
             placeholder="https://"
           />
@@ -593,7 +594,7 @@ export default function PartnersAdminPage() {
             label="Nama paket"
             value={planForm.name}
             onChange={(e) =>
-              setPlanForm((prev) => ({ ...prev, name: e.currentTarget.value }))
+              setPlanForm((prev) => ({ ...prev, name: changeValue(e) }))
             }
             required
           />
@@ -602,7 +603,7 @@ export default function PartnersAdminPage() {
               label="Harga"
               value={planForm.price}
               onChange={(e) =>
-                setPlanForm((prev) => ({ ...prev, price: e.currentTarget.value }))
+                setPlanForm((prev) => ({ ...prev, price: changeValue(e) }))
               }
               placeholder="150K"
               required
@@ -611,7 +612,7 @@ export default function PartnersAdminPage() {
               label="Unit"
               value={planForm.unit}
               onChange={(e) =>
-                setPlanForm((prev) => ({ ...prev, unit: e.currentTarget.value }))
+                setPlanForm((prev) => ({ ...prev, unit: changeValue(e) }))
               }
               placeholder="/spot"
             />
@@ -634,7 +635,7 @@ export default function PartnersAdminPage() {
             onChange={(e) =>
               setPlanForm((prev) => ({
                 ...prev,
-                whatsappMessage: e.currentTarget.value,
+                whatsappMessage: changeValue(e),
               }))
             }
             minRows={2}

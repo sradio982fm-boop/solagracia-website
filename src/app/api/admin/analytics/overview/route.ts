@@ -3,6 +3,7 @@ import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth-guard";
 import { jsonResponse } from "@/lib/api-helpers";
 import { parseDateRange, getJakartaDay } from "@/lib/analytics-dates";
+import { decodeGeoValue } from "@/lib/request-helpers";
 
 const TOP_COUNTRIES_LIMIT = 10;
 
@@ -96,16 +97,30 @@ function computeSummary(
 }
 
 function computeDailyBreakdown(events: EventRow[]) {
-  const dailyMap: Record<string, { streamPlays: number; audioPlays: number }> =
-    {};
+  const dailyMap: Record<
+    string,
+    {
+      streamPlays: number;
+      audioPlays: number;
+      pageViews: number;
+      sectionViews: number;
+    }
+  > = {};
 
   for (const event of events) {
     const day = getJakartaDay(event.occurred_at);
     if (!dailyMap[day]) {
-      dailyMap[day] = { streamPlays: 0, audioPlays: 0 };
+      dailyMap[day] = {
+        streamPlays: 0,
+        audioPlays: 0,
+        pageViews: 0,
+        sectionViews: 0,
+      };
     }
     if (event.event_type === "sp") dailyMap[day].streamPlays++;
     if (event.event_type === "ap") dailyMap[day].audioPlays++;
+    if (event.event_type === "pv") dailyMap[day].pageViews++;
+    if (event.event_type === "sv") dailyMap[day].sectionViews++;
   }
 
   return Object.entries(dailyMap)
@@ -133,7 +148,8 @@ function computeTopCountries(visitors: { country: string | null }[]) {
   const countryMap: Record<string, number> = {};
 
   for (const v of visitors) {
-    if (v.country) countryMap[v.country] = (countryMap[v.country] || 0) + 1;
+    const country = decodeGeoValue(v.country);
+    if (country) countryMap[country] = (countryMap[country] || 0) + 1;
   }
 
   return Object.entries(countryMap)

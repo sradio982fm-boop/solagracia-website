@@ -87,7 +87,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={cn("antialiased", montserrat.variable)}>
+    <html
+      lang="id"
+      className={cn("antialiased", montserrat.variable)}
+      data-scroll-behavior="smooth"
+    >
       <body className="min-h-screen font-[family-name:var(--font-montserrat)]">
         <AnalyticsRoot>{children}</AnalyticsRoot>
       </body>

@@ -1,0 +1,24 @@
+/* Focus rings — Mantine 7+ styles prop does not support nested selectors. */
+
+.mantine-TextInput-input:focus,
+.mantine-Textarea-input:focus,
+.mantine-Select-input:focus,
+.mantine-PasswordInput-input:focus,
+.mantine-PasswordInput-innerInput:focus {
+  border-color: var(--admin-primary, #6ba259);
+  box-shadow: var(
+    --admin-focus-ring,
+    0 0 0 2px #fff,
+    0 0 0 4px #6ba259
+  );
+}
+
+.mantine-PasswordInput-root:focus-within .mantine-PasswordInput-input,
+.mantine-PasswordInput-wrapper:focus-within {
+  border-color: var(--admin-primary, #6ba259);
+  box-shadow: var(
+    --admin-focus-ring,
+    0 0 0 2px #fff,
+    0 0 0 4px #6ba259
+  );
+}

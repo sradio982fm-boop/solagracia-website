@@ -32,6 +32,10 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminSurface } from "@/components/admin/AdminSurface";
+import {
+  AnalyticsCharts,
+  AnalyticsChartsSkeleton,
+} from "@/components/admin/AnalyticsCharts";
 import { ADMIN_BORDER, ADMIN_MUTED_BG } from "@/lib/admin/ui";
 import { toast } from "sonner";
 
@@ -177,24 +181,17 @@ export default function AnalyticsPage() {
         />
       </SimpleGrid>
 
-      {!overviewLoading && overview && overview.topSections.length > 0 ? (
-        <AdminSurface p="md">
-          <Text size="xs" tt="uppercase" fw={600} c="dimmed" mb="sm">
-            Section teratas
-          </Text>
-          <Stack gap={6}>
-            {overview.topSections.slice(0, 5).map((section) => (
-              <Group key={section.sectionId} justify="space-between">
-                <Text size="sm" ff="monospace">
-                  {section.sectionId}
-                </Text>
-                <Text size="sm" fw={600} ff="monospace">
-                  {section.views.toLocaleString("id-ID")}
-                </Text>
-              </Group>
-            ))}
-          </Stack>
-        </AdminSurface>
+      {overviewLoading ? (
+        <AnalyticsChartsSkeleton />
+      ) : overview ? (
+        <AnalyticsCharts
+          daily={overview.daily}
+          topSections={overview.topSections}
+          topCountries={overview.topCountries}
+          summary={overview.summary}
+          from={filters.from}
+          to={filters.to}
+        />
       ) : null}
 
       <Tabs value={activeTab} onChange={setActiveTab}>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, type KeyboardEvent } from "react";
 import { Badge, Group, TextInput, Text, Stack } from "@mantine/core";
+import { changeValue } from "@/lib/admin/form";
 
 interface TagInputProps {
   value: string[];
@@ -77,7 +78,7 @@ export function TagInput({
       {value.length < maxTags && (
         <TextInput
           value={inputValue}
-          onChange={(e) => setInputValue(e.currentTarget.value)}
+          onChange={(e) => setInputValue(changeValue(e))}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           maxLength={maxLength}

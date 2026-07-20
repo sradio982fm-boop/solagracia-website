@@ -44,6 +44,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DAY_LABELS, FIELD_LIMITS } from "@/lib/admin/constants";
 import { formatHour, hourToTime, timeToHour } from "@/lib/admin/format";
+import { changeValue } from "@/lib/admin/form";
 
 /* ─── Shows tab ─── */
 
@@ -245,7 +246,7 @@ function ShowsTab() {
           <TextInput
             label="Judul acara"
             value={form.title}
-            onChange={(e) => updateField("title", e.currentTarget.value)}
+            onChange={(e) => updateField("title", changeValue(e))}
             required
             maxLength={FIELD_LIMITS.TITLE_MAX}
           />
@@ -265,14 +266,14 @@ function ShowsTab() {
             label="Tag"
             placeholder="MUSIC MIX"
             value={form.tag}
-            onChange={(e) => updateField("tag", e.currentTarget.value)}
+            onChange={(e) => updateField("tag", changeValue(e))}
             maxLength={FIELD_LIMITS.SHOW_TAG_MAX}
           />
 
           <Textarea
             label="Deskripsi"
             value={form.description}
-            onChange={(e) => updateField("description", e.currentTarget.value)}
+            onChange={(e) => updateField("description", changeValue(e))}
             maxLength={FIELD_LIMITS.DESCRIPTION_MAX}
             autosize
             minRows={2}
@@ -530,13 +531,13 @@ function ScheduleTab() {
             <TimeInput
               label="Mulai"
               value={startTime}
-              onChange={(e) => setStartTime(e.currentTarget.value)}
+              onChange={(e) => setStartTime(changeValue(e))}
               required
             />
             <TimeInput
               label="Selesai"
               value={endTime}
-              onChange={(e) => setEndTime(e.currentTarget.value)}
+              onChange={(e) => setEndTime(changeValue(e))}
               required
             />
           </Group>

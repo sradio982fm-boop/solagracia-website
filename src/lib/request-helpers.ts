@@ -26,13 +26,28 @@ export function extractClientIp(request: NextRequest): string {
 }
 
 /**
+ * Vercel geo headers (and some stored visitor rows) are percent-encoded
+ * (e.g. `Central%20Jakarta`). Safe for already-decoded values.
+ */
+export function decodeGeoValue(
+  value: string | null | undefined,
+): string | undefined {
+  if (!value) return undefined;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+/**
  * Extracts geolocation from Vercel headers.
  */
 export function extractGeo(request: NextRequest) {
   return {
-    city: request.headers.get("x-vercel-ip-city") || undefined,
-    region: request.headers.get("x-vercel-ip-country-region") || undefined,
-    country: request.headers.get("x-vercel-ip-country") || undefined,
+    city: decodeGeoValue(request.headers.get("x-vercel-ip-city")),
+    region: decodeGeoValue(request.headers.get("x-vercel-ip-country-region")),
+    country: decodeGeoValue(request.headers.get("x-vercel-ip-country")),
   };
 }
 

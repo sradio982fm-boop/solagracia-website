@@ -26,6 +26,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminSurface } from "@/components/admin/AdminSurface";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
+import { changeValue } from "@/lib/admin/form";
 
 const PLATFORMS = [
   { value: "instagram", label: "Instagram" },
@@ -186,7 +187,7 @@ export default function SocialAdminPage() {
             label="Label"
             value={form.label}
             onChange={(e) =>
-              setForm((p) => ({ ...p, label: e.currentTarget.value }))
+              setForm((p) => ({ ...p, label: changeValue(e) }))
             }
             required
           />
@@ -194,7 +195,7 @@ export default function SocialAdminPage() {
             label="URL"
             value={form.url}
             onChange={(e) =>
-              setForm((p) => ({ ...p, url: e.currentTarget.value }))
+              setForm((p) => ({ ...p, url: changeValue(e) }))
             }
             required
           />

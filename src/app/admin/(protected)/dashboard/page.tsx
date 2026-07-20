@@ -22,7 +22,7 @@ const QUICK_LINKS = [
   { href: "/admin/partners", label: "Partner", icon: "handshake" },
   { href: "/admin/ads", label: "Iklan", icon: "campaign" },
   { href: "/admin/social", label: "Social", icon: "share" },
-  { href: "/admin/site", label: "Konfigurasi Situs", icon: "settings" },
+  { href: "/admin/site/seo", label: "Konfigurasi Situs", icon: "settings" },
   { href: "/admin/analytics", label: "Analytics", icon: "analytics" },
 ] as const;
 
@@ -201,7 +201,7 @@ export default function AdminDashboardPage() {
         </Text>
         <Text
           component={Link}
-          href="/admin/site"
+          href="/admin/site/sections"
           size="sm"
           mt="xs"
           td="underline"
