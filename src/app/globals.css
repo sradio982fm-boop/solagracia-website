@@ -162,6 +162,17 @@ body {
   }
 }
 
+@keyframes ad-promo-carrier {
+  from {
+    transform: scaleX(0.28);
+    opacity: 0.55;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
 /*
  * Penyiar / Program on tall / 2K viewports — keep FHD proportions.
  * Stage max-height is set in JSX; center the shorter stage in the slide.

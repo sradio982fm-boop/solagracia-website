@@ -1,11 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState, type MouseEvent } from "react";
+import { createPortal } from "react-dom";
+import { AdPromoLoadingShell } from "@/components/ads/AdPromoLoadingShell";
 import { buildIklanPath } from "@/lib/ad-promo";
 import { parseFocalUrl } from "@/lib/focal-point";
-import { hoverLift, tapPress } from "@/lib/motion";
-import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
+import { easeOut, hoverLift, tapPress } from "@/lib/motion";
+import { isSafeHttpUrl, sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { AdPlaceholder } from "@/types/ads";
 
@@ -23,10 +27,24 @@ function resolveAdHref(ad: AdPlaceholder): string | undefined {
       from: ad.sectionId,
       sponsor: ad.sponsor,
       label: ad.label,
+      line: ad.line,
     });
   }
   const safe = sanitizeHref(ad.href, "");
   return safe || undefined;
+}
+
+function trackAdClick(id: string) {
+  const url = `/api/public/ad-click?id=${encodeURIComponent(id)}&noredirect=1`;
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      navigator.sendBeacon(url);
+      return;
+    }
+  } catch {
+    /* fall through */
+  }
+  void fetch(url, { method: "POST", keepalive: true }).catch(() => {});
 }
 
 /**
@@ -34,6 +52,14 @@ function resolveAdHref(ad: AdPlaceholder): string | undefined {
  * Supports text-only, image+copy, or full-bleed image creatives.
  */
 export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
+  const router = useRouter();
+  const [leaving, setLeaving] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
   const label = ad.label ?? "Partner";
   const ink = ad.tone === "ink";
   const { cleanUrl: adCleanUrl, objectPosition: adPosition } = parseFocalUrl(
@@ -46,6 +72,53 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const hasCaption = Boolean(ad.sponsor || ad.line);
   const title = ad.sponsor ?? ad.imageAlt ?? label;
   const linkHref = resolveAdHref(ad);
+  const externalTracked =
+    Boolean(ad.id) && Boolean(ad.href && isSafeHttpUrl(ad.href));
+
+  const onPromoNavigate = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!linkHref) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (event.button !== 0) return;
+
+    // External partner URL still goes through redirect tracker — show veil only.
+    if (externalTracked) {
+      setLeaving(true);
+      return;
+    }
+
+    const goesToPromo =
+      linkHref.startsWith("/iklan") ||
+      linkHref.startsWith("/api/public/ad-click");
+    if (!goesToPromo) return;
+
+    event.preventDefault();
+    setLeaving(true);
+
+    const dest = buildIklanPath({
+      from: ad.sectionId,
+      id: ad.id,
+      sponsor: ad.sponsor,
+      label: ad.label,
+      line: ad.line,
+    });
+
+    if (ad.id) trackAdClick(ad.id);
+    router.push(dest);
+  };
+
+  const onPromoPrefetch = () => {
+    if (externalTracked) return;
+    if (!ad.sectionId && !ad.id && !linkHref?.startsWith("/iklan")) return;
+    router.prefetch(
+      buildIklanPath({
+        from: ad.sectionId,
+        id: ad.id,
+        sponsor: ad.sponsor,
+        label: ad.label,
+        line: ad.line,
+      }),
+    );
+  };
 
   const plateClass = cn(
     "group relative block overflow-hidden transition-colors",
@@ -288,9 +361,13 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
         <motion.a
           href={linkHref}
           rel="sponsored noopener noreferrer"
-          whileHover={hoverLift}
-          whileTap={tapPress}
-          className={plateClass}
+          whileHover={leaving ? undefined : hoverLift}
+          whileTap={leaving ? undefined : tapPress}
+          onClick={onPromoNavigate}
+          onMouseEnter={onPromoPrefetch}
+          onFocus={onPromoPrefetch}
+          aria-busy={leaving}
+          className={cn(plateClass, leaving && "pointer-events-none opacity-80")}
         >
           {body}
         </motion.a>
@@ -299,6 +376,26 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
           {body}
         </motion.div>
       )}
+
+      {portalReady
+        ? createPortal(
+            <AnimatePresence>
+              {leaving ? (
+                <motion.div
+                  key="ad-promo-leave"
+                  className="fixed inset-0 z-[80]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.28, ease: easeOut }}
+                >
+                  <AdPromoLoadingShell compact />
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
     </aside>
   );
 }

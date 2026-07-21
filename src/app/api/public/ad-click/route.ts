@@ -23,6 +23,10 @@ async function handleAdClick(request: NextRequest) {
   const parsed = idSchema.safeParse(id);
   if (!parsed.success) return errorResponse("Invalid ad id", 400);
 
+  const noredirect =
+    request.nextUrl.searchParams.get("noredirect") === "1" ||
+    request.nextUrl.searchParams.get("noredirect") === "true";
+
   const supabase = createSupabaseAdmin();
   const { data: ad, error } = await supabase
     .from("ad_slots")
@@ -43,6 +47,10 @@ async function handleAdClick(request: NextRequest) {
 
   if (updateError) {
     console.error("[ad-click] click_count update failed", updateError);
+  }
+
+  if (noredirect) {
+    return new NextResponse(null, { status: 204 });
   }
 
   const destination = resolveAdClickDestination(row);
