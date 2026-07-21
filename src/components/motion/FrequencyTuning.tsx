@@ -120,10 +120,10 @@ export function FrequencyTuning() {
       // Tentang burn lives in TentangSection (scoped to its layers).
 
       // —— Kontak switchboard ——
-      const channels = document.querySelectorAll<HTMLElement>(
-        "#kontak [data-channel]",
-      );
-      if (channels.length && !reduced) {
+      // useGSAP scope is an empty wrapper — don't use string "#kontak" (scoped miss).
+      const kontak = document.getElementById("kontak");
+      const channels = kontak?.querySelectorAll<HTMLElement>("[data-channel]");
+      if (kontak && channels && channels.length && !reduced) {
         gsap.from(channels, {
           opacity: 0,
           y: 16,
@@ -131,7 +131,7 @@ export function FrequencyTuning() {
           stagger: 0.09,
           ease: "expo.out",
           scrollTrigger: {
-            trigger: "#kontak",
+            trigger: kontak,
             start: "top 60%",
             toggleActions: "play none none reverse",
           },
