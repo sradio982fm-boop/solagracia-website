@@ -235,7 +235,7 @@ export function StickyMediaPlayer({
                 className={cn(
                   videoMaximized
                     ? "fixed inset-[var(--frame-inset)] z-[46] flex items-center justify-center p-4 md:p-8"
-                    : "absolute right-0 bottom-full z-10 max-h-[min(40dvh,16rem)] w-[min(20rem,100%)] origin-bottom-right overflow-hidden",
+                    : "absolute right-0 bottom-full z-10 mb-2.5 w-[min(22rem,100%)] origin-bottom-right overflow-hidden md:w-[min(26rem,46vw)]",
                 )}
                 initial={{ opacity: 0, y: videoMaximized ? 0 : 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -256,7 +256,7 @@ export function StickyMediaPlayer({
                     "relative overflow-hidden border border-[var(--frame-line)] bg-black",
                     videoMaximized
                       ? "aspect-video w-full max-w-5xl shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
-                      : "aspect-video w-full border-b-0 shadow-[0_-12px_40px_rgba(0,0,0,0.45)]",
+                      : "aspect-video w-full shadow-[0_12px_40px_rgba(0,0,0,0.5)]",
                   )}
                 >
                   <video
@@ -267,56 +267,93 @@ export function StickyMediaPlayer({
                     controls={false}
                   />
 
-                  <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-black/75 to-transparent px-2.5 py-2">
-                    <p className="min-w-0 truncate text-[10px] font-semibold tracking-[0.14em] text-white/80 uppercase">
+                  <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 bg-gradient-to-b from-black/80 via-black/35 to-transparent px-3 py-2.5">
+                    <p className="min-w-0 truncate text-[10px] font-semibold tracking-[0.14em] text-white/75 uppercase">
                       Live video · {stationName}
                     </p>
                     <button
                       type="button"
                       onClick={closeVideo}
-                      className="flex h-7 shrink-0 items-center gap-1.5 border border-white/25 bg-black/50 px-2 text-white transition-colors hover:bg-white/15"
+                      className={cn(
+                        "flex shrink-0 items-center justify-center border border-white/25 bg-black/55 text-white transition-colors hover:bg-white/15",
+                        videoMaximized
+                          ? "h-8 gap-1.5 px-2.5"
+                          : "h-8 w-8",
+                      )}
                       aria-label="Tutup video"
                     >
                       <CloseIcon />
-                      <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
-                        Tutup
-                      </span>
+                      {videoMaximized ? (
+                        <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
+                          Tutup
+                        </span>
+                      ) : null}
                     </button>
                   </div>
 
-                  <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/85 to-transparent px-2.5 py-2.5">
-                    <button
-                      type="button"
-                      onClick={() => void toggleVideoPlayback()}
-                      className="flex h-8 shrink-0 items-center gap-1.5 border border-white/25 bg-black/50 px-2 text-white transition-colors hover:bg-white/15"
-                      aria-label={videoPlaying ? "Jeda video" : "Putar video"}
-                    >
-                      {videoPlaying ? <PauseIcon /> : <PlayIcon />}
-                      <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
-                        {videoPlaying ? "Jeda" : "Putar"}
-                      </span>
-                    </button>
-                    <p className="min-w-0 flex-1 truncate text-[11px] text-white/70">
-                      {showTitle}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setMode(videoMaximized ? "video-mini" : "video-max")
-                      }
-                      className="flex h-8 shrink-0 items-center gap-1.5 border border-white/25 bg-black/50 px-2 text-white transition-colors hover:bg-white/15"
-                      aria-label={
-                        videoMaximized
-                          ? "Kecilkan ke mini player"
-                          : "Perbesar video"
-                      }
-                    >
-                      {videoMaximized ? <MinimizeIcon /> : <MaximizeIcon />}
-                      <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
-                        {videoMaximized ? "Kecilkan" : "Perbesar"}
-                      </span>
-                    </button>
-                  </div>
+                  {videoMaximized ? (
+                    <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3 py-3">
+                      <button
+                        type="button"
+                        onClick={() => void toggleVideoPlayback()}
+                        className="flex h-9 shrink-0 items-center gap-1.5 border border-white/25 bg-black/55 px-2.5 text-white transition-colors hover:bg-white/15"
+                        aria-label={
+                          videoPlaying ? "Jeda video" : "Putar video"
+                        }
+                      >
+                        {videoPlaying ? <PauseIcon /> : <PlayIcon />}
+                        <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
+                          {videoPlaying ? "Jeda" : "Putar"}
+                        </span>
+                      </button>
+                      <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-white/80">
+                        {showTitle}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setMode("video-mini")}
+                        className="flex h-9 shrink-0 items-center gap-1.5 border border-white/25 bg-black/55 px-2.5 text-white transition-colors hover:bg-white/15"
+                        aria-label="Kecilkan ke mini player"
+                      >
+                        <MinimizeIcon />
+                        <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
+                          Kecilkan
+                        </span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/92 via-black/55 to-transparent px-3 pt-10 pb-3">
+                      <p className="mb-2.5 truncate text-[13px] leading-tight font-semibold tracking-tight text-white">
+                        {showTitle}
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void toggleVideoPlayback()}
+                          className="flex h-8 items-center gap-1.5 border border-white/25 bg-black/55 px-2.5 text-white transition-colors hover:bg-white/15"
+                          aria-label={
+                            videoPlaying ? "Jeda video" : "Putar video"
+                          }
+                        >
+                          {videoPlaying ? <PauseIcon /> : <PlayIcon />}
+                          <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
+                            {videoPlaying ? "Jeda" : "Putar"}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setMode("video-max")}
+                          className="flex h-8 items-center gap-1.5 border border-white/30 bg-white/10 px-2.5 text-white transition-colors hover:bg-white/20"
+                          aria-label="Perbesar video"
+                        >
+                          <MaximizeIcon />
+                          <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
+                            Perbesar
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ) : null}
