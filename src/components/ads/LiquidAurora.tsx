@@ -36,6 +36,7 @@ export function LiquidAurora({ className }: LiquidAuroraProps) {
       setMode("fallback");
       return;
     }
+    const ctx: WebGL2RenderingContext = gl;
 
     const vert = `#version 300 es
 in vec2 p;
@@ -175,13 +176,13 @@ void main(){
 }`;
 
     function compile(type: number, src: string) {
-      const s = gl.createShader(type);
+      const s = ctx.createShader(type);
       if (!s) throw new Error("shader create failed");
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-        const log = gl.getShaderInfoLog(s) || "compile error";
-        gl.deleteShader(s);
+      ctx.shaderSource(s, src);
+      ctx.compileShader(s);
+      if (!ctx.getShaderParameter(s, ctx.COMPILE_STATUS)) {
+        const log = ctx.getShaderInfoLog(s) || "compile error";
+        ctx.deleteShader(s);
         throw new Error(log);
       }
       return s;
@@ -193,38 +194,38 @@ void main(){
     let disposed = false;
 
     try {
-      prog = gl.createProgram();
+      prog = ctx.createProgram();
       if (!prog) throw new Error("program create failed");
-      const vs = compile(gl.VERTEX_SHADER, vert);
-      const fs = compile(gl.FRAGMENT_SHADER, frag);
-      gl.attachShader(prog, vs);
-      gl.attachShader(prog, fs);
-      gl.linkProgram(prog);
-      gl.deleteShader(vs);
-      gl.deleteShader(fs);
-      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-        throw new Error(gl.getProgramInfoLog(prog) || "link error");
+      const vs = compile(ctx.VERTEX_SHADER, vert);
+      const fs = compile(ctx.FRAGMENT_SHADER, frag);
+      ctx.attachShader(prog, vs);
+      ctx.attachShader(prog, fs);
+      ctx.linkProgram(prog);
+      ctx.deleteShader(vs);
+      ctx.deleteShader(fs);
+      if (!ctx.getProgramParameter(prog, ctx.LINK_STATUS)) {
+        throw new Error(ctx.getProgramInfoLog(prog) || "link error");
       }
-      gl.useProgram(prog);
+      ctx.useProgram(prog);
 
-      buf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
+      buf = ctx.createBuffer();
+      ctx.bindBuffer(ctx.ARRAY_BUFFER, buf);
+      ctx.bufferData(
+        ctx.ARRAY_BUFFER,
         new Float32Array([-1, -1, 3, -1, -1, 3]),
-        gl.STATIC_DRAW,
+        ctx.STATIC_DRAW,
       );
-      const loc = gl.getAttribLocation(prog, "p");
-      gl.enableVertexAttribArray(loc);
-      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const loc = ctx.getAttribLocation(prog, "p");
+      ctx.enableVertexAttribArray(loc);
+      ctx.vertexAttribPointer(loc, 2, ctx.FLOAT, false, 0, 0);
 
-      const uRes = gl.getUniformLocation(prog, "u_res");
-      const uT = gl.getUniformLocation(prog, "u_t");
-      const uMouse = gl.getUniformLocation(prog, "u_mouse");
-      const uAmp = gl.getUniformLocation(prog, "u_amp");
-      const uRing0 = gl.getUniformLocation(prog, "u_ring0");
-      const uRing1 = gl.getUniformLocation(prog, "u_ring1");
-      const uRing2 = gl.getUniformLocation(prog, "u_ring2");
+      const uRes = ctx.getUniformLocation(prog, "u_res");
+      const uT = ctx.getUniformLocation(prog, "u_t");
+      const uMouse = ctx.getUniformLocation(prog, "u_mouse");
+      const uAmp = ctx.getUniformLocation(prog, "u_amp");
+      const uRing0 = ctx.getUniformLocation(prog, "u_ring0");
+      const uRing1 = ctx.getUniformLocation(prog, "u_ring1");
+      const uRing2 = ctx.getUniformLocation(prog, "u_ring2");
 
       const t0 = performance.now();
       const pointer = {
@@ -292,7 +293,7 @@ void main(){
         if (canvas.width !== w || canvas.height !== h) {
           canvas.width = w;
           canvas.height = h;
-          gl.viewport(0, 0, w, h);
+          ctx.viewport(0, 0, w, h);
         }
       };
 
@@ -319,15 +320,15 @@ void main(){
         pointer.sy += (pointer.y - pointer.sy) * 0.06;
         pointer.amp *= 0.978;
 
-        gl.uniform2f(uRes, canvas.width, canvas.height);
-        gl.uniform1f(uT, sec);
-        gl.uniform2f(uMouse, pointer.sx, pointer.sy);
-        gl.uniform1f(uAmp, pointer.amp);
+        ctx.uniform2f(uRes, canvas.width, canvas.height);
+        ctx.uniform1f(uT, sec);
+        ctx.uniform2f(uMouse, pointer.sx, pointer.sy);
+        ctx.uniform1f(uAmp, pointer.amp);
         const [r0, r1, r2] = pointer.rings;
-        gl.uniform3f(uRing0, r0!.x, r0!.y, r0!.t);
-        gl.uniform3f(uRing1, r1!.x, r1!.y, r1!.t);
-        gl.uniform3f(uRing2, r2!.x, r2!.y, r2!.t);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        ctx.uniform3f(uRing0, r0!.x, r0!.y, r0!.t);
+        ctx.uniform3f(uRing1, r1!.x, r1!.y, r1!.t);
+        ctx.uniform3f(uRing2, r2!.x, r2!.y, r2!.t);
+        ctx.drawArrays(ctx.TRIANGLES, 0, 3);
         raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);
@@ -338,8 +339,8 @@ void main(){
         window.removeEventListener("resize", resize);
         window.removeEventListener("pointermove", onPointerMove);
         window.removeEventListener("pointerdown", onPointerDown);
-        if (buf) gl.deleteBuffer(buf);
-        if (prog) gl.deleteProgram(prog);
+        if (buf) ctx.deleteBuffer(buf);
+        if (prog) ctx.deleteProgram(prog);
       };
     } catch (err) {
       console.error("[LiquidAurora]", err);
