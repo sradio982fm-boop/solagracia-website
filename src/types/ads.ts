@@ -6,6 +6,8 @@ export type AdSlotTone = "match" | "ink";
 /** banner = wide 4:1 strip; portrait = vertical creative (3:4) */
 export type AdImageShape = "banner" | "portrait";
 
+export type AdCapableSectionId = "tentang" | "program" | "penyiar";
+
 /**
  * `image` — whole creative is the asset (sponsor/line optional for a11y).
  * Other variants may include `imageSrc` as a thumb beside/above copy.
@@ -13,6 +15,8 @@ export type AdImageShape = "banner" | "portrait";
 export type AdPlaceholder = {
   /** CMS ad slot id — enables click tracking redirect */
   id?: string;
+  /** Homepage section this plate sits in — used for /iklan WhatsApp context */
+  sectionId?: AdCapableSectionId;
   /** Quiet label — prefer Partner over “Iklan” */
   label?: string;
   sponsor?: string;

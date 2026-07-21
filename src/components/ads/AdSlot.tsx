@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { buildIklanPath } from "@/lib/ad-promo";
 import { parseFocalUrl } from "@/lib/focal-point";
 import { hoverLift, tapPress } from "@/lib/motion";
 import { sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
@@ -14,6 +15,19 @@ type AdSlotProps = {
   /** Shorter full-image plate for viewport-locked sections */
   compact?: boolean;
 };
+
+function resolveAdHref(ad: AdPlaceholder): string | undefined {
+  if (ad.id) return `/api/public/ad-click?id=${ad.id}`;
+  if (ad.sectionId) {
+    return buildIklanPath({
+      from: ad.sectionId,
+      sponsor: ad.sponsor,
+      label: ad.label,
+    });
+  }
+  const safe = sanitizeHref(ad.href, "");
+  return safe || undefined;
+}
 
 /**
  * Quiet sponsored plate — blueprint frame language.
@@ -31,11 +45,7 @@ export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const hasThumb = Boolean(safeImageSrc) && !isFullImage;
   const hasCaption = Boolean(ad.sponsor || ad.line);
   const title = ad.sponsor ?? ad.imageAlt ?? label;
-  const safeAdHref = sanitizeHref(ad.href, "");
-  const linkHref =
-    safeAdHref && ad.id
-      ? `/api/public/ad-click?id=${ad.id}`
-      : safeAdHref || undefined;
+  const linkHref = resolveAdHref(ad);
 
   const plateClass = cn(
     "group relative block overflow-hidden transition-colors",

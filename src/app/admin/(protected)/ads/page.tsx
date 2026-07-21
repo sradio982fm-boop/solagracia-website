@@ -29,6 +29,10 @@ import {
   SegmentedControl,
   NumberInput,
   Divider,
+  Code,
+  ActionIcon,
+  Tooltip,
+  CopyButton,
 } from "@mantine/core";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
@@ -39,6 +43,7 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { AdSlot as AdSlotPreview } from "@/components/ads/AdSlot";
+import { formatAdPromoRef } from "@/lib/ad-promo";
 import type { AdImageShape, AdSlotTone, AdSlotVariant } from "@/types/ads";
 import { changeValue } from "@/lib/admin/form";
 
@@ -261,7 +266,7 @@ export default function AdsAdminPage() {
         <AdminEmptyState
           icon="campaign"
           title="Belum ada slot iklan"
-          description="Tambah slot atau seed dari data statis — halaman publik memakai fallback sampai slot published ada."
+          description="Tambah slot atau seed dari data statis — halaman publik memakai /public/ads dan mengarah ke /iklan (WhatsApp) sampai slot published aktif."
           actionLabel="Tambah Slot"
           onAction={openCreate}
         />
@@ -317,7 +322,42 @@ export default function AdsAdminPage() {
                     </Text>
                   ) : null}
 
-                  <Group gap="md" mt={4}>
+                  <Group gap="md" mt={4} wrap="wrap" align="center">
+                    <Group gap={6} wrap="nowrap" align="center">
+                      <Text size="xs" c="dimmed" tt="uppercase" lts={0.6} fw={600}>
+                        Ref
+                      </Text>
+                      <Code
+                        style={{ fontSize: 11 }}
+                        title={`UUID penuh: ${ad.id}`}
+                      >
+                        {formatAdPromoRef(ad.id)}
+                      </Code>
+                      <CopyButton value={ad.id} timeout={1500}>
+                        {({ copied, copy }) => (
+                          <Tooltip
+                            label={copied ? "UUID disalin" : "Salin UUID penuh"}
+                            withArrow
+                          >
+                            <ActionIcon
+                              size="sm"
+                              variant="subtle"
+                              color={copied ? "teal" : "dark"}
+                              onClick={copy}
+                              aria-label="Salin UUID iklan"
+                            >
+                              <i
+                                className="material-icons"
+                                style={{ fontSize: 14, lineHeight: 1 }}
+                                aria-hidden
+                              >
+                                {copied ? "check" : "content_copy"}
+                              </i>
+                            </ActionIcon>
+                          </Tooltip>
+                        )}
+                      </CopyButton>
+                    </Group>
                     <Text size="xs" c="dimmed">
                       <Text span fw={600} c="dark">
                         {ad.clickCount.toLocaleString("id-ID")}
@@ -375,6 +415,43 @@ export default function AdsAdminPage() {
         size="xl"
       >
         <Stack gap="md">
+          {editing ? (
+            <Group gap="sm" wrap="wrap" align="center">
+              <Text size="sm" fw={500}>
+                Ref
+              </Text>
+              <Code>{formatAdPromoRef(editing.id)}</Code>
+              <Text size="xs" c="dimmed">
+                sama dengan yang tampil di /iklan & WhatsApp
+              </Text>
+              <CopyButton value={editing.id} timeout={1500}>
+                {({ copied, copy }) => (
+                  <Tooltip
+                    label={copied ? "UUID disalin" : "Salin UUID penuh"}
+                    withArrow
+                  >
+                    <ActionIcon
+                      size="sm"
+                      variant="light"
+                      color={copied ? "teal" : "dark"}
+                      onClick={copy}
+                      aria-label="Salin UUID iklan"
+                    >
+                      <i
+                        className="material-icons"
+                        style={{ fontSize: 14, lineHeight: 1 }}
+                        aria-hidden
+                      >
+                        {copied ? "check" : "content_copy"}
+                      </i>
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </CopyButton>
+              <Code style={{ fontSize: 11, maxWidth: "100%" }}>{editing.id}</Code>
+            </Group>
+          ) : null}
+
           <Select
             label="Section"
             data={sectionOptions}

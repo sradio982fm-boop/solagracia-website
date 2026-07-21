@@ -17,8 +17,17 @@ import { mapPartnerFromConfig } from "@/lib/partner";
 import {
   AD_CAPABLE_SECTIONS,
   buildSectionAdsFromRows,
+  isAdScheduledActive,
   type AdSlotRow,
 } from "@/lib/ads";
+import {
+  adSlotRowToPromoSource,
+  isAdCapableSection,
+  isAdPromoId,
+  mergeAdPromoSource,
+  parseAdPromoSearchParams,
+  type AdPromoSource,
+} from "@/lib/ad-promo";
 import type { SectionId } from "@/data/constants";
 import {
   buildFallbackSectionConfig,
@@ -644,5 +653,75 @@ export async function fetchSectionAds(): Promise<
   } catch {
     return buildSectionAdsFromRows([]);
   }
+}
+
+type AdPromoRow = Pick<
+  AdSlotRow,
+  "id" | "section_id" | "sponsor" | "label" | "line" | "starts_at" | "ends_at"
+>;
+
+async function fetchPublishedAdById(id: string): Promise<AdPromoRow | null> {
+  try {
+    const supabase = createSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("ad_slots")
+      .select("id, section_id, sponsor, label, line, starts_at, ends_at")
+      .eq("id", id)
+      .eq("status", "published")
+      .maybeSingle();
+
+    if (error || !data) return null;
+    const row = data as AdPromoRow;
+    if (!isAdScheduledActive(row)) return null;
+    return row;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchLiveAdForSection(
+  sectionId: string,
+): Promise<AdPromoRow | null> {
+  if (!isAdCapableSection(sectionId)) return null;
+  try {
+    const supabase = createSupabaseAdmin();
+    const { data, error } = await supabase
+      .from("ad_slots")
+      .select("id, section_id, sponsor, label, line, starts_at, ends_at, is_visible, sort_order")
+      .eq("section_id", sectionId)
+      .eq("status", "published")
+      .eq("is_visible", true)
+      .order("sort_order", { ascending: true });
+
+    if (error || !data?.length) return null;
+    const live = (data as (AdPromoRow & { is_visible: boolean })[]).find(
+      (row) => isAdScheduledActive(row),
+    );
+    return live ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve /iklan query params against `ad_slots`.
+ * Prefer DB by id; else live published slot for `from`; else URL params.
+ */
+export async function resolveAdPromoSource(
+  searchParams: Record<string, string | string[] | undefined>,
+): Promise<AdPromoSource> {
+  const parsed = parseAdPromoSearchParams(searchParams);
+
+  if (isAdPromoId(parsed.id)) {
+    const row = await fetchPublishedAdById(parsed.id!);
+    if (row) return mergeAdPromoSource(parsed, adSlotRowToPromoSource(row));
+  }
+
+  if (isAdCapableSection(parsed.from)) {
+    const live = await fetchLiveAdForSection(parsed.from);
+    if (live) return mergeAdPromoSource(parsed, adSlotRowToPromoSource(live));
+  }
+
+  return parsed;
 }
 

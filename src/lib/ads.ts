@@ -1,6 +1,7 @@
 import type { SectionId } from "@/data/constants";
 import { SECTION_ADS } from "@/data/ads";
 import type {
+  AdCapableSectionId,
   AdImageShape,
   AdPlaceholder,
   AdSlotTone,
@@ -10,7 +11,7 @@ import type {
 /** Sections that may carry a quiet partner ad plate (MVP allowlist). */
 export const AD_CAPABLE_SECTIONS = ["tentang", "program", "penyiar"] as const;
 
-export type AdCapableSectionId = (typeof AD_CAPABLE_SECTIONS)[number];
+export type { AdCapableSectionId };
 
 export type AdSlotRow = {
   id: string;
@@ -93,6 +94,7 @@ export function mapAdSlot(row: Record<string, unknown>): AdSlot {
 export function adSlotToPlaceholder(slot: AdSlot): AdPlaceholder {
   return {
     id: slot.id,
+    sectionId: slot.sectionId,
     ...(slot.label ? { label: slot.label } : {}),
     ...(slot.sponsor ? { sponsor: slot.sponsor } : {}),
     ...(slot.line ? { line: slot.line } : {}),

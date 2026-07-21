@@ -3,36 +3,32 @@ import type { AdPlaceholder } from "@/types/ads";
 
 /**
  * Static `/public/ads` creatives — used when no live CMS ad exists for a section.
- * Live = published + is_visible + inside schedule. Intentional hide (published +
- * is_visible false) suppresses this fallback.
- *
- * Modes:
- * - text only
- * - image + copy (`imageSrc` on strip/panel/inline)
- * - full image (`variant: "image"`)
+ * Clicks open `/iklan` promo with WhatsApp CTA (section context in query).
  */
 export const SECTION_ADS: Partial<Record<SectionId, AdPlaceholder>> = {
   tentang: {
+    sectionId: "tentang",
     label: "Partner",
     variant: "image",
     tone: "ink",
-    /** 4:1 — deliver at 1600×400 or 2000×500 */
     imageShape: "banner",
     imageSrc: "/ads/about-section-ad.webp",
     imageAlt:
       "Space iklan ini bisa jadi milik kamu — jangkau audiens luas bersama S Radio",
-    href: "#kontak",
+    href: "/iklan?from=tentang&label=Partner",
   },
   program: {
+    sectionId: "program",
     label: "Partner",
     sponsor: "Space Iklan",
     line: "Sewakan sekarang — jangkau lebih banyak audiens bersama kami.",
     variant: "panel",
     imageSrc: "/ads/program-section-ad.webp",
     imageAlt: "Space iklan program — brand Anda didengar banyak orang",
-    href: "#kontak",
+    href: "/iklan?from=program&sponsor=Space+Iklan&label=Partner",
   },
   penyiar: {
+    sectionId: "penyiar",
     label: "Partner",
     sponsor: "Space Iklan",
     line: "Jangkau lebih banyak audiens bersama kami.",
@@ -40,6 +36,6 @@ export const SECTION_ADS: Partial<Record<SectionId, AdPlaceholder>> = {
     tone: "ink",
     imageSrc: "/ads/penyiar-section-ad.webp",
     imageAlt: "Space iklan penyiar — your brand, your impact",
-    href: "#kontak",
+    href: "/iklan?from=penyiar&sponsor=Space+Iklan&label=Partner",
   },
 };
