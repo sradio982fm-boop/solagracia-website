@@ -36,18 +36,21 @@ export function splitBrandLines(brand: string): string[] {
 export function HeroTitle({ brand, eyebrow, support }: HeroTitleProps) {
   const lines = splitBrandLines(brand);
   const supportText = support.trim();
+  const eyebrowText = eyebrow.trim();
   const ariaLabel = lines.join(" — ") || brand;
 
   return (
     <>
-      <motion.p
-        className="text-[11px] font-semibold tracking-[0.32em] text-white/80 uppercase md:text-[12px]"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: easeOut }}
-      >
-        {eyebrow}
-      </motion.p>
+      {eyebrowText ? (
+        <motion.p
+          className="text-[11px] font-semibold tracking-[0.32em] text-white/80 uppercase md:text-[12px]"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: easeOut }}
+        >
+          {eyebrowText}
+        </motion.p>
+      ) : null}
 
       <motion.h1
         className="relative mt-3 w-full max-w-[18ch] text-[clamp(2.35rem,7.5vw,3.9rem)] leading-[1.08] font-extrabold tracking-[-0.015em] md:max-w-none md:text-[clamp(2.15rem,2.85vw,3.35rem)] md:leading-[1.08]"

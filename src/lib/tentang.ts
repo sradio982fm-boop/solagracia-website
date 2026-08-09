@@ -202,12 +202,22 @@ export function mapTentangFromConfig(
   >(section.testimonial, testimonialToCms(fallback.testimonial));
 
   return {
-    headline: section.headline?.trim() || fallback.headline,
-    headlineAccent: section.headline_accent?.trim() || fallback.headlineAccent,
+    // Present key with "" → respect empty (do not revive fallback copy).
+    headline:
+      "headline" in section
+        ? (section.headline ?? "").trim()
+        : fallback.headline,
+    headlineAccent:
+      "headline_accent" in section
+        ? (section.headline_accent ?? "").trim()
+        : fallback.headlineAccent,
     body: "body" in section ? body : fallback.body,
     stats: "stats" in section ? stats : fallback.stats,
     ctas: "ctas" in section ? (ctas.length ? ctas : []) : fallback.ctas,
-    socialLabel: section.social_label?.trim() || fallback.socialLabel,
+    socialLabel:
+      "social_label" in section
+        ? (section.social_label ?? "").trim()
+        : fallback.socialLabel,
     testimonial: mapCmsTestimonial(testimonialRaw),
     ...(frequencyLabel ? { frequencyLabel } : {}),
   };

@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Edit-only: updates existing `(section, key)` rows. Never inserts.
- * Missing keys are reported so admins can't accidentally create orphans.
+ * Upsert `(section, key)` so admin can set new known fields
+ * (e.g. brand.parent_site_url) without a separate seed migration.
  */
 export async function PUT(request: NextRequest) {
   const auth = await requireAdmin(request);
@@ -119,17 +119,17 @@ export async function PUT(request: NextRequest) {
   let updated = 0;
 
   for (const { section, key, value, valueType } of updates) {
-    const payload: Record<string, unknown> = {
+    const payload = {
+      section,
+      key,
       value,
+      value_type: valueType ?? (isUrlKey(key) ? "url" : "text"),
       updated_at: new Date().toISOString(),
     };
-    if (valueType !== undefined) payload.value_type = valueType;
 
     const { data, error } = await supabase
       .from("site_config")
-      .update(payload)
-      .eq("section", section)
-      .eq("key", key)
+      .upsert(payload, { onConflict: "section,key" })
       .select("id");
 
     if (error) {
@@ -138,11 +138,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (!data?.length) {
-      failed.push({
-        section,
-        key,
-        reason: "Config key not found — edit only, no insert",
-      });
+      failed.push({ section, key, reason: "Upsert returned no rows" });
       continue;
     }
 
@@ -150,11 +146,13 @@ export async function PUT(request: NextRequest) {
   }
 
   revalidatePath("/");
+  revalidatePath("/", "layout");
+  revalidatePath("/privasi");
 
   if (failed.length === updates.length) {
     return errorResponse(
-      failed[0]?.reason ?? "Config keys not found — edit only, no insert",
-      404,
+      failed[0]?.reason ?? "Failed to update site config",
+      500,
     );
   }
 

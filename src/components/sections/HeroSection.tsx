@@ -54,12 +54,14 @@ export function HeroSection({
 
   const { cleanUrl: coverCleanUrl, focus: coverFocus } = parseFocalUrl(coverSrc);
   const safeCoverSrc = sanitizeAssetSrc(coverCleanUrl, HERO_COVER_FALLBACK);
+  const safeCoverAlt = coverAlt.trim() || brand.trim() || "Solagracia";
   const safeMobileCtaHref = sanitizeHref(mobileCtaHref, "#kontak");
   const showMobileCta = Boolean(mobileCtaLabel.trim());
   const parentHref =
     parentSiteUrl && isSafeHttpUrl(parentSiteUrl)
       ? sanitizeHref(parentSiteUrl)
       : "";
+  // Label default only when outbound CTA is shown.
   const parentLabel = parentSiteLabel?.trim() || "S Radio";
   // Portrait mobile crop ≠ desktop 16:9 framing — keep phone centered;
   // honor CMS focus from md up where the admin preview matches.
@@ -128,7 +130,7 @@ export function HeroSection({
         >
           <Image
             src={safeCoverSrc}
-            alt={coverAlt}
+            alt={safeCoverAlt}
             fill
             priority
             sizes="100vw"

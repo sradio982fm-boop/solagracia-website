@@ -211,11 +211,20 @@ function textAllowEmpty(
   return value;
 }
 
-function parseHeroCtas(raw: string | null | undefined): HeroCta[] {
-  if (!raw) return fallbackHero.ctas;
+/**
+ * Missing / invalid → fallback.
+ * Explicit `[]` → [] (admin cleared all CTAs).
+ */
+function parseHeroCtas(
+  section: Record<string, string | null> | undefined,
+  key: string,
+): HeroCta[] {
+  if (!section || !(key in section)) return fallbackHero.ctas;
+  const raw = section[key];
+  if (raw === null || raw === undefined || raw === "") return [];
   try {
     const parsed = JSON.parse(raw) as HeroCta[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return fallbackHero.ctas;
+    if (!Array.isArray(parsed)) return fallbackHero.ctas;
     return parsed.filter(
       (cta): cta is HeroCta =>
         typeof cta?.label === "string" && typeof cta?.href === "string",
@@ -304,17 +313,19 @@ export async function fetchHeroContent(
 
     return {
       brand: text(hero, "brand", fallbackHero.brand),
-      eyebrow: text(hero, "eyebrow", fallbackHero.eyebrow),
+      // Explicit empty clears eyebrow — do not revive fallback.
+      eyebrow: textAllowEmpty(hero, "eyebrow", fallbackHero.eyebrow),
       support: textAllowEmpty(hero, "support", fallbackHero.support),
-      verticalTagline: text(
+      verticalTagline: textAllowEmpty(
         hero,
         "vertical_tagline",
         fallbackHero.verticalTagline,
       ),
       coverSrc: text(hero, "cover_url", fallbackHero.coverSrc),
-      coverAlt: text(hero, "cover_alt", fallbackHero.coverAlt),
+      // Explicit empty alt stays empty (component uses brand as last resort).
+      coverAlt: textAllowEmpty(hero, "cover_alt", fallbackHero.coverAlt),
       logoSrc: text(hero, "logo_url", fallbackHero.logoSrc),
-      ctas: parseHeroCtas(hero.ctas),
+      ctas: parseHeroCtas(hero, "ctas"),
       mobileCtaLabel: textAllowEmpty(
         hero,
         "mobile_cta_label",

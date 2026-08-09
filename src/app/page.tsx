@@ -37,7 +37,8 @@ import { getOnAirShow, getUpcomingShows, getWeekdayId } from "@/lib/schedule";
 import { toFooterSocialLinks, toSocialLinks } from "@/lib/social";
 import type { ReactNode } from "react";
 
-export const revalidate = 3600;
+/** ISR safety net — admin saves also call revalidatePath("/"). Keep short so CMS edits surface quickly. */
+export const revalidate = 60;
 
 /**
  * Home — SSR content from Supabase with static fallbacks.
