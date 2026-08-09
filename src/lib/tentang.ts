@@ -9,7 +9,7 @@ import { tentangContent as fallback } from "@/data/tentang";
 
 /** Admin / CMS shape for social proof. Prefer `quote` parts; legacy fields still map. */
 export type CmsTentangTestimonial = {
-  platform: "x" | "threads";
+  platform: "x" | "threads" | "instagram";
   date: string;
   /** Rich quote parts (Phase 2 editor). */
   quote?: SocialQuotePart[];
@@ -26,8 +26,18 @@ export type CmsTentangTestimonial = {
 
 export function isRichTestimonial(
   raw: CmsTentangTestimonial | SocialTestimonial,
-): raw is SocialTestimonial | (CmsTentangTestimonial & { quote: SocialQuotePart[] }) {
+): raw is
+  | SocialTestimonial
+  | (CmsTentangTestimonial & { quote: SocialQuotePart[] }) {
   return "quote" in raw && Array.isArray(raw.quote) && raw.quote.length > 0;
+}
+
+function normalizePlatform(
+  platform: string | undefined,
+): SocialTestimonial["platform"] {
+  if (platform === "threads") return "threads";
+  if (platform === "instagram") return "instagram";
+  return "x";
 }
 
 export function buildQuoteParts(input: {
@@ -72,7 +82,7 @@ export function mapCmsTestimonial(
 
   if (isRichTestimonial(raw)) {
     return {
-      platform: raw.platform === "threads" ? "threads" : "x",
+      platform: normalizePlatform(raw.platform),
       date: raw.date || fallback.testimonial.date,
       quote: raw.quote.filter((part) => {
         if (part.type === "text" || part.type === "mention") {
@@ -83,13 +93,14 @@ export function mapCmsTestimonial(
       authorName: raw.authorName || fallback.testimonial.authorName,
       authorHandle: raw.authorHandle || fallback.testimonial.authorHandle,
       authorInitials: raw.authorInitials || fallback.testimonial.authorInitials,
-      href: raw.href || fallback.testimonial.href,
+      // Explicit empty href hides the card — do not revive fallback URL.
+      href: typeof raw.href === "string" ? raw.href : fallback.testimonial.href,
     };
   }
 
   const cms = raw as CmsTentangTestimonial;
   return {
-    platform: cms.platform === "threads" ? "threads" : "x",
+    platform: normalizePlatform(cms.platform),
     date: cms.date || fallback.testimonial.date,
     quote: buildQuoteParts({
       quote_text: cms.quote_text || "",
@@ -100,7 +111,7 @@ export function mapCmsTestimonial(
     authorName: cms.authorName || fallback.testimonial.authorName,
     authorHandle: cms.authorHandle || fallback.testimonial.authorHandle,
     authorInitials: cms.authorInitials || fallback.testimonial.authorInitials,
-    href: cms.href || fallback.testimonial.href,
+    href: typeof cms.href === "string" ? cms.href : fallback.testimonial.href,
   };
 }
 
@@ -118,17 +129,37 @@ export function testimonialToCms(
   };
 }
 
-function parseJsonArray<T>(raw: string | null | undefined, fallbackValue: T[]): T[] {
-  if (!raw) return fallbackValue;
+/** True when social-proof card should render (needs outbound href). */
+export function hasVisibleTestimonial(
+  testimonial: SocialTestimonial | null | undefined,
+): boolean {
+  return Boolean(testimonial?.href?.trim());
+}
+
+/**
+ * Missing key → fallback.
+ * Present key with "[]" / empty → [] (respect cleared CMS).
+ */
+function parseJsonArrayAllowEmpty<T>(
+  section: Record<string, string | null>,
+  key: string,
+  fallbackValue: T[],
+): T[] {
+  if (!(key in section)) return fallbackValue;
+  const raw = section[key];
+  if (raw === null || raw === undefined || raw === "") return [];
   try {
     const parsed = JSON.parse(raw) as T[];
-    return Array.isArray(parsed) && parsed.length ? parsed : fallbackValue;
+    return Array.isArray(parsed) ? parsed : fallbackValue;
   } catch {
     return fallbackValue;
   }
 }
 
-function parseJsonObject<T>(raw: string | null | undefined, fallbackValue: T): T {
+function parseJsonObject<T>(
+  raw: string | null | undefined,
+  fallbackValue: T,
+): T {
   if (!raw) return fallbackValue;
   try {
     return JSON.parse(raw) as T;
@@ -148,26 +179,34 @@ export function mapTentangFromConfig(
     };
   }
 
-  const stats = parseJsonArray<TentangStat>(section.stats, fallback.stats).filter(
-    (s) => s?.value && s?.label,
-  );
-  const ctas = parseJsonArray<TentangCta>(section.ctas, fallback.ctas).filter(
-    (c) => c?.label && c?.href,
-  );
-  const body = parseJsonArray<string>(section.body, fallback.body).filter(
-    (p) => typeof p === "string" && p.trim(),
-  );
-  const testimonialRaw = parseJsonObject<CmsTentangTestimonial | SocialTestimonial>(
-    section.testimonial,
-    testimonialToCms(fallback.testimonial),
-  );
+  const stats = parseJsonArrayAllowEmpty<TentangStat>(
+    section,
+    "stats",
+    fallback.stats,
+  ).filter((s) => s?.value && s?.label);
+
+  const ctas = parseJsonArrayAllowEmpty<TentangCta>(
+    section,
+    "ctas",
+    fallback.ctas,
+  ).filter((c) => c?.label && c?.href);
+
+  const body = parseJsonArrayAllowEmpty<string>(
+    section,
+    "body",
+    fallback.body,
+  ).filter((p) => typeof p === "string" && p.trim());
+
+  const testimonialRaw = parseJsonObject<
+    CmsTentangTestimonial | SocialTestimonial
+  >(section.testimonial, testimonialToCms(fallback.testimonial));
 
   return {
     headline: section.headline?.trim() || fallback.headline,
     headlineAccent: section.headline_accent?.trim() || fallback.headlineAccent,
-    body: body.length ? body : fallback.body,
-    stats: stats.length ? stats : fallback.stats,
-    ctas: ctas.length ? ctas : fallback.ctas,
+    body: "body" in section ? body : fallback.body,
+    stats: "stats" in section ? stats : fallback.stats,
+    ctas: "ctas" in section ? (ctas.length ? ctas : []) : fallback.ctas,
     socialLabel: section.social_label?.trim() || fallback.socialLabel,
     testimonial: mapCmsTestimonial(testimonialRaw),
     ...(frequencyLabel ? { frequencyLabel } : {}),

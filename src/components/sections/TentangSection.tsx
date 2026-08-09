@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import { motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { ensureGsap, prefersReducedMotion } from "@/lib/gsap";
@@ -13,6 +13,7 @@ import {
   staggerContainer,
   viewportOnce,
 } from "@/lib/motion";
+import { hasVisibleTestimonial } from "@/lib/tentang";
 import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { AdPlaceholder } from "@/types/ads";
@@ -44,6 +45,7 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const { testimonial } = content;
   const frequencyLabel = content.frequencyLabel || "98.2 FM";
+  const showSocialProof = hasVisibleTestimonial(testimonial);
 
   useGSAP(
     () => {
@@ -95,7 +97,14 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
 
       {/* Top-aligned stack — copy fills the stage, ad rides directly under it */}
       <div className="relative z-[1] mx-auto flex h-full min-h-0 w-full max-w-[1180px] flex-col justify-start gap-2 pt-1 lg:gap-2 lg:pt-2">
-        <div className="grid shrink-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)] lg:items-start lg:gap-12">
+        <div
+          className={cn(
+            "grid shrink-0 grid-cols-1 gap-6 lg:items-start lg:gap-12",
+            showSocialProof
+              ? "lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)]"
+              : "lg:grid-cols-1",
+          )}
+        >
           <motion.div
             className="flex flex-col"
             variants={columnVariants}
@@ -124,23 +133,31 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
               </span>
             </motion.h2>
 
-            <motion.p
-              variants={itemVariants}
-              className="mt-4 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-[clamp(1rem,1.5vw,1.15rem)] font-semibold tracking-[-0.01em] text-[var(--section-fg)]"
-            >
-              {content.stats.map((stat, index) => (
-                <span key={stat.label} className="inline-flex items-baseline gap-1">
-                  <span className="underline decoration-[var(--section-fg)] decoration-1 underline-offset-[5px]">
-                    {stat.value} {stat.label}
-                  </span>
-                  {index < content.stats.length - 1 ? (
-                    <span className="mx-1 text-[var(--section-muted)]" aria-hidden>
-                      ,
+            {content.stats.length > 0 ? (
+              <motion.p
+                variants={itemVariants}
+                className="mt-4 flex flex-wrap items-baseline gap-x-1 gap-y-1 text-[clamp(1rem,1.5vw,1.15rem)] font-semibold tracking-[-0.01em] text-[var(--section-fg)]"
+              >
+                {content.stats.map((stat, index) => (
+                  <span
+                    key={`${stat.value}-${stat.label}-${index}`}
+                    className="inline-flex items-baseline gap-1"
+                  >
+                    <span className="underline decoration-[var(--section-fg)] decoration-1 underline-offset-[5px]">
+                      {stat.value} {stat.label}
                     </span>
-                  ) : null}
-                </span>
-              ))}
-            </motion.p>
+                    {index < content.stats.length - 1 ? (
+                      <span
+                        className="mx-1 text-[var(--section-muted)]"
+                        aria-hidden
+                      >
+                        ,
+                      </span>
+                    ) : null}
+                  </span>
+                ))}
+              </motion.p>
+            ) : null}
 
             <motion.div
               variants={itemVariants}
@@ -148,7 +165,7 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
             >
               {content.body.map((paragraph, index) => (
                 <p key={index} className="m-0">
-                  {paragraph}
+                  <ParagraphWithBreaks text={paragraph} />
                 </p>
               ))}
             </motion.div>
@@ -178,101 +195,107 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
             </motion.div>
           </motion.div>
 
-          <motion.aside
-            className="flex flex-col lg:pt-1"
-            aria-label={content.socialLabel}
-            variants={railVariants}
-            initial="hidden"
-            whileInView="show"
-            viewport={viewport}
-          >
-            <motion.h3
-              variants={itemVariants}
-              className="m-0 max-w-[20ch] text-[1.05rem] font-medium tracking-[-0.01em] text-[var(--section-fg)] lg:text-[1.15rem]"
+          {showSocialProof ? (
+            <motion.aside
+              className="flex flex-col lg:pt-1"
+              aria-label={content.socialLabel}
+              variants={railVariants}
+              initial="hidden"
+              whileInView="show"
+              viewport={viewport}
             >
-              {content.socialLabel}
-            </motion.h3>
+              <motion.h3
+                variants={itemVariants}
+                className="m-0 max-w-[20ch] text-[1.05rem] font-medium tracking-[-0.01em] text-[var(--section-fg)] lg:text-[1.15rem]"
+              >
+                {content.socialLabel}
+              </motion.h3>
 
-            <motion.blockquote
-              cite={testimonial.href}
-              variants={cardVariants}
-              whileHover={{ y: -3 }}
-              transition={{ duration: 0.3, ease: easeOut }}
-              className="relative mt-4 m-0 overflow-hidden border border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_88%,transparent)] px-5 py-5 backdrop-blur-[2px] sm:px-6 sm:py-6"
-            >
-              <span
-                className="pointer-events-none absolute top-0 left-0 h-2 w-2 border-t border-l border-[rgba(12,12,14,0.45)]"
-                aria-hidden
-              />
-              <span
-                className="pointer-events-none absolute top-0 right-0 h-2 w-2 border-t border-r border-[rgba(12,12,14,0.45)]"
-                aria-hidden
-              />
-              <span
-                className="pointer-events-none absolute bottom-0 left-0 h-2 w-2 border-b border-l border-[rgba(12,12,14,0.45)]"
-                aria-hidden
-              />
-              <span
-                className="pointer-events-none absolute right-0 bottom-0 h-2 w-2 border-r border-b border-[rgba(12,12,14,0.45)]"
-                aria-hidden
-              />
+              <motion.blockquote
+                cite={testimonial.href}
+                variants={cardVariants}
+                whileHover={{ y: -3 }}
+                transition={{ duration: 0.3, ease: easeOut }}
+                className="relative mt-4 m-0 overflow-hidden border border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_88%,transparent)] px-5 py-5 backdrop-blur-[2px] sm:px-6 sm:py-6"
+              >
+                <span
+                  className="pointer-events-none absolute top-0 left-0 h-2 w-2 border-t border-l border-[rgba(12,12,14,0.45)]"
+                  aria-hidden
+                />
+                <span
+                  className="pointer-events-none absolute top-0 right-0 h-2 w-2 border-t border-r border-[rgba(12,12,14,0.45)]"
+                  aria-hidden
+                />
+                <span
+                  className="pointer-events-none absolute bottom-0 left-0 h-2 w-2 border-b border-l border-[rgba(12,12,14,0.45)]"
+                  aria-hidden
+                />
+                <span
+                  className="pointer-events-none absolute right-0 bottom-0 h-2 w-2 border-r border-b border-[rgba(12,12,14,0.45)]"
+                  aria-hidden
+                />
 
-              <span
-                className="absolute top-0 left-5 h-[2px] w-7 bg-[var(--accent)]"
-                aria-hidden
-              />
+                <span
+                  className="absolute top-0 left-5 h-[2px] w-7 bg-[var(--accent)]"
+                  aria-hidden
+                />
 
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--section-fg)] text-[var(--bg-white)]"
+                      aria-hidden
+                    >
+                      <PlatformIcon platform={testimonial.platform} />
+                    </span>
+                    <span className="text-[0.6rem] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
+                      {platformLabel(testimonial.platform)}
+                    </span>
+                  </div>
+                  <span className="text-[0.58rem] font-medium tracking-[0.14em] text-[var(--section-muted)] uppercase tabular-nums">
+                    {testimonial.date}
+                  </span>
+                </div>
+
+                <p className="mt-4 m-0 text-[1rem] leading-[1.5] font-semibold tracking-[-0.015em] text-[var(--section-fg)] lg:text-[1.05rem]">
+                  {testimonial.quote.map((part, index) => (
+                    <QuotePart key={`${part.type}-${index}`} part={part} />
+                  ))}
+                </p>
+
+                <footer className="mt-4 flex items-center gap-2.5 border-t border-[rgba(12,12,14,0.1)] pt-4">
                   <span
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--section-fg)] text-[var(--bg-white)]"
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(12,12,14,0.12)] bg-[rgba(12,12,14,0.04)] text-[0.65rem] font-bold tracking-[0.06em] text-[var(--section-fg)]"
                     aria-hidden
                   >
-                    {testimonial.platform === "x" ? <XIcon /> : <ThreadsIcon />}
+                    {testimonial.authorInitials}
                   </span>
-                  <span className="text-[0.6rem] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
-                    {testimonial.platform === "x" ? "Post di X" : "Post di Threads"}
-                  </span>
-                </div>
-                <span className="text-[0.58rem] font-medium tracking-[0.14em] text-[var(--section-muted)] uppercase tabular-nums">
-                  {testimonial.date}
-                </span>
-              </div>
-
-              <p className="mt-4 m-0 text-[1rem] leading-[1.5] font-semibold tracking-[-0.015em] text-[var(--section-fg)] lg:text-[1.05rem]">
-                {testimonial.quote.map((part, index) => (
-                  <QuotePart key={`${part.type}-${index}`} part={part} />
-                ))}
-              </p>
-
-              <footer className="mt-4 flex items-center gap-2.5 border-t border-[rgba(12,12,14,0.1)] pt-4">
-                <span
-                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(12,12,14,0.12)] bg-[rgba(12,12,14,0.04)] text-[0.65rem] font-bold tracking-[0.06em] text-[var(--section-fg)]"
-                  aria-hidden
-                >
-                  {testimonial.authorInitials}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <cite className="block truncate text-[0.9rem] font-bold not-italic tracking-[-0.01em] text-[var(--section-fg)]">
-                    {testimonial.authorName}
-                  </cite>
+                  <div className="min-w-0 flex-1">
+                    <cite className="block truncate text-[0.9rem] font-bold not-italic tracking-[-0.01em] text-[var(--section-fg)]">
+                      {testimonial.authorName}
+                    </cite>
+                    <a
+                      href={sanitizeHref(testimonial.href)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-0.5 block truncate text-[0.78rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
+                    >
+                      {testimonial.authorHandle}
+                    </a>
+                  </div>
                   <a
                     href={sanitizeHref(testimonial.href)}
-                    className="mt-0.5 block truncate text-[0.78rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)]"
+                    aria-label="Buka postingan"
                   >
-                    {testimonial.authorHandle}
+                    <ArrowIcon />
                   </a>
-                </div>
-                <a
-                  href={sanitizeHref(testimonial.href)}
-                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)]"
-                  aria-label="Buka postingan"
-                >
-                  <ArrowIcon />
-                </a>
-              </footer>
-            </motion.blockquote>
-          </motion.aside>
+                </footer>
+              </motion.blockquote>
+            </motion.aside>
+          ) : null}
         </div>
 
         {ad ? (
@@ -281,14 +304,44 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewport}
             transition={{ duration: 0.55, ease: easeOut }}
-            className="-mt-2 w-full shrink-0"
+            className="mt-4 w-full shrink-0 pb-2 lg:mt-6"
           >
-            <AdSlot ad={ad} />
+            <AdSlot ad={ad} compact />
           </motion.div>
         ) : null}
       </div>
     </section>
   );
+}
+
+function ParagraphWithBreaks({ text }: { text: string }) {
+  const lines = text.split("\n");
+  return (
+    <>
+      {lines.map((line, index) => (
+        <Fragment key={index}>
+          {index > 0 ? <br /> : null}
+          {line}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+function platformLabel(platform: TentangContent["testimonial"]["platform"]): string {
+  if (platform === "instagram") return "Reel / Post di IG";
+  if (platform === "threads") return "Post di Threads";
+  return "Post di X";
+}
+
+function PlatformIcon({
+  platform,
+}: {
+  platform: TentangContent["testimonial"]["platform"];
+}) {
+  if (platform === "instagram") return <InstagramIcon />;
+  if (platform === "threads") return <ThreadsIcon />;
+  return <XIcon />;
 }
 
 /**
@@ -427,6 +480,14 @@ function QuotePart({ part }: { part: SocialQuotePart }) {
   }
 
   return <>{part.value}</>;
+}
+
+function InstagramIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6zm9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+    </svg>
+  );
 }
 
 function XIcon() {

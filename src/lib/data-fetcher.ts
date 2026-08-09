@@ -199,6 +199,18 @@ function text(
   return value && value.trim() ? value : fallback;
 }
 
+/** Missing key → fallback; explicit empty/null → "" (do not revive fallback copy). */
+function textAllowEmpty(
+  section: Record<string, string | null> | undefined,
+  key: string,
+  fallback: string,
+): string {
+  if (!section || !(key in section)) return fallback;
+  const value = section[key];
+  if (value === null || value === undefined) return "";
+  return value;
+}
+
 function parseHeroCtas(raw: string | null | undefined): HeroCta[] {
   if (!raw) return fallbackHero.ctas;
   try {
@@ -266,11 +278,15 @@ export async function fetchBrandContent(): Promise<BrandContent> {
     return {
       displayName: text(brand, "display_name", fallbackSite.name),
       frequencyLabel: text(brand, "frequency_label", "98.2 FM"),
+      parentSiteUrl: textAllowEmpty(brand, "parent_site_url", ""),
+      parentSiteLabel: textAllowEmpty(brand, "parent_site_label", "S Radio"),
     };
   } catch {
     return {
       displayName: fallbackSite.name,
       frequencyLabel: "98.2 FM",
+      parentSiteUrl: "",
+      parentSiteLabel: "S Radio",
     };
   }
 }
@@ -289,7 +305,7 @@ export async function fetchHeroContent(
     return {
       brand: text(hero, "brand", fallbackHero.brand),
       eyebrow: text(hero, "eyebrow", fallbackHero.eyebrow),
-      support: text(hero, "support", fallbackHero.support),
+      support: textAllowEmpty(hero, "support", fallbackHero.support),
       verticalTagline: text(
         hero,
         "vertical_tagline",
@@ -299,12 +315,12 @@ export async function fetchHeroContent(
       coverAlt: text(hero, "cover_alt", fallbackHero.coverAlt),
       logoSrc: text(hero, "logo_url", fallbackHero.logoSrc),
       ctas: parseHeroCtas(hero.ctas),
-      mobileCtaLabel: text(
+      mobileCtaLabel: textAllowEmpty(
         hero,
         "mobile_cta_label",
         fallbackHero.mobileCtaLabel,
       ),
-      mobileCtaHref: text(
+      mobileCtaHref: textAllowEmpty(
         hero,
         "mobile_cta_href",
         fallbackHero.mobileCtaHref,

@@ -104,6 +104,8 @@ export default async function HomePage() {
       partner,
       kontak,
       sectionAds,
+      parentSiteUrl: brand.parentSiteUrl,
+      parentSiteLabel: brand.parentSiteLabel,
     }),
   );
 
@@ -143,6 +145,8 @@ type SectionRenderContext = {
   partner: Awaited<ReturnType<typeof fetchPartnerContent>>;
   kontak: Awaited<ReturnType<typeof fetchKontakContent>>;
   sectionAds: Awaited<ReturnType<typeof fetchSectionAds>>;
+  parentSiteUrl?: string;
+  parentSiteLabel?: string;
 };
 
 function renderSection(
@@ -158,6 +162,8 @@ function renderSection(
           onAir={ctx.onAir}
           onAirShow={ctx.onAirShow}
           upcomingShows={ctx.upcomingShows}
+          parentSiteUrl={ctx.parentSiteUrl}
+          parentSiteLabel={ctx.parentSiteLabel}
         />,
       ];
     case "tentang":

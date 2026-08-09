@@ -131,6 +131,23 @@ body {
     max-height: 100dvh;
     overflow: hidden;
   }
+
+  /*
+   * Tentang carries a partner ad under long copy — hard viewport lock
+   * clipped the plate on Windows laptop heights. Grow instead of clip.
+   */
+  #tentang.section-slide {
+    height: auto;
+    min-height: 100dvh;
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* Penyiar partner plate sits at column foot — allow scroll instead of clip */
+  #penyiar.section-slide {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 }
 
 @keyframes hero-rise {

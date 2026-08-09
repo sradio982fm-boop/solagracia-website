@@ -39,26 +39,27 @@ function read(config: SiteConfigMap | undefined, key: string): string {
 }
 
 function parseStats(raw: string): TentangStat[] {
+  if (!raw) return fallback.stats;
   try {
     const parsed = JSON.parse(raw) as TentangStat[];
-    return Array.isArray(parsed) && parsed.length
-      ? parsed
-      : fallback.stats;
+    return Array.isArray(parsed) ? parsed : fallback.stats;
   } catch {
     return fallback.stats;
   }
 }
 
 function parseCtas(raw: string): TentangCta[] {
+  if (!raw) return fallback.ctas;
   try {
     const parsed = JSON.parse(raw) as TentangCta[];
-    return Array.isArray(parsed) && parsed.length ? parsed : fallback.ctas;
+    return Array.isArray(parsed) ? parsed : fallback.ctas;
   } catch {
     return fallback.ctas;
   }
 }
 
 function parseBody(raw: string): string {
+  if (raw === "") return "";
   if (!raw) return fallback.body.join("\n\n");
   try {
     const parsed = JSON.parse(raw) as string[];
@@ -164,7 +165,6 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                 onClick={() =>
                   setStats((prev) => prev.filter((_, i) => i !== index))
                 }
-                disabled={stats.length <= 1}
                 aria-label="Hapus stat"
               >
                 <i className="material-icons text-[18px]">close</i>
@@ -186,7 +186,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
 
       <Textarea
         label="Body"
-        description="Pisahkan paragraf dengan baris kosong"
+        description="Enter = baris baru dalam paragraf. Baris kosong = paragraf baru."
         value={body}
         onChange={(e) => setBody(changeValue(e))}
         rows={6}
@@ -270,6 +270,7 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
       <Select
         label="Platform"
         data={[
+          { value: "instagram", label: "Instagram" },
           { value: "x", label: "X" },
           { value: "threads", label: "Threads" },
         ]}
@@ -277,7 +278,12 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
         onChange={(value) =>
           setTestimonial((prev) => ({
             ...prev,
-            platform: value === "threads" ? "threads" : "x",
+            platform:
+              value === "threads"
+                ? "threads"
+                : value === "instagram"
+                  ? "instagram"
+                  : "x",
           }))
         }
         size="sm"
@@ -453,7 +459,8 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
         />
       </Group>
       <TextInput
-        label="Post / profile link"
+        label="Post / Reel / profile link"
+        description="Kosongkan untuk menyembunyikan kartu social proof di frontend"
         value={testimonial.href}
         onChange={(e) =>
           setTestimonial((prev) => ({
@@ -469,9 +476,10 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
           size="xs"
           loading={saving}
           onClick={() => {
+            // Blank line → new paragraph; single Enter stays as \n (rendered as <br>).
             const bodyParagraphs = body
               .split(/\n\s*\n/)
-              .map((p) => p.trim())
+              .map((p) => p.replace(/^\s+|\s+$/g, ""))
               .filter(Boolean);
 
             return onSave([

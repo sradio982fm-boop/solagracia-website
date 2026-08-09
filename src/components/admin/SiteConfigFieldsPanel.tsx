@@ -59,13 +59,35 @@ export const BRAND_FIELDS: SiteFieldDef[] = [
     label: "Frequency label",
     description: "SoT untuk stempel Studio · 98.2 FM",
   },
+  {
+    key: "parent_site_url",
+    label: "S Radio website URL",
+    valueType: "url",
+    description: "Tombol cross-link ke situs S Radio (kosong = sembunyikan)",
+  },
+  {
+    key: "parent_site_label",
+    label: "S Radio button label",
+    description: 'Default: "S Radio"',
+  },
 ];
 
 export const HERO_FIELDS: SiteFieldDef[] = [
-  { key: "brand", label: "Brand / title" },
+  {
+    key: "brand",
+    label: "Brand / title",
+    multiline: true,
+    description:
+      "Enter = baris baru di judul (contoh: Solagracia / Digital Radio)",
+  },
   { key: "eyebrow", label: "Eyebrow" },
   { key: "vertical_tagline", label: "Tagline vertikal" },
-  { key: "support", label: "Support / deskripsi", multiline: true },
+  {
+    key: "support",
+    label: "Support / deskripsi",
+    multiline: true,
+    description: "Kosongkan untuk menyembunyikan di frontend",
+  },
   {
     key: "cover_url",
     label: "Cover image",
@@ -90,7 +112,11 @@ export const HERO_FIELDS: SiteFieldDef[] = [
     description:
       'Contoh: [{"label":"Tentang","href":"#tentang","variant":"text","icon":"arrow"}]',
   },
-  { key: "mobile_cta_label", label: "Mobile CTA label" },
+  {
+    key: "mobile_cta_label",
+    label: "Mobile CTA label",
+    description: "Kosongkan untuk menyembunyikan tombol atas di HP",
+  },
   {
     key: "mobile_cta_href",
     label: "Mobile CTA href",

@@ -64,6 +64,9 @@ export type SeoContent = {
 export type BrandContent = {
   displayName: string;
   frequencyLabel: string;
+  /** Parent S Radio site — hero cross-link when set */
+  parentSiteUrl?: string;
+  parentSiteLabel?: string;
 };
 
 export type MediaPlayerContent = {
@@ -112,7 +115,7 @@ export type SocialQuotePart =
   | { type: "link"; value: string; href: string };
 
 export type SocialTestimonial = {
-  platform: "x" | "threads";
+  platform: "x" | "threads" | "instagram";
   date: string;
   quote: SocialQuotePart[];
   authorName: string;

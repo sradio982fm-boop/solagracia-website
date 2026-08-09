@@ -20,7 +20,7 @@ export const tentangContent: TentangContent = {
   ],
   socialLabel: "Mereka ngomong gini tentang kita",
   testimonial: {
-    platform: "x",
+    platform: "instagram",
     date: "JUN. 24, 2025",
     quote: [
       {
@@ -31,17 +31,12 @@ export const tentangContent: TentangContent = {
       { type: "mention", value: "@solagracia" },
       {
         type: "text",
-        value: " bikin sore jadi lebih pelan. Mulai dari sini: ",
-      },
-      {
-        type: "link",
-        value: "solagracia.id",
-        href: "https://solagracia.id",
+        value: " bikin sore jadi lebih pelan.",
       },
     ],
     authorName: "Alya Putri",
     authorHandle: "@alyaputri",
     authorInitials: "AP",
-    href: "https://solagracia.id",
+    href: "",
   },
 };

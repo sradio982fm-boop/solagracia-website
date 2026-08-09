@@ -4,9 +4,9 @@ import type { HeroContent } from "@/types/site";
  * Local hero copy — fallback when CMS site_config.hero is empty.
  */
 export const heroContent: HeroContent = {
-  brand: "Solagracia.",
+  brand: "Solagracia\nDigital Radio",
   eyebrow: "S Radio sub-brand",
-  support: "Ruang dari S Radio untuk lebih jauh menumbuhkan iman kristiani.",
+  support: "",
   verticalTagline: "Golden state of mind",
   coverSrc: "/cover-image.png",
   coverAlt:
@@ -15,8 +15,8 @@ export const heroContent: HeroContent = {
   ctas: [
     { label: "Tentang", href: "#tentang", variant: "text", icon: "arrow" },
   ],
-  mobileCtaLabel: "Reservasi",
-  mobileCtaHref: "#partner",
+  mobileCtaLabel: "",
+  mobileCtaHref: "",
   socialLinks: [
     {
       label: "TikTok",
