@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { Fragment, useRef } from "react";
 import { motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
+import { InstagramEmbed } from "@/components/sections/InstagramEmbed";
 import { ensureGsap, prefersReducedMotion } from "@/lib/gsap";
 import {
   easeOut,
@@ -13,11 +14,11 @@ import {
   staggerContainer,
   viewportOnce,
 } from "@/lib/motion";
-import { hasVisibleTestimonial } from "@/lib/tentang";
+import { hasVisibleReel } from "@/lib/tentang";
 import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { AdPlaceholder } from "@/types/ads";
-import type { SocialQuotePart, TentangContent } from "@/types/site";
+import type { TentangContent } from "@/types/site";
 
 type TentangSectionProps = {
   content: TentangContent;
@@ -34,7 +35,7 @@ const viewport = viewportOnce;
 const METER_BARS = [28, 52, 36, 68, 44, 78, 40, 62, 34, 56, 48, 70] as const;
 
 /**
- * #tentang — viewport-locked loft about + social proof + partner spot.
+ * #tentang — viewport-locked loft about + Instagram Reel + partner spot.
  * Cool plaster burns into warm bright on scroll (matches Penyiar tone).
  */
 function frequencyStamp(label: string): string {
@@ -43,9 +44,9 @@ function frequencyStamp(label: string): string {
 
 export function TentangSection({ content, ad }: TentangSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const { testimonial } = content;
+  const { reel } = content;
   const frequencyLabel = content.frequencyLabel || "98.2 FM";
-  const showSocialProof = hasVisibleTestimonial(testimonial);
+  const showReel = hasVisibleReel(reel);
 
   useGSAP(
     () => {
@@ -100,7 +101,7 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
         <div
           className={cn(
             "grid shrink-0 grid-cols-1 gap-6 lg:items-start lg:gap-12",
-            showSocialProof
+            showReel
               ? "lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)]"
               : "lg:grid-cols-1",
           )}
@@ -195,7 +196,7 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
             </motion.div>
           </motion.div>
 
-          {showSocialProof ? (
+          {showReel ? (
             <motion.aside
               className="flex flex-col lg:pt-1"
               aria-label={content.socialLabel}
@@ -206,94 +207,17 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
             >
               <motion.h3
                 variants={itemVariants}
-                className="m-0 max-w-[20ch] text-[1.05rem] font-medium tracking-[-0.01em] text-[var(--section-fg)] lg:text-[1.15rem]"
+                className="m-0 max-w-none text-[1.05rem] font-medium tracking-[-0.01em] text-[var(--section-fg)] lg:text-[1.15rem]"
               >
                 {content.socialLabel}
               </motion.h3>
 
-              <motion.blockquote
-                cite={testimonial.href}
-                variants={cardVariants}
-                whileHover={{ y: -3 }}
-                transition={{ duration: 0.3, ease: easeOut }}
-                className="relative mt-4 m-0 overflow-hidden border border-[rgba(12,12,14,0.14)] bg-[color-mix(in_srgb,var(--section-raised)_88%,transparent)] px-5 py-5 backdrop-blur-[2px] sm:px-6 sm:py-6"
-              >
-                <span
-                  className="pointer-events-none absolute top-0 left-0 h-2 w-2 border-t border-l border-[rgba(12,12,14,0.45)]"
-                  aria-hidden
+              <motion.div variants={cardVariants} className="mt-4">
+                <InstagramEmbed
+                  href={reel.href}
+                  title="Instagram Reel — S Radio"
                 />
-                <span
-                  className="pointer-events-none absolute top-0 right-0 h-2 w-2 border-t border-r border-[rgba(12,12,14,0.45)]"
-                  aria-hidden
-                />
-                <span
-                  className="pointer-events-none absolute bottom-0 left-0 h-2 w-2 border-b border-l border-[rgba(12,12,14,0.45)]"
-                  aria-hidden
-                />
-                <span
-                  className="pointer-events-none absolute right-0 bottom-0 h-2 w-2 border-r border-b border-[rgba(12,12,14,0.45)]"
-                  aria-hidden
-                />
-
-                <span
-                  className="absolute top-0 left-5 h-[2px] w-7 bg-[var(--accent)]"
-                  aria-hidden
-                />
-
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--section-fg)] text-[var(--bg-white)]"
-                      aria-hidden
-                    >
-                      <PlatformIcon platform={testimonial.platform} />
-                    </span>
-                    <span className="text-[0.6rem] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
-                      {platformLabel(testimonial.platform)}
-                    </span>
-                  </div>
-                  <span className="text-[0.58rem] font-medium tracking-[0.14em] text-[var(--section-muted)] uppercase tabular-nums">
-                    {testimonial.date}
-                  </span>
-                </div>
-
-                <p className="mt-4 m-0 text-[1rem] leading-[1.5] font-semibold tracking-[-0.015em] text-[var(--section-fg)] lg:text-[1.05rem]">
-                  {testimonial.quote.map((part, index) => (
-                    <QuotePart key={`${part.type}-${index}`} part={part} />
-                  ))}
-                </p>
-
-                <footer className="mt-4 flex items-center gap-2.5 border-t border-[rgba(12,12,14,0.1)] pt-4">
-                  <span
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[rgba(12,12,14,0.12)] bg-[rgba(12,12,14,0.04)] text-[0.65rem] font-bold tracking-[0.06em] text-[var(--section-fg)]"
-                    aria-hidden
-                  >
-                    {testimonial.authorInitials}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <cite className="block truncate text-[0.9rem] font-bold not-italic tracking-[-0.01em] text-[var(--section-fg)]">
-                      {testimonial.authorName}
-                    </cite>
-                    <a
-                      href={sanitizeHref(testimonial.href)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-0.5 block truncate text-[0.78rem] text-[var(--section-muted)] no-underline transition-colors hover:text-[var(--accent)]"
-                    >
-                      {testimonial.authorHandle}
-                    </a>
-                  </div>
-                  <a
-                    href={sanitizeHref(testimonial.href)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-[rgba(12,12,14,0.2)] text-[var(--section-fg)] transition-colors hover:bg-[rgba(12,12,14,0.05)]"
-                    aria-label="Buka postingan"
-                  >
-                    <ArrowIcon />
-                  </a>
-                </footer>
-              </motion.blockquote>
+              </motion.div>
             </motion.aside>
           ) : null}
         </div>
@@ -326,22 +250,6 @@ function ParagraphWithBreaks({ text }: { text: string }) {
       ))}
     </>
   );
-}
-
-function platformLabel(platform: TentangContent["testimonial"]["platform"]): string {
-  if (platform === "instagram") return "Reel / Post di IG";
-  if (platform === "threads") return "Post di Threads";
-  return "Post di X";
-}
-
-function PlatformIcon({
-  platform,
-}: {
-  platform: TentangContent["testimonial"]["platform"];
-}) {
-  if (platform === "instagram") return <InstagramIcon />;
-  if (platform === "threads") return <ThreadsIcon />;
-  return <XIcon />;
 }
 
 /**
@@ -460,61 +368,5 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
         ))}
       </div>
     </div>
-  );
-}
-
-function QuotePart({ part }: { part: SocialQuotePart }) {
-  if (part.type === "mention") {
-    return <span className="text-[var(--accent)]">{part.value}</span>;
-  }
-
-  if (part.type === "link") {
-    return (
-      <a
-        href={sanitizeHref(part.href)}
-        className="text-[var(--accent)] underline decoration-[color-mix(in_srgb,var(--accent)_45%,transparent)] underline-offset-[3px] transition-opacity hover:opacity-80"
-      >
-        {part.value}
-      </a>
-    );
-  }
-
-  return <>{part.value}</>;
-}
-
-function InstagramIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6zm9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.727-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-  );
-}
-
-function ThreadsIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2C7.03 2 3.5 5.58 3.5 10.5c0 3.4 1.86 5.95 4.7 7.05-.1-.82-.18-2.08.04-2.98.2-.82 1.26-5.2 1.26-5.2s-.32-.64-.32-1.58c0-1.48.86-2.58 1.92-2.58.9 0 1.34.68 1.34 1.5 0 .9-.58 2.26-.88 3.52-.25 1.06.54 1.92 1.58 1.92 1.9 0 3.18-2.44 3.18-5.34 0-2.2-1.48-3.84-4.16-3.84-3.04 0-4.92 2.24-4.92 4.76 0 .86.25 1.48.64 1.96.18.2.2.36.14.56-.05.18-.16.62-.2.8-.07.24-.28.32-.5.24-1.4-.58-2.04-2.12-2.04-3.86 0-2.86 2.42-6.3 7.22-6.3 3.86 0 6.4 2.78 6.4 5.76 0 3.94-2.18 6.88-5.4 6.88-1.08 0-2.1-.58-2.46-1.24l-.66 2.52c-.24.94-.72 1.88-1.14 2.6 1.02.3 2.1.46 3.22.46 4.97 0 9-3.58 9-9.5C21.5 5.58 17.97 2 12 2z" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M7 17L17 7M17 7H9M17 7v8"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="square"
-      />
-    </svg>
   );
 }

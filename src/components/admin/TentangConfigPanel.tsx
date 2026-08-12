@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActionIcon,
   Button,
   Group,
-  Select,
   Stack,
   Text,
   Textarea,
@@ -13,12 +12,12 @@ import {
 } from "@mantine/core";
 import type { SiteConfigMap } from "@/hooks/admin/useSiteConfig";
 import {
-  mapCmsTestimonial,
-  testimonialToCms,
-  type CmsTentangTestimonial,
+  mapCmsReel,
+  reelToCms,
+  type CmsInstagramReel,
 } from "@/lib/tentang";
 import { tentangContent as fallback } from "@/data/tentang";
-import type { SocialQuotePart, TentangCta, TentangStat } from "@/types/site";
+import type { TentangCta, TentangStat } from "@/types/site";
 import { changeValue } from "@/lib/admin/form";
 
 type Props = {
@@ -32,6 +31,16 @@ type Props = {
       valueType?: "text" | "image" | "url" | "json";
     }>,
   ) => Promise<void>;
+};
+
+type FormState = {
+  headline: string;
+  headlineAccent: string;
+  body: string;
+  stats: TentangStat[];
+  ctas: TentangCta[];
+  socialLabel: string;
+  reel: CmsInstagramReel;
 };
 
 function read(config: SiteConfigMap | undefined, key: string): string {
@@ -70,57 +79,71 @@ function parseBody(raw: string): string {
   return raw;
 }
 
-function parseTestimonial(raw: string): CmsTentangTestimonial {
-  if (!raw) return testimonialToCms(fallback.testimonial);
-  try {
-    const parsed = JSON.parse(raw) as CmsTentangTestimonial;
-    return testimonialToCms(mapCmsTestimonial(parsed));
-  } catch {
-    return testimonialToCms(fallback.testimonial);
+function parseReel(raw: string, legacyTestimonial: string): CmsInstagramReel {
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as CmsInstagramReel;
+      return reelToCms(mapCmsReel(parsed));
+    } catch {
+      /* fall through */
+    }
   }
+  if (legacyTestimonial) {
+    try {
+      const parsed = JSON.parse(legacyTestimonial) as { href?: string };
+      return reelToCms(mapCmsReel(parsed));
+    } catch {
+      /* fall through */
+    }
+  }
+  return reelToCms(fallback.reel);
 }
 
-function emptyQuotePart(type: SocialQuotePart["type"]): SocialQuotePart {
-  if (type === "link") return { type: "link", value: "", href: "" };
-  if (type === "mention") return { type: "mention", value: "@" };
-  return { type: "text", value: "" };
+function formFromConfig(config: SiteConfigMap | undefined): FormState {
+  return {
+    headline: read(config, "headline") || fallback.headline,
+    headlineAccent:
+      read(config, "headline_accent") || fallback.headlineAccent,
+    body: parseBody(read(config, "body")),
+    stats: parseStats(read(config, "stats")),
+    ctas: parseCtas(read(config, "ctas")),
+    socialLabel: read(config, "social_label") || fallback.socialLabel,
+    reel: parseReel(
+      read(config, "instagram_reel"),
+      read(config, "testimonial"),
+    ),
+  };
 }
 
 export function TentangConfigPanel({ config, saving, onSave }: Props) {
-  const [headline, setHeadline] = useState("");
-  const [headlineAccent, setHeadlineAccent] = useState("");
-  const [body, setBody] = useState("");
-  const [stats, setStats] = useState<TentangStat[]>(fallback.stats);
-  const [ctas, setCtas] = useState<TentangCta[]>(fallback.ctas);
-  const [socialLabel, setSocialLabel] = useState("");
-  const [testimonial, setTestimonial] = useState<CmsTentangTestimonial>(
-    testimonialToCms(fallback.testimonial),
-  );
+  const [form, setForm] = useState(() => formFromConfig(config));
+  const [configRef, setConfigRef] = useState(config);
 
-  useEffect(() => {
-    setHeadline(read(config, "headline") || fallback.headline);
-    setHeadlineAccent(
-      read(config, "headline_accent") || fallback.headlineAccent,
-    );
-    setBody(parseBody(read(config, "body")));
-    setStats(parseStats(read(config, "stats")));
-    setCtas(parseCtas(read(config, "ctas")));
-    setSocialLabel(read(config, "social_label") || fallback.socialLabel);
-    setTestimonial(parseTestimonial(read(config, "testimonial")));
-  }, [config]);
+  // Reset local draft when CMS config identity changes (avoids setState-in-effect).
+  if (config !== configRef) {
+    setConfigRef(config);
+    setForm(formFromConfig(config));
+  }
+
+  const { headline, headlineAccent, body, stats, ctas, socialLabel, reel } =
+    form;
 
   return (
     <Stack gap="md">
       <TextInput
         label="Headline"
         value={headline}
-        onChange={(e) => setHeadline(changeValue(e))}
+        onChange={(e) =>
+          setForm((prev) => ({ ...prev, headline: changeValue(e) }))
+        }
         size="sm"
       />
       <TextInput
         label="Headline accent"
         value={headlineAccent}
-        onChange={(e) => setHeadlineAccent(changeValue(e))}
+        onChange={(e) =>
+          setForm((prev) => ({ ...prev, headlineAccent: changeValue(e) }))
+        }
         size="sm"
       />
 
@@ -135,13 +158,14 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                 label={index === 0 ? "Value" : undefined}
                 value={stat.value}
                 onChange={(e) =>
-                  setStats((prev) =>
-                    prev.map((s, i) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    stats: prev.stats.map((s, i) =>
                       i === index
                         ? { ...s, value: changeValue(e) }
                         : s,
                     ),
-                  )
+                  }))
                 }
                 size="sm"
               />
@@ -149,13 +173,14 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                 label={index === 0 ? "Label" : undefined}
                 value={stat.label}
                 onChange={(e) =>
-                  setStats((prev) =>
-                    prev.map((s, i) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    stats: prev.stats.map((s, i) =>
                       i === index
                         ? { ...s, label: changeValue(e) }
                         : s,
                     ),
-                  )
+                  }))
                 }
                 size="sm"
               />
@@ -163,7 +188,10 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                 variant="subtle"
                 color="gray"
                 onClick={() =>
-                  setStats((prev) => prev.filter((_, i) => i !== index))
+                  setForm((prev) => ({
+                    ...prev,
+                    stats: prev.stats.filter((_, i) => i !== index),
+                  }))
                 }
                 aria-label="Hapus stat"
               >
@@ -176,7 +204,10 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
             variant="light"
             color="gray"
             onClick={() =>
-              setStats((prev) => [...prev, { value: "", label: "" }])
+              setForm((prev) => ({
+                ...prev,
+                stats: [...prev.stats, { value: "", label: "" }],
+              }))
             }
           >
             Tambah stat
@@ -188,7 +219,9 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
         label="Body"
         description="Enter = baris baru dalam paragraf. Baris kosong = paragraf baru."
         value={body}
-        onChange={(e) => setBody(changeValue(e))}
+        onChange={(e) =>
+          setForm((prev) => ({ ...prev, body: changeValue(e) }))
+        }
         rows={6}
         size="sm"
       />
@@ -204,13 +237,14 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                 label={index === 0 ? "Label" : undefined}
                 value={cta.label}
                 onChange={(e) =>
-                  setCtas((prev) =>
-                    prev.map((c, i) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    ctas: prev.ctas.map((c, i) =>
                       i === index
                         ? { ...c, label: changeValue(e) }
                         : c,
                     ),
-                  )
+                  }))
                 }
                 size="sm"
               />
@@ -218,13 +252,14 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                 label={index === 0 ? "Href" : undefined}
                 value={cta.href}
                 onChange={(e) =>
-                  setCtas((prev) =>
-                    prev.map((c, i) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    ctas: prev.ctas.map((c, i) =>
                       i === index
                         ? { ...c, href: changeValue(e) }
                         : c,
                     ),
-                  )
+                  }))
                 }
                 size="sm"
               />
@@ -232,7 +267,10 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
                 variant="subtle"
                 color="gray"
                 onClick={() =>
-                  setCtas((prev) => prev.filter((_, i) => i !== index))
+                  setForm((prev) => ({
+                    ...prev,
+                    ctas: prev.ctas.filter((_, i) => i !== index),
+                  }))
                 }
                 disabled={ctas.length <= 1}
                 aria-label="Hapus CTA"
@@ -246,10 +284,13 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
             variant="light"
             color="gray"
             onClick={() =>
-              setCtas((prev) => [
+              setForm((prev) => ({
                 ...prev,
-                { label: "", href: "#", variant: "ghost" },
-              ])
+                ctas: [
+                  ...prev.ctas,
+                  { label: "", href: "#", variant: "ghost" },
+                ],
+              }))
             }
           >
             Tambah CTA
@@ -258,214 +299,21 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
       </div>
 
       <TextInput
-        label="Social proof label"
+        label="Label di atas Reel"
         value={socialLabel}
-        onChange={(e) => setSocialLabel(changeValue(e))}
-        size="sm"
-      />
-
-      <Text size="xs" c="dimmed">
-        Social media post
-      </Text>
-      <Select
-        label="Platform"
-        data={[
-          { value: "instagram", label: "Instagram" },
-          { value: "x", label: "X" },
-          { value: "threads", label: "Threads" },
-        ]}
-        value={testimonial.platform}
-        onChange={(value) =>
-          setTestimonial((prev) => ({
-            ...prev,
-            platform:
-              value === "threads"
-                ? "threads"
-                : value === "instagram"
-                  ? "instagram"
-                  : "x",
-          }))
+        onChange={(e) =>
+          setForm((prev) => ({ ...prev, socialLabel: changeValue(e) }))
         }
         size="sm"
       />
       <TextInput
-        label="Date"
-        value={testimonial.date}
+        label="Instagram Reel URL"
+        description="Hanya URL Reel (contoh: https://www.instagram.com/reel/...). Kosongkan untuk menyembunyikan embed."
+        value={reel.href}
         onChange={(e) =>
-          setTestimonial((prev) => ({
+          setForm((prev) => ({
             ...prev,
-            date: changeValue(e),
-          }))
-        }
-        size="sm"
-      />
-      <div>
-        <Text size="xs" c="dimmed" mb={6}>
-          Quote parts (teks / mention / link)
-        </Text>
-        <Stack gap="xs">
-          {(testimonial.quote || []).map((part, index) => (
-            <Stack
-              key={index}
-              gap={6}
-              p="sm"
-              style={{ border: "1px solid var(--mantine-color-gray-3)" }}
-            >
-              <Group grow align="flex-end">
-                <Select
-                  label="Tipe"
-                  data={[
-                    { value: "text", label: "Text" },
-                    { value: "mention", label: "Mention" },
-                    { value: "link", label: "Link" },
-                  ]}
-                  value={part.type}
-                  onChange={(value) => {
-                    const type = (value || "text") as SocialQuotePart["type"];
-                    setTestimonial((prev) => ({
-                      ...prev,
-                      quote: (prev.quote || []).map((p, i) =>
-                        i === index ? emptyQuotePart(type) : p,
-                      ),
-                    }));
-                  }}
-                  size="xs"
-                />
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  onClick={() =>
-                    setTestimonial((prev) => ({
-                      ...prev,
-                      quote: (prev.quote || []).filter((_, i) => i !== index),
-                    }))
-                  }
-                  disabled={(testimonial.quote || []).length <= 1}
-                  aria-label="Hapus part"
-                >
-                  <i className="material-icons text-[18px]">close</i>
-                </ActionIcon>
-              </Group>
-              <TextInput
-                label={part.type === "mention" ? "Mention" : "Teks"}
-                value={part.value}
-                onChange={(e) =>
-                  setTestimonial((prev) => ({
-                    ...prev,
-                    quote: (prev.quote || []).map((p, i) =>
-                      i === index
-                        ? { ...p, value: changeValue(e) }
-                        : p,
-                    ),
-                  }))
-                }
-                size="xs"
-              />
-              {part.type === "link" ? (
-                <TextInput
-                  label="Href"
-                  value={part.href}
-                  onChange={(e) =>
-                    setTestimonial((prev) => ({
-                      ...prev,
-                      quote: (prev.quote || []).map((p, i) =>
-                        i === index && p.type === "link"
-                          ? { ...p, href: changeValue(e) }
-                          : p,
-                      ),
-                    }))
-                  }
-                  size="xs"
-                />
-              ) : null}
-            </Stack>
-          ))}
-          <Group gap="xs">
-            <Button
-              size="xs"
-              variant="light"
-              color="gray"
-              onClick={() =>
-                setTestimonial((prev) => ({
-                  ...prev,
-                  quote: [...(prev.quote || []), emptyQuotePart("text")],
-                }))
-              }
-            >
-              + Text
-            </Button>
-            <Button
-              size="xs"
-              variant="light"
-              color="gray"
-              onClick={() =>
-                setTestimonial((prev) => ({
-                  ...prev,
-                  quote: [...(prev.quote || []), emptyQuotePart("mention")],
-                }))
-              }
-            >
-              + Mention
-            </Button>
-            <Button
-              size="xs"
-              variant="light"
-              color="gray"
-              onClick={() =>
-                setTestimonial((prev) => ({
-                  ...prev,
-                  quote: [...(prev.quote || []), emptyQuotePart("link")],
-                }))
-              }
-            >
-              + Link
-            </Button>
-          </Group>
-        </Stack>
-      </div>
-      <Group grow>
-        <TextInput
-          label="Author name"
-          value={testimonial.authorName}
-          onChange={(e) =>
-            setTestimonial((prev) => ({
-              ...prev,
-              authorName: changeValue(e),
-            }))
-          }
-          size="sm"
-        />
-        <TextInput
-          label="Author handle"
-          value={testimonial.authorHandle}
-          onChange={(e) =>
-            setTestimonial((prev) => ({
-              ...prev,
-              authorHandle: changeValue(e),
-            }))
-          }
-          size="sm"
-        />
-        <TextInput
-          label="Initials"
-          value={testimonial.authorInitials}
-          onChange={(e) =>
-            setTestimonial((prev) => ({
-              ...prev,
-              authorInitials: changeValue(e),
-            }))
-          }
-          size="sm"
-        />
-      </Group>
-      <TextInput
-        label="Post / Reel / profile link"
-        description="Kosongkan untuk menyembunyikan kartu social proof di frontend"
-        value={testimonial.href}
-        onChange={(e) =>
-          setTestimonial((prev) => ({
-            ...prev,
-            href: changeValue(e),
+            reel: { href: changeValue(e) },
           }))
         }
         size="sm"
@@ -531,20 +379,9 @@ export function TentangConfigPanel({ config, saving, onSave }: Props) {
               },
               {
                 section: "tentang",
-                key: "testimonial",
+                key: "instagram_reel",
                 value: JSON.stringify({
-                  platform: testimonial.platform,
-                  date: testimonial.date,
-                  quote: (testimonial.quote || []).filter((part) => {
-                    if (part.type === "link") {
-                      return part.value.trim() && part.href.trim();
-                    }
-                    return part.value.trim();
-                  }),
-                  authorName: testimonial.authorName,
-                  authorHandle: testimonial.authorHandle,
-                  authorInitials: testimonial.authorInitials,
-                  href: testimonial.href,
+                  href: reel.href.trim(),
                 }),
                 valueType: "json",
               },

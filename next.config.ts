@@ -18,7 +18,7 @@ const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data: blob: https://*.supabase.co",
   "media-src 'self' blob: https://*.siar.us:* https://*.siar.us",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.siar.us:* https://*.siar.us",
-  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
+  "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.instagram.com",
   "frame-ancestors 'none'",
   "form-action 'self' https://wa.me",
   "base-uri 'self'",

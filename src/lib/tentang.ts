@@ -1,139 +1,60 @@
 import type {
-  SocialQuotePart,
-  SocialTestimonial,
+  InstagramReel,
   TentangContent,
   TentangCta,
   TentangStat,
 } from "@/types/site";
 import { tentangContent as fallback } from "@/data/tentang";
 
-/** Admin / CMS shape for social proof. Prefer `quote` parts; legacy fields still map. */
-export type CmsTentangTestimonial = {
-  platform: "x" | "threads" | "instagram";
-  date: string;
-  /** Rich quote parts (Phase 2 editor). */
-  quote?: SocialQuotePart[];
-  /** Legacy simple fields — used when `quote` absent. */
-  quote_text?: string;
-  mention?: string;
-  link_label?: string;
-  link_url?: string;
-  authorName: string;
-  authorHandle: string;
-  authorInitials: string;
+/** Admin / CMS shape for Instagram Reel embed. */
+export type CmsInstagramReel = {
   href: string;
 };
 
-export function isRichTestimonial(
-  raw: CmsTentangTestimonial | SocialTestimonial,
-): raw is
-  | SocialTestimonial
-  | (CmsTentangTestimonial & { quote: SocialQuotePart[] }) {
-  return "quote" in raw && Array.isArray(raw.quote) && raw.quote.length > 0;
-}
-
-function normalizePlatform(
-  platform: string | undefined,
-): SocialTestimonial["platform"] {
-  if (platform === "threads") return "threads";
-  if (platform === "instagram") return "instagram";
-  return "x";
-}
-
-export function buildQuoteParts(input: {
-  quote_text: string;
-  mention?: string;
-  link_label?: string;
-  link_url?: string;
-}): SocialQuotePart[] {
-  const parts: SocialQuotePart[] = [];
-  const text = input.quote_text?.trim();
-  if (text) {
-    parts.push({
-      type: "text",
-      value: text.endsWith(" ") ? text : `${text} `,
-    });
+/**
+ * Normalize Instagram Reel URLs for embeds.
+ * Strips tracking query params; only `/reel/` permalinks are accepted.
+ */
+export function normalizeInstagramPermalink(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  try {
+    const url = new URL(trimmed);
+    if (!/(^|\.)instagram\.com$/i.test(url.hostname)) return "";
+    const match = url.pathname.match(/^\/reel\/([^/?#]+)/i);
+    if (!match) return "";
+    return `https://www.instagram.com/reel/${match[1]}/`;
+  } catch {
+    return "";
   }
-  if (input.mention?.trim()) {
-    parts.push({ type: "mention", value: input.mention.trim() });
-  }
-  if (input.link_label?.trim() && input.link_url?.trim()) {
-    if (parts.length > 0 && parts[parts.length - 1]?.type !== "text") {
-      parts.push({ type: "text", value: " " });
-    } else if (parts.length > 0) {
-      const last = parts[parts.length - 1];
-      if (last.type === "text" && !last.value.endsWith(" ")) {
-        last.value = `${last.value} `;
-      }
-    }
-    parts.push({
-      type: "link",
-      value: input.link_label.trim(),
-      href: input.link_url.trim(),
-    });
-  }
-  return parts.length ? parts : fallback.testimonial.quote;
 }
 
-export function mapCmsTestimonial(
-  raw: CmsTentangTestimonial | SocialTestimonial | null | undefined,
-): SocialTestimonial {
-  if (!raw) return fallback.testimonial;
-
-  if (isRichTestimonial(raw)) {
-    return {
-      platform: normalizePlatform(raw.platform),
-      date: raw.date || fallback.testimonial.date,
-      quote: raw.quote.filter((part) => {
-        if (part.type === "text" || part.type === "mention") {
-          return Boolean(part.value?.trim());
-        }
-        return Boolean(part.value?.trim() && part.href?.trim());
-      }),
-      authorName: raw.authorName || fallback.testimonial.authorName,
-      authorHandle: raw.authorHandle || fallback.testimonial.authorHandle,
-      authorInitials: raw.authorInitials || fallback.testimonial.authorInitials,
-      // Explicit empty href hides the card — do not revive fallback URL.
-      href: typeof raw.href === "string" ? raw.href : fallback.testimonial.href,
-    };
-  }
-
-  const cms = raw as CmsTentangTestimonial;
-  return {
-    platform: normalizePlatform(cms.platform),
-    date: cms.date || fallback.testimonial.date,
-    quote: buildQuoteParts({
-      quote_text: cms.quote_text || "",
-      mention: cms.mention,
-      link_label: cms.link_label,
-      link_url: cms.link_url,
-    }),
-    authorName: cms.authorName || fallback.testimonial.authorName,
-    authorHandle: cms.authorHandle || fallback.testimonial.authorHandle,
-    authorInitials: cms.authorInitials || fallback.testimonial.authorInitials,
-    href: typeof cms.href === "string" ? cms.href : fallback.testimonial.href,
-  };
+/** True when href can be shown as an Instagram Reel embed iframe. */
+export function isInstagramEmbeddableUrl(href: string): boolean {
+  return Boolean(normalizeInstagramPermalink(href));
 }
 
-export function testimonialToCms(
-  testimonial: SocialTestimonial,
-): CmsTentangTestimonial {
-  return {
-    platform: testimonial.platform,
-    date: testimonial.date,
-    quote: testimonial.quote,
-    authorName: testimonial.authorName,
-    authorHandle: testimonial.authorHandle,
-    authorInitials: testimonial.authorInitials,
-    href: testimonial.href,
-  };
+/** iframe src for Instagram official embed player. */
+export function instagramEmbedSrc(href: string): string {
+  const permalink = normalizeInstagramPermalink(href);
+  if (!permalink) return "";
+  return `${permalink}embed`;
 }
 
-/** True when social-proof card should render (needs outbound href). */
-export function hasVisibleTestimonial(
-  testimonial: SocialTestimonial | null | undefined,
-): boolean {
-  return Boolean(testimonial?.href?.trim());
+export function mapCmsReel(
+  raw: { href?: string } | null | undefined,
+): InstagramReel {
+  if (!raw || typeof raw.href !== "string") return fallback.reel;
+  return { href: raw.href };
+}
+
+export function reelToCms(reel: InstagramReel): CmsInstagramReel {
+  return { href: reel.href };
+}
+
+/** True when Reel rail should render (valid Instagram Reel URL). */
+export function hasVisibleReel(reel: InstagramReel | null | undefined): boolean {
+  return isInstagramEmbeddableUrl(reel?.href ?? "");
 }
 
 /**
@@ -197,9 +118,17 @@ export function mapTentangFromConfig(
     fallback.body,
   ).filter((p) => typeof p === "string" && p.trim());
 
-  const testimonialRaw = parseJsonObject<
-    CmsTentangTestimonial | SocialTestimonial
-  >(section.testimonial, testimonialToCms(fallback.testimonial));
+  // Prefer `instagram_reel`; tolerate legacy `testimonial.href` during transition.
+  const reelRaw =
+    "instagram_reel" in section
+      ? parseJsonObject<CmsInstagramReel | InstagramReel>(
+          section.instagram_reel,
+          reelToCms(fallback.reel),
+        )
+      : parseJsonObject<{ href?: string }>(
+          section.testimonial,
+          reelToCms(fallback.reel),
+        );
 
   return {
     // Present key with "" → respect empty (do not revive fallback copy).
@@ -218,7 +147,7 @@ export function mapTentangFromConfig(
       "social_label" in section
         ? (section.social_label ?? "").trim()
         : fallback.socialLabel,
-    testimonial: mapCmsTestimonial(testimonialRaw),
+    reel: mapCmsReel(reelRaw),
     ...(frequencyLabel ? { frequencyLabel } : {}),
   };
 }

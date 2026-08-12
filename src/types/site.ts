@@ -109,18 +109,9 @@ export type TentangCta = {
   variant: "primary" | "ghost";
 };
 
-export type SocialQuotePart =
-  | { type: "text"; value: string }
-  | { type: "mention"; value: string }
-  | { type: "link"; value: string; href: string };
-
-export type SocialTestimonial = {
-  platform: "x" | "threads" | "instagram";
-  date: string;
-  quote: SocialQuotePart[];
-  authorName: string;
-  authorHandle: string;
-  authorInitials: string;
+/** Instagram Reel embed for Tentang social rail. */
+export type InstagramReel = {
+  /** Permalink, e.g. https://www.instagram.com/reel/... */
   href: string;
 };
 
@@ -133,9 +124,9 @@ export type TentangContent = {
   body: string[];
   stats: TentangStat[];
   ctas: TentangCta[];
-  /** Right-rail social proof (replaces episode list) */
+  /** Right-rail label above the Reel embed */
   socialLabel: string;
-  testimonial: SocialTestimonial;
+  reel: InstagramReel;
 };
 
 export type FooterLink = {

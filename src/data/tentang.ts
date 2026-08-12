@@ -18,25 +18,8 @@ export const tentangContent: TentangContent = {
     { label: "Jelajahi Program", href: "#program", variant: "ghost" },
     { label: "Kenali Penyiar", href: "#penyiar", variant: "ghost" },
   ],
-  socialLabel: "Mereka ngomong gini tentang kita",
-  testimonial: {
-    platform: "instagram",
-    date: "JUN. 24, 2025",
-    quote: [
-      {
-        type: "text",
-        value:
-          "Studio-nya hangat, host-nya nyambung, dan lagu-lagunya pas banget buat nunggu hujan. ",
-      },
-      { type: "mention", value: "@solagracia" },
-      {
-        type: "text",
-        value: " bikin sore jadi lebih pelan.",
-      },
-    ],
-    authorName: "Alya Putri",
-    authorHandle: "@alyaputri",
-    authorInitials: "AP",
-    href: "",
+  socialLabel: "Pengen lebih dekat? yuk liat postingan kami di sini!",
+  reel: {
+    href: "https://www.instagram.com/reel/DbfSxcjTMfU/",
   },
 };
