@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useRef } from "react";
 import { motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { InstagramEmbed } from "@/components/sections/InstagramEmbed";
-import { DESKTOP_MOTION_QUERY, ensureGsap, prefersReducedMotion } from "@/lib/gsap";
+import { ensureGsap, prefersReducedMotion } from "@/lib/gsap";
 import {
   easeOut,
   fadeUp,
@@ -47,18 +47,6 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
   const { reel } = content;
   const frequencyLabel = content.frequencyLabel || "98.2 FM";
   const showReel = hasVisibleReel(reel);
-  const [entranceMotion, setEntranceMotion] = useState(false);
-
-  useEffect(() => {
-    if (prefersReducedMotion()) return;
-    const mq = window.matchMedia(DESKTOP_MOTION_QUERY);
-    const sync = () => setEntranceMotion(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  const enterHidden = entranceMotion ? "hidden" : false;
 
   useGSAP(
     () => {
@@ -66,39 +54,35 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
       if (!section) return;
 
       const gsap = ensureGsap();
-      const mm = gsap.matchMedia();
+      const cool = section.querySelector<HTMLElement>("[data-burn-cool]");
+      const ember = section.querySelector<HTMLElement>("[data-burn-ember]");
+      const warm = section.querySelector<HTMLElement>("[data-burn-warm]");
+      if (!cool || !ember || !warm) return;
 
-      mm.add(DESKTOP_MOTION_QUERY, () => {
-        const cool = section.querySelector<HTMLElement>("[data-burn-cool]");
-        const ember = section.querySelector<HTMLElement>("[data-burn-ember]");
-        const warm = section.querySelector<HTMLElement>("[data-burn-warm]");
-        if (!cool || !ember || !warm) return;
-
-        if (prefersReducedMotion()) {
-          gsap.set(cool, { opacity: 0 });
-          gsap.set(ember, { opacity: 0 });
-          gsap.set(warm, { opacity: 1 });
-          return;
-        }
-
-        gsap.set(cool, { opacity: 1 });
+      if (prefersReducedMotion()) {
+        gsap.set(cool, { opacity: 0 });
         gsap.set(ember, { opacity: 0 });
-        gsap.set(warm, { opacity: 0 });
+        gsap.set(warm, { opacity: 1 });
+        return;
+      }
 
-        gsap
-          .timeline({
-            scrollTrigger: {
-              trigger: section,
-              start: "top 80%",
-              end: "top 22%",
-              scrub: 1.15,
-            },
-          })
-          .to(ember, { opacity: 0.92, ease: "none", duration: 0.35 }, 0)
-          .to(cool, { opacity: 0, ease: "none", duration: 0.5 }, 0.12)
-          .to(warm, { opacity: 1, ease: "none", duration: 0.55 }, 0.22)
-          .to(ember, { opacity: 0.08, ease: "none", duration: 0.4 }, 0.55);
-      });
+      gsap.set(cool, { opacity: 1 });
+      gsap.set(ember, { opacity: 0 });
+      gsap.set(warm, { opacity: 0 });
+
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top 80%",
+            end: "top 22%",
+            scrub: 1.15,
+          },
+        })
+        .to(ember, { opacity: 0.92, ease: "none", duration: 0.35 }, 0)
+        .to(cool, { opacity: 0, ease: "none", duration: 0.5 }, 0.12)
+        .to(warm, { opacity: 1, ease: "none", duration: 0.55 }, 0.22)
+        .to(ember, { opacity: 0.08, ease: "none", duration: 0.4 }, 0.55);
     },
     { scope: sectionRef },
   );
@@ -125,8 +109,8 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
           <motion.div
             className="flex flex-col"
             variants={columnVariants}
-            initial={enterHidden}
-            whileInView={entranceMotion ? "show" : undefined}
+            initial="hidden"
+            whileInView="show"
             viewport={viewport}
           >
             <motion.p
@@ -217,8 +201,8 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
               className="flex flex-col lg:pt-1"
               aria-label={content.socialLabel}
               variants={railVariants}
-              initial={enterHidden}
-              whileInView={entranceMotion ? "show" : undefined}
+              initial="hidden"
+              whileInView="show"
               viewport={viewport}
             >
               <motion.h3
@@ -240,8 +224,8 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
 
         {ad ? (
           <motion.div
-            initial={entranceMotion ? { opacity: 0, y: 14 } : false}
-            whileInView={entranceMotion ? { opacity: 1, y: 0 } : undefined}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={viewport}
             transition={{ duration: 0.55, ease: easeOut }}
             className="mt-4 w-full shrink-0 pb-2 lg:mt-6"
@@ -270,13 +254,12 @@ function ParagraphWithBreaks({ text }: { text: string }) {
 
 /**
  * Broadcast loft wash — cool start burns into warm bright plaster.
- * Desktop pointer: GSAP scrubs [data-burn-*] layers. Touch: no extra paint.
+ * GSAP scrubs [data-burn-*] layers on scroll.
  */
 function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      {/* Burn stack is desktop-pointer only — scrubbing full-bleed
-          gradients / grain / blur on touch tanks scroll FPS. */}
+      {/* Soft studio photo — desktop only; blur + parallax is extra paint */}
       <div
         data-parallax="8"
         className="absolute inset-0 hidden opacity-[0.22] desktop-motion:block desktop-motion:will-change-transform"
@@ -290,10 +273,10 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
         />
       </div>
 
-      {/* Start: cool concrete (current Tentang) */}
+      {/* Start: cool concrete */}
       <div
         data-burn-cool
-        className="absolute inset-0 hidden desktop-motion:block desktop-motion:will-change-[opacity]"
+        className="absolute inset-0 will-change-[opacity]"
         style={{
           background: `
             linear-gradient(
@@ -309,7 +292,7 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
       {/* Mid: ember burn flare */}
       <div
         data-burn-ember
-        className="absolute inset-0 hidden desktop-motion:block desktop-motion:will-change-[opacity]"
+        className="absolute inset-0 will-change-[opacity]"
         style={{
           opacity: 0,
           background: `
@@ -337,8 +320,9 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
       {/* End: warm bright plaster */}
       <div
         data-burn-warm
-        className="absolute inset-0 hidden opacity-0 desktop-motion:block desktop-motion:will-change-[opacity]"
+        className="absolute inset-0 will-change-[opacity]"
         style={{
+          opacity: 0,
           background: `
             radial-gradient(ellipse 50% 45% at 85% 20%, rgba(196,92,38,0.12) 0%, transparent 55%),
             radial-gradient(ellipse 40% 35% at 8% 80%, rgba(12,12,14,0.08) 0%, transparent 50%),
@@ -349,7 +333,7 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
 
       {/* Blueprint grid */}
       <div
-        className="absolute inset-0 hidden opacity-[0.07] desktop-motion:block"
+        className="absolute inset-0 opacity-[0.07]"
         style={{
           backgroundImage: `
             linear-gradient(rgba(12,12,14,0.9) 1px, transparent 1px),
@@ -359,7 +343,7 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
         }}
       />
 
-      {/* Film grain — SVG turbulence + multiply is a mobile paint bomb */}
+      {/* Film grain — SVG turbulence + multiply stays desktop-only */}
       <div
         className="absolute inset-0 hidden opacity-[0.18] mix-blend-multiply desktop-motion:block"
         style={{
