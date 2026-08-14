@@ -49,7 +49,7 @@ export function ProgramSection({ content, initialDay, ad }: ProgramSectionProps)
       id="program"
       data-surface="smoke"
       className={cn(
-        "section-surface-smoke relative flex min-h-[100dvh] flex-col overflow-x-hidden border-t px-4 pt-[clamp(36px,6vw,72px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]",
+        "section-surface-smoke relative flex min-h-[100svh] flex-col overflow-x-hidden border-t px-4 pt-[clamp(36px,6vw,72px)] pb-[var(--section-pad-bottom)] sm:px-6 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]",
         /* Tall / 2K: center capped stage — FHD 1080p untouched */
         "[@media(min-height:1200px)]:justify-center",
       )}

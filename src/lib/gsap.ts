@@ -7,6 +7,8 @@ let registered = false;
 export function ensureGsap(): typeof gsap {
   if (!registered && typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
+    /* iOS URL bar show/hide fires resize — refresh() jumps scroll + recrops covers */
+    ScrollTrigger.config({ ignoreMobileResize: true });
     registered = true;
   }
   return gsap;

@@ -32,7 +32,7 @@ export function SectionShell({
       id={id}
       data-surface={surface}
       className={cn(
-        "relative min-h-[100dvh] border-t px-6 py-24 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]",
+        "relative min-h-[100svh] border-t px-6 py-24 md:pr-10 md:pl-[calc(var(--rail)+2.5rem)]",
         surface === "white" && "section-surface-white",
         surface === "smoke" && "section-surface-smoke",
         surface === "dark" && "section-surface-dark",

@@ -109,29 +109,39 @@ html[data-chrome="light"] {
 }
 
 html {
-  scroll-behavior: smooth;
+  /* auto on touch — smooth + URL-bar resize fights momentum and “pulls” after lift */
+  scroll-behavior: auto;
   -webkit-tap-highlight-color: transparent;
   overflow-x: clip;
 }
 
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 body {
   margin: 0;
-  min-height: 100dvh;
+  min-height: 100svh;
   background: var(--bg-void);
   color: var(--text-main);
   overflow-x: clip;
 }
 
-/* Mobile: sections may grow; desktop slides stay viewport-locked */
+/*
+ * svh (not dvh): dvh tracks the mobile URL bar, so full-bleed covers
+ * resize mid-scroll and the page jumps when chrome settles.
+ */
 .section-slide {
-  min-height: 100dvh;
+  min-height: 100svh;
   overflow-x: hidden;
 }
 
 @media (min-width: 1024px) {
   .section-slide {
-    height: 100dvh;
-    max-height: 100dvh;
+    height: 100svh;
+    max-height: 100svh;
     overflow: hidden;
   }
 
@@ -141,7 +151,7 @@ body {
    */
   #tentang.section-slide {
     height: auto;
-    min-height: 100dvh;
+    min-height: 100svh;
     max-height: none;
     overflow: visible;
   }

@@ -119,11 +119,11 @@ export function HeroSection({
     <>
       <section
         id="home"
-        className="relative h-[100dvh] max-h-[100dvh] overflow-hidden bg-[var(--bg-void)] text-white max-md:min-h-0 md:min-h-[640px]"
+        className="relative h-[100svh] max-h-[100svh] overflow-hidden bg-[var(--bg-void)] text-white max-md:min-h-0 md:min-h-[640px]"
       >
         <motion.div
           data-hero-cover
-          className="absolute inset-0 will-change-transform"
+          className="absolute top-0 left-0 h-[100svh] w-full"
           initial={{ scale: 1.06, opacity: 0.85 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1.35, ease: easeOut }}
@@ -154,7 +154,7 @@ export function HeroSection({
         <div
           className="pointer-events-none absolute top-1/2 left-1/2 z-[11] hidden -translate-x-1/2 -translate-y-1/2 md:block"
           style={{
-            width: "max(100%, calc(100dvh * 1715 / 917))",
+            width: "max(100%, calc(100svh * 1715 / 917))",
             height: "max(100%, calc(100dvw * 917 / 1715))",
           }}
         >
