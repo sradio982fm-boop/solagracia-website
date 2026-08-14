@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Keep in sync with DESKTOP_MOTION_QUERY in src/lib/gsap.ts */
+@custom-variant desktop-motion (@media (min-width: 1024px) and (hover: hover) and (pointer: fine));
+
 @theme inline {
   --color-accent: #c45c26;
   --color-accent-hover: #a84d1f;

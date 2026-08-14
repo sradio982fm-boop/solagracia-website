@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
-import { Fragment, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { InstagramEmbed } from "@/components/sections/InstagramEmbed";
-import { ensureGsap, prefersReducedMotion } from "@/lib/gsap";
+import { DESKTOP_MOTION_QUERY, ensureGsap, prefersReducedMotion } from "@/lib/gsap";
 import {
   easeOut,
   fadeUp,
@@ -47,6 +47,18 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
   const { reel } = content;
   const frequencyLabel = content.frequencyLabel || "98.2 FM";
   const showReel = hasVisibleReel(reel);
+  const [entranceMotion, setEntranceMotion] = useState(false);
+
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    const mq = window.matchMedia(DESKTOP_MOTION_QUERY);
+    const sync = () => setEntranceMotion(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const enterHidden = entranceMotion ? "hidden" : false;
 
   useGSAP(
     () => {
@@ -54,35 +66,39 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
       if (!section) return;
 
       const gsap = ensureGsap();
-      const cool = section.querySelector<HTMLElement>("[data-burn-cool]");
-      const ember = section.querySelector<HTMLElement>("[data-burn-ember]");
-      const warm = section.querySelector<HTMLElement>("[data-burn-warm]");
-      if (!cool || !ember || !warm) return;
+      const mm = gsap.matchMedia();
 
-      if (prefersReducedMotion()) {
-        gsap.set(cool, { opacity: 0 });
+      mm.add(DESKTOP_MOTION_QUERY, () => {
+        const cool = section.querySelector<HTMLElement>("[data-burn-cool]");
+        const ember = section.querySelector<HTMLElement>("[data-burn-ember]");
+        const warm = section.querySelector<HTMLElement>("[data-burn-warm]");
+        if (!cool || !ember || !warm) return;
+
+        if (prefersReducedMotion()) {
+          gsap.set(cool, { opacity: 0 });
+          gsap.set(ember, { opacity: 0 });
+          gsap.set(warm, { opacity: 1 });
+          return;
+        }
+
+        gsap.set(cool, { opacity: 1 });
         gsap.set(ember, { opacity: 0 });
-        gsap.set(warm, { opacity: 1 });
-        return;
-      }
+        gsap.set(warm, { opacity: 0 });
 
-      gsap.set(cool, { opacity: 1 });
-      gsap.set(ember, { opacity: 0 });
-      gsap.set(warm, { opacity: 0 });
-
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: section,
-            start: "top 80%",
-            end: "top 22%",
-            scrub: 1.15,
-          },
-        })
-        .to(ember, { opacity: 0.92, ease: "none", duration: 0.35 }, 0)
-        .to(cool, { opacity: 0, ease: "none", duration: 0.5 }, 0.12)
-        .to(warm, { opacity: 1, ease: "none", duration: 0.55 }, 0.22)
-        .to(ember, { opacity: 0.08, ease: "none", duration: 0.4 }, 0.55);
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: section,
+              start: "top 80%",
+              end: "top 22%",
+              scrub: 1.15,
+            },
+          })
+          .to(ember, { opacity: 0.92, ease: "none", duration: 0.35 }, 0)
+          .to(cool, { opacity: 0, ease: "none", duration: 0.5 }, 0.12)
+          .to(warm, { opacity: 1, ease: "none", duration: 0.55 }, 0.22)
+          .to(ember, { opacity: 0.08, ease: "none", duration: 0.4 }, 0.55);
+      });
     },
     { scope: sectionRef },
   );
@@ -109,8 +125,8 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
           <motion.div
             className="flex flex-col"
             variants={columnVariants}
-            initial="hidden"
-            whileInView="show"
+            initial={enterHidden}
+            whileInView={entranceMotion ? "show" : undefined}
             viewport={viewport}
           >
             <motion.p
@@ -201,8 +217,8 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
               className="flex flex-col lg:pt-1"
               aria-label={content.socialLabel}
               variants={railVariants}
-              initial="hidden"
-              whileInView="show"
+              initial={enterHidden}
+              whileInView={entranceMotion ? "show" : undefined}
               viewport={viewport}
             >
               <motion.h3
@@ -224,8 +240,8 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
 
         {ad ? (
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={entranceMotion ? { opacity: 0, y: 14 } : false}
+            whileInView={entranceMotion ? { opacity: 1, y: 0 } : undefined}
             viewport={viewport}
             transition={{ duration: 0.55, ease: easeOut }}
             className="mt-4 w-full shrink-0 pb-2 lg:mt-6"
@@ -253,16 +269,17 @@ function ParagraphWithBreaks({ text }: { text: string }) {
 }
 
 /**
- * Broadcast loft wash — cool start burns into warm bright plaster (Penyiar tone).
- * GSAP scrubs [data-burn-*] layers on scroll; see FrequencyTuning.
+ * Broadcast loft wash — cool start burns into warm bright plaster.
+ * Desktop pointer: GSAP scrubs [data-burn-*] layers. Touch: no extra paint.
  */
 function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      {/* Soft studio photo plane */}
+      {/* Burn stack is desktop-pointer only — scrubbing full-bleed
+          gradients / grain / blur on touch tanks scroll FPS. */}
       <div
         data-parallax="8"
-        className="absolute inset-0 opacity-[0.22] will-change-transform"
+        className="absolute inset-0 hidden opacity-[0.22] desktop-motion:block desktop-motion:will-change-transform"
       >
         <Image
           src="/cover-image.png"
@@ -276,7 +293,7 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
       {/* Start: cool concrete (current Tentang) */}
       <div
         data-burn-cool
-        className="absolute inset-0 will-change-[opacity]"
+        className="absolute inset-0 hidden desktop-motion:block desktop-motion:will-change-[opacity]"
         style={{
           background: `
             linear-gradient(
@@ -292,7 +309,7 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
       {/* Mid: ember burn flare */}
       <div
         data-burn-ember
-        className="absolute inset-0 will-change-[opacity]"
+        className="absolute inset-0 hidden desktop-motion:block desktop-motion:will-change-[opacity]"
         style={{
           opacity: 0,
           background: `
@@ -317,12 +334,11 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
         }}
       />
 
-      {/* End: warm bright plaster (matches Penyiar / other light sections) */}
+      {/* End: warm bright plaster */}
       <div
         data-burn-warm
-        className="absolute inset-0 will-change-[opacity]"
+        className="absolute inset-0 hidden opacity-0 desktop-motion:block desktop-motion:will-change-[opacity]"
         style={{
-          opacity: 0,
           background: `
             radial-gradient(ellipse 50% 45% at 85% 20%, rgba(196,92,38,0.12) 0%, transparent 55%),
             radial-gradient(ellipse 40% 35% at 8% 80%, rgba(12,12,14,0.08) 0%, transparent 50%),
@@ -333,7 +349,7 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
 
       {/* Blueprint grid */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
+        className="absolute inset-0 hidden opacity-[0.07] desktop-motion:block"
         style={{
           backgroundImage: `
             linear-gradient(rgba(12,12,14,0.9) 1px, transparent 1px),
@@ -343,9 +359,9 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
         }}
       />
 
-      {/* Film grain */}
+      {/* Film grain — SVG turbulence + multiply is a mobile paint bomb */}
       <div
-        className="absolute inset-0 opacity-[0.18] mix-blend-multiply"
+        className="absolute inset-0 hidden opacity-[0.18] mix-blend-multiply desktop-motion:block"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`,
           backgroundSize: "180px 180px",

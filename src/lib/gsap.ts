@@ -17,6 +17,14 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/**
+ * Paint-heavy scrub (burn, parallax, scale-in) — real desktops only.
+ * Touch / coarse-pointer devices keep native scroll; keep in sync with
+ * `@custom-variant desktop-motion` in globals.css.
+ */
+export const DESKTOP_MOTION_QUERY =
+  "(min-width: 1024px) and (hover: hover) and (pointer: fine)";
+
 export const STATIONS = [
   { id: "home", label: "HOME", hz: "98.2" },
   { id: "tentang", label: "TENTANG", hz: "98.3" },

@@ -3,6 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import { useRef } from "react";
 import {
+  DESKTOP_MOTION_QUERY,
   ensureGsap,
   prefersReducedMotion,
   ScrollTrigger,
@@ -55,23 +56,45 @@ export function FrequencyTuning() {
         });
       });
 
-      // —— Atmosphere parallax (decorative only) ——
+      // —— Scrubbed atmosphere (desktop pointer only) ——
       if (!reduced) {
-        document.querySelectorAll<HTMLElement>("[data-parallax]").forEach((layer) => {
-          const amount = Number(layer.dataset.parallax || "10");
-          const parent = layer.closest("section") ?? layer.parentElement;
-          if (!parent) return;
+        gsap.matchMedia().add(DESKTOP_MOTION_QUERY, () => {
+          document.querySelectorAll<HTMLElement>("[data-parallax]").forEach((layer) => {
+            const amount = Number(layer.dataset.parallax || "10");
+            const parent = layer.closest("section") ?? layer.parentElement;
+            if (!parent) return;
 
-          gsap.to(layer, {
-            yPercent: amount,
-            ease: "none",
-            scrollTrigger: {
-              trigger: parent,
-              scrub: 0.8,
-              start: "top bottom",
-              end: "bottom top",
-            },
+            gsap.to(layer, {
+              yPercent: amount,
+              ease: "none",
+              scrollTrigger: {
+                trigger: parent,
+                scrub: 0.8,
+                start: "top bottom",
+                end: "bottom top",
+              },
+            });
           });
+
+          document
+            .querySelectorAll<HTMLElement>("[data-scale-in]")
+            .forEach((img) => {
+              gsap.fromTo(
+                img,
+                { scale: 0.9, opacity: 0.55 },
+                {
+                  scale: 1,
+                  opacity: 1,
+                  ease: "none",
+                  scrollTrigger: {
+                    trigger: img,
+                    start: "top 90%",
+                    end: "top 45%",
+                    scrub: 0.6,
+                  },
+                },
+              );
+            });
         });
       }
 
@@ -91,29 +114,6 @@ export function FrequencyTuning() {
                 toggleActions: "play none none reverse",
               },
             });
-          });
-      }
-
-      // —— Image scale reveals (gpt-taste) ——
-      if (!reduced) {
-        document
-          .querySelectorAll<HTMLElement>("[data-scale-in]")
-          .forEach((img) => {
-            gsap.fromTo(
-              img,
-              { scale: 0.9, opacity: 0.55 },
-              {
-                scale: 1,
-                opacity: 1,
-                ease: "none",
-                scrollTrigger: {
-                  trigger: img,
-                  start: "top 90%",
-                  end: "top 45%",
-                  scrub: 0.6,
-                },
-              },
-            );
           });
       }
 
