@@ -37,8 +37,8 @@ import { getOnAirShow, getUpcomingShows, getWeekdayId } from "@/lib/schedule";
 import { toFooterSocialLinks, toSocialLinks } from "@/lib/social";
 import type { ReactNode } from "react";
 
-/** ISR safety net — admin saves also call revalidatePath("/"). Keep short so CMS edits surface quickly. */
-export const revalidate = 60;
+/** CMS-driven home — always fetch current site_config so empty saves show immediately. */
+export const dynamic = "force-dynamic";
 
 /**
  * Home — SSR content from Supabase with static fallbacks.
@@ -183,7 +183,9 @@ function renderSection(
           initialDay={ctx.todayId}
           ad={ctx.sectionAds.program}
         />,
-        <RadioMarquee key="marquee" items={ctx.marqueeItems} />,
+        ...(ctx.marqueeItems.length > 0
+          ? [<RadioMarquee key="marquee" items={ctx.marqueeItems} />]
+          : []),
       ];
     case "penyiar":
       return [

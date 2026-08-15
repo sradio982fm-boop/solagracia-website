@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Button, Group, Stack, Text, Textarea, TextInput } from "@mantine/core";
 import {
   ImageUpload,
   type ImageAspectRatio,
 } from "@/components/admin/ImageUpload";
 import { changeValue } from "@/lib/admin/form";
+import { configText } from "@/lib/cms-parse";
+import { useDraftFromSource } from "@/hooks/useDraftFromSource";
+import { heroContent as fallbackHero } from "@/data/hero";
+import { site as fallbackSite } from "@/data/site";
 import type {
   SiteConfigEntry,
   SiteConfigMap,
@@ -22,18 +25,20 @@ export type SiteFieldDef = {
   aspectRatio?: ImageAspectRatio;
   description?: string;
   maxLength?: number;
+  fallback?: string;
 };
 
 export const SEO_FIELDS: SiteFieldDef[] = [
-  { key: "site_name", label: "Nama situs" },
-  { key: "parent_name", label: "Parent brand" },
-  { key: "title", label: "Title (SEO)", maxLength: 70 },
+  { key: "site_name", label: "Nama situs", fallback: fallbackSite.name },
+  { key: "parent_name", label: "Parent brand", fallback: fallbackSite.parent },
+  { key: "title", label: "Title (SEO)", maxLength: 70, fallback: fallbackSite.title },
   { key: "subtitle", label: "Subtitle" },
   {
     key: "description",
     label: "Description",
     multiline: true,
     maxLength: 160,
+    fallback: fallbackSite.description,
   },
   {
     key: "og_image_url",
@@ -41,6 +46,7 @@ export const SEO_FIELDS: SiteFieldDef[] = [
     image: true,
     valueType: "image",
     aspectRatio: "video",
+    fallback: "/cover-image.png",
   },
   {
     key: "favicon_url",
@@ -49,15 +55,17 @@ export const SEO_FIELDS: SiteFieldDef[] = [
     valueType: "image",
     aspectRatio: "square",
     description: "Upload PNG/WebP/ICO — dipakai di tab browser",
+    fallback: "/favicon.ico",
   },
 ];
 
 export const BRAND_FIELDS: SiteFieldDef[] = [
-  { key: "display_name", label: "Display name" },
+  { key: "display_name", label: "Display name", fallback: fallbackSite.name },
   {
     key: "frequency_label",
     label: "Frequency label",
-    description: "SoT untuk stempel Studio · 98.2 FM",
+    description: "SoT untuk stempel Studio · 98.2 FM. Kosongkan untuk menyembunyikan.",
+    fallback: "98.2 FM",
   },
   {
     key: "parent_site_url",
@@ -79,30 +87,42 @@ export const HERO_FIELDS: SiteFieldDef[] = [
     multiline: true,
     description:
       "Enter = baris baru di judul (contoh: Solagracia / Digital Radio)",
+    fallback: fallbackHero.brand,
   },
-  { key: "eyebrow", label: "Eyebrow" },
-  { key: "vertical_tagline", label: "Tagline vertikal" },
+  { key: "eyebrow", label: "Eyebrow", fallback: fallbackHero.eyebrow },
+  {
+    key: "vertical_tagline",
+    label: "Tagline vertikal",
+    fallback: fallbackHero.verticalTagline,
+  },
   {
     key: "support",
     label: "Support / deskripsi",
     multiline: true,
     description: "Kosongkan untuk menyembunyikan di frontend",
+    fallback: fallbackHero.support,
   },
   {
     key: "cover_url",
     label: "Cover image",
     image: true,
     valueType: "image",
-    // Match full-bleed hero (~16:9 viewport), not portrait crop
     aspectRatio: "video",
+    fallback: fallbackHero.coverSrc,
   },
-  { key: "cover_alt", label: "Cover alt text", multiline: true },
+  {
+    key: "cover_alt",
+    label: "Cover alt text",
+    multiline: true,
+    fallback: fallbackHero.coverAlt,
+  },
   {
     key: "logo_url",
     label: "Logo",
     image: true,
     valueType: "image",
     aspectRatio: "square",
+    fallback: fallbackHero.logoSrc,
   },
   {
     key: "ctas",
@@ -110,17 +130,20 @@ export const HERO_FIELDS: SiteFieldDef[] = [
     multiline: true,
     valueType: "json",
     description:
-      'Contoh: [{"label":"Tentang","href":"#tentang","variant":"text","icon":"arrow"}]',
+      'Kosongkan atau [] untuk menyembunyikan. Contoh: [{"label":"Tentang","href":"#tentang","variant":"text","icon":"arrow"}]',
+    fallback: JSON.stringify(fallbackHero.ctas),
   },
   {
     key: "mobile_cta_label",
     label: "Mobile CTA label",
     description: "Kosongkan untuk menyembunyikan tombol atas di HP",
+    fallback: fallbackHero.mobileCtaLabel,
   },
   {
     key: "mobile_cta_href",
     label: "Mobile CTA href",
     valueType: "url",
+    fallback: fallbackHero.mobileCtaHref,
   },
 ];
 
@@ -128,8 +151,26 @@ function cfgValue(
   config: SiteConfigMap | undefined,
   section: string,
   key: string,
+  fallback = "",
 ): string {
-  return config?.[section]?.[key]?.value ?? "";
+  return configText(config?.[section], key, fallback);
+}
+
+function valuesFromConfig(
+  config: SiteConfigMap | undefined,
+  section: string,
+  fields: SiteFieldDef[],
+): Record<string, string> {
+  const next: Record<string, string> = {};
+  for (const field of fields) {
+    next[field.key] = cfgValue(
+      config,
+      section,
+      field.key,
+      field.fallback ?? "",
+    );
+  }
+  return next;
 }
 
 type Props = {
@@ -154,15 +195,9 @@ export function SiteConfigFieldsPanel({
   saving,
   onSave,
 }: Props) {
-  const [values, setValues] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const next: Record<string, string> = {};
-    for (const field of fields) {
-      next[field.key] = cfgValue(config, section, field.key);
-    }
-    setValues(next);
-  }, [config, fields, section]);
+  const [values, setValues] = useDraftFromSource(config, (source) =>
+    valuesFromConfig(source, section, fields),
+  );
 
   return (
     <Stack gap="md">

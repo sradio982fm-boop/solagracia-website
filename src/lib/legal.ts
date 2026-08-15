@@ -1,4 +1,5 @@
 import type { FooterLink } from "@/types/site";
+import { textAllowEmpty } from "@/lib/cms-parse";
 
 export type PrivacyContent = {
   title: string;
@@ -17,57 +18,89 @@ const FALLBACK_PRIVACY: PrivacyContent = {
   ],
 };
 
+function parsePrivacyBody(
+  section: Record<string, string | null>,
+): string[] {
+  const key =
+    "privacy_body" in section
+      ? "privacy_body"
+      : "body" in section
+        ? "body"
+        : null;
+  if (!key) return FALLBACK_PRIVACY.body;
+
+  const raw = section[key];
+  if (raw === null || raw === undefined || raw === "") return [];
+
+  try {
+    const parsed = JSON.parse(raw) as string[];
+    if (Array.isArray(parsed)) {
+      return parsed.filter((p) => typeof p === "string");
+    }
+  } catch {
+    return raw
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 export function mapPrivacyFromConfig(
   section: Record<string, string | null> | undefined,
 ): PrivacyContent {
   if (!section || Object.keys(section).length === 0) return FALLBACK_PRIVACY;
 
-  const bodyRaw = section.privacy_body || section.body;
-  let body = FALLBACK_PRIVACY.body;
-  if (bodyRaw) {
-    try {
-      const parsed = JSON.parse(bodyRaw) as string[];
-      if (Array.isArray(parsed) && parsed.length) {
-        body = parsed.filter((p) => typeof p === "string" && p.trim());
-      }
-    } catch {
-      const paragraphs = bodyRaw
-        .split(/\n\s*\n/)
-        .map((p) => p.trim())
-        .filter(Boolean);
-      if (paragraphs.length) body = paragraphs;
-    }
-  }
-
   return {
-    title:
-      section.privacy_title?.trim() ||
-      section.title?.trim() ||
+    title: textAllowEmpty(
+      section,
+      "privacy_title" in section ? "privacy_title" : "title",
       FALLBACK_PRIVACY.title,
-    updatedLabel:
-      section.privacy_updated_label?.trim() ||
-      section.updated_label?.trim() ||
+    ),
+    updatedLabel: textAllowEmpty(
+      section,
+      "privacy_updated_label" in section
+        ? "privacy_updated_label"
+        : "updated_label",
       FALLBACK_PRIVACY.updatedLabel,
-    body,
+    ),
+    body: parsePrivacyBody(section),
   };
 }
 
-export function ensurePrivacyLegalLink(links: FooterLink[]): FooterLink[] {
-  const hasPrivacy = links.some(
-    (l) =>
-      l.href === "/privasi" ||
-      l.label.toLowerCase().includes("privasi") ||
-      l.label.toLowerCase().includes("privacy"),
+export const PRIVACY_FOOTER_LINK_KEY = "privacy_show_footer_link";
+export const PRIVACY_FOOTER_LINK_DEFAULT = true;
+
+function isPrivacyFooterLink(link: FooterLink): boolean {
+  const label = link.label.toLowerCase();
+  return (
+    link.href === "/privasi" ||
+    label.includes("privasi") ||
+    label.includes("privacy")
   );
+}
+
+export function ensurePrivacyLegalLink(links: FooterLink[]): FooterLink[] {
+  const hasPrivacy = links.some(isPrivacyFooterLink);
   if (hasPrivacy) {
-    return links.map((l) =>
-      l.label.toLowerCase().includes("privasi") ||
-      l.label.toLowerCase().includes("privacy")
-        ? { ...l, href: l.href === "#" ? "/privasi" : l.href }
-        : l,
+    return links.map((link) =>
+      isPrivacyFooterLink(link)
+        ? { ...link, href: link.href === "#" ? "/privasi" : link.href }
+        : link,
     );
   }
   return [...links, { href: "/privasi", label: "Privasi" }];
+}
+
+export function applyPrivacyFooterLink(
+  links: FooterLink[],
+  showPrivacyLink: boolean,
+): FooterLink[] {
+  if (!showPrivacyLink) {
+    return links.filter((link) => !isPrivacyFooterLink(link));
+  }
+  return ensurePrivacyLegalLink(links);
 }
 
 export { FALLBACK_PRIVACY };

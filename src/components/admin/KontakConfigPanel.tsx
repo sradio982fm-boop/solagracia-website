@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   ActionIcon,
   Button,
@@ -12,13 +11,15 @@ import {
   TextInput,
 } from "@mantine/core";
 import { kontakContent as fallback } from "@/data/kontak";
+import { configJsonArray, configText } from "@/lib/cms-parse";
 import type { SiteConfigMap } from "@/hooks/admin/useSiteConfig";
 import type {
   KontakChannel,
   KontakFormCopy,
   KontakHotline,
 } from "@/types/kontak";
-import { changeValue } from "@/lib/admin/form";
+import { changeChecked, changeValue } from "@/lib/admin/form";
+import { useDraftFromSource } from "@/hooks/useDraftFromSource";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -33,22 +34,20 @@ type Props = {
   ) => Promise<void>;
 };
 
-function read(config: SiteConfigMap | undefined, key: string): string {
-  return config?.contact?.[key]?.value ?? "";
-}
-
-function parseArray<T>(raw: string, fallbackValue: T[]): T[] {
-  if (!raw) return fallbackValue;
-  try {
-    const parsed = JSON.parse(raw) as T[];
-    return Array.isArray(parsed) && parsed.length ? parsed : fallbackValue;
-  } catch {
-    return fallbackValue;
+function parseFormFromConfig(config: SiteConfigMap | undefined): KontakFormCopy {
+  const entry = config?.contact?.form;
+  if (entry === undefined) return fallback.form;
+  const raw = entry.value ?? "";
+  if (!raw) {
+    return {
+      nameLabel: "",
+      namePlaceholder: "",
+      messageLabel: "",
+      messagePlaceholder: "",
+      submitLabel: "",
+      whatsappTemplate: "",
+    };
   }
-}
-
-function parseForm(raw: string): KontakFormCopy {
-  if (!raw) return fallback.form;
   try {
     return { ...fallback.form, ...(JSON.parse(raw) as KontakFormCopy) };
   } catch {
@@ -56,32 +55,57 @@ function parseForm(raw: string): KontakFormCopy {
   }
 }
 
-export function KontakConfigPanel({ config, saving, onSave }: Props) {
-  const [studioLabel, setStudioLabel] = useState(fallback.studioLabel);
-  const [address, setAddress] = useState(fallback.address);
-  const [operatingHours, setOperatingHours] = useState(fallback.operatingHours);
-  const [email, setEmail] = useState(fallback.email);
-  const [frequency, setFrequency] = useState(fallback.frequency);
-  const [whatsappNumber, setWhatsappNumber] = useState(fallback.whatsappNumber);
-  const [channels, setChannels] = useState<KontakChannel[]>(fallback.channels);
-  const [hotlines, setHotlines] = useState<KontakHotline[]>(fallback.hotlines);
-  const [form, setForm] = useState<KontakFormCopy>(fallback.form);
+type KontakDraft = {
+  studioLabel: string;
+  address: string;
+  operatingHours: string;
+  email: string;
+  frequency: string;
+  whatsappNumber: string;
+  channels: KontakChannel[];
+  hotlines: KontakHotline[];
+  form: KontakFormCopy;
+};
 
-  useEffect(() => {
-    setStudioLabel(read(config, "studio_label") || fallback.studioLabel);
-    setAddress(read(config, "address") || fallback.address);
-    setOperatingHours(
-      read(config, "operating_hours") || fallback.operatingHours,
-    );
-    setEmail(read(config, "email") || fallback.email);
-    setFrequency(read(config, "frequency") || fallback.frequency);
-    setWhatsappNumber(
-      read(config, "whatsapp_number") || fallback.whatsappNumber,
-    );
-    setChannels(parseArray(read(config, "channels"), fallback.channels));
-    setHotlines(parseArray(read(config, "hotlines"), fallback.hotlines));
-    setForm(parseForm(read(config, "form")));
-  }, [config]);
+function draftFromConfig(config: SiteConfigMap | undefined): KontakDraft {
+  return {
+    studioLabel: configText(
+      config?.contact,
+      "studio_label",
+      fallback.studioLabel,
+    ),
+    address: configText(config?.contact, "address", fallback.address),
+    operatingHours: configText(
+      config?.contact,
+      "operating_hours",
+      fallback.operatingHours,
+    ),
+    email: configText(config?.contact, "email", fallback.email),
+    frequency: configText(config?.contact, "frequency", fallback.frequency),
+    whatsappNumber: configText(
+      config?.contact,
+      "whatsapp_number",
+      fallback.whatsappNumber,
+    ),
+    channels: configJsonArray(config?.contact, "channels", fallback.channels),
+    hotlines: configJsonArray(config?.contact, "hotlines", fallback.hotlines),
+    form: parseFormFromConfig(config),
+  };
+}
+
+export function KontakConfigPanel({ config, saving, onSave }: Props) {
+  const [draft, setDraft] = useDraftFromSource(config, draftFromConfig);
+  const {
+    studioLabel,
+    address,
+    operatingHours,
+    email,
+    frequency,
+    whatsappNumber,
+    channels,
+    hotlines,
+    form,
+  } = draft;
 
   return (
     <Stack gap="md">
@@ -93,34 +117,44 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
       <TextInput
         label="Studio label"
         value={studioLabel}
-        onChange={(e) => setStudioLabel(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, studioLabel: changeValue(e) }))
+        }
         size="sm"
       />
       <Textarea
         label="Address"
         value={address}
-        onChange={(e) => setAddress(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, address: changeValue(e) }))
+        }
         rows={3}
         size="sm"
       />
       <TextInput
         label="Operating hours"
         value={operatingHours}
-        onChange={(e) => setOperatingHours(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, operatingHours: changeValue(e) }))
+        }
         size="sm"
       />
       <Group grow>
         <TextInput
           label="Email"
           value={email}
-          onChange={(e) => setEmail(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, email: changeValue(e) }))
+          }
           size="sm"
         />
         <TextInput
           label="Frequency"
-          description="Bisa dikosongkan — brand.frequency_label jadi fallback"
+          description="Bisa dikosongkan"
           value={frequency}
-          onChange={(e) => setFrequency(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, frequency: changeValue(e) }))
+          }
           size="sm"
         />
       </Group>
@@ -128,7 +162,9 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
         label="WhatsApp number"
         description="Digits only, mis. 628811982982"
         value={whatsappNumber}
-        onChange={(e) => setWhatsappNumber(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, whatsappNumber: changeValue(e) }))
+        }
         size="sm"
       />
 
@@ -148,13 +184,12 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 label="ID"
                 value={channel.id}
                 onChange={(e) =>
-                  setChannels((prev) =>
-                    prev.map((c, i) =>
-                      i === index
-                        ? { ...c, id: changeValue(e) }
-                        : c,
+                  setDraft((prev) => ({
+                    ...prev,
+                    channels: prev.channels.map((c, i) =>
+                      i === index ? { ...c, id: changeValue(e) } : c,
                     ),
-                  )
+                  }))
                 }
                 size="xs"
               />
@@ -162,13 +197,12 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 label="Label"
                 value={channel.label}
                 onChange={(e) =>
-                  setChannels((prev) =>
-                    prev.map((c, i) =>
-                      i === index
-                        ? { ...c, label: changeValue(e) }
-                        : c,
+                  setDraft((prev) => ({
+                    ...prev,
+                    channels: prev.channels.map((c, i) =>
+                      i === index ? { ...c, label: changeValue(e) } : c,
                     ),
-                  )
+                  }))
                 }
                 size="xs"
               />
@@ -177,13 +211,12 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
               label="Detail"
               value={channel.detail}
               onChange={(e) =>
-                setChannels((prev) =>
-                  prev.map((c, i) =>
-                    i === index
-                      ? { ...c, detail: changeValue(e) }
-                      : c,
+                setDraft((prev) => ({
+                  ...prev,
+                  channels: prev.channels.map((c, i) =>
+                    i === index ? { ...c, detail: changeValue(e) } : c,
                   ),
-                )
+                }))
               }
               size="xs"
             />
@@ -192,13 +225,12 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 label="Href"
                 value={channel.href}
                 onChange={(e) =>
-                  setChannels((prev) =>
-                    prev.map((c, i) =>
-                      i === index
-                        ? { ...c, href: changeValue(e) }
-                        : c,
+                  setDraft((prev) => ({
+                    ...prev,
+                    channels: prev.channels.map((c, i) =>
+                      i === index ? { ...c, href: changeValue(e) } : c,
                     ),
-                  )
+                  }))
                 }
                 size="xs"
                 style={{ flex: 1 }}
@@ -207,20 +239,24 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
                 label="External"
                 checked={Boolean(channel.external)}
                 onChange={(e) =>
-                  setChannels((prev) =>
-                    prev.map((c, i) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    channels: prev.channels.map((c, i) =>
                       i === index
-                        ? { ...c, external: e.currentTarget.checked }
+                        ? { ...c, external: changeChecked(e) }
                         : c,
                     ),
-                  )
+                  }))
                 }
               />
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 onClick={() =>
-                  setChannels((prev) => prev.filter((_, i) => i !== index))
+                  setDraft((prev) => ({
+                    ...prev,
+                    channels: prev.channels.filter((_, i) => i !== index),
+                  }))
                 }
                 aria-label="Hapus channel"
               >
@@ -234,15 +270,18 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           variant="light"
           color="gray"
           onClick={() =>
-            setChannels((prev) => [
+            setDraft((prev) => ({
               ...prev,
-              {
-                id: `channel-${prev.length + 1}`,
-                label: "",
-                detail: "",
-                href: "#",
-              },
-            ])
+              channels: [
+                ...prev.channels,
+                {
+                  id: `channel-${prev.channels.length + 1}`,
+                  label: "",
+                  detail: "",
+                  href: "#",
+                },
+              ],
+            }))
           }
         >
           Tambah channel
@@ -259,13 +298,12 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
               label={index === 0 ? "Label" : undefined}
               value={line.label}
               onChange={(e) =>
-                setHotlines((prev) =>
-                  prev.map((h, i) =>
-                    i === index
-                      ? { ...h, label: changeValue(e) }
-                      : h,
+                setDraft((prev) => ({
+                  ...prev,
+                  hotlines: prev.hotlines.map((h, i) =>
+                    i === index ? { ...h, label: changeValue(e) } : h,
                   ),
-                )
+                }))
               }
               size="sm"
             />
@@ -273,13 +311,12 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
               label={index === 0 ? "Number" : undefined}
               value={line.number}
               onChange={(e) =>
-                setHotlines((prev) =>
-                  prev.map((h, i) =>
-                    i === index
-                      ? { ...h, number: changeValue(e) }
-                      : h,
+                setDraft((prev) => ({
+                  ...prev,
+                  hotlines: prev.hotlines.map((h, i) =>
+                    i === index ? { ...h, number: changeValue(e) } : h,
                   ),
-                )
+                }))
               }
               size="sm"
             />
@@ -287,13 +324,12 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
               label={index === 0 ? "Href" : undefined}
               value={line.href}
               onChange={(e) =>
-                setHotlines((prev) =>
-                  prev.map((h, i) =>
-                    i === index
-                      ? { ...h, href: changeValue(e) }
-                      : h,
+                setDraft((prev) => ({
+                  ...prev,
+                  hotlines: prev.hotlines.map((h, i) =>
+                    i === index ? { ...h, href: changeValue(e) } : h,
                   ),
-                )
+                }))
               }
               size="sm"
             />
@@ -301,7 +337,10 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
               variant="subtle"
               color="gray"
               onClick={() =>
-                setHotlines((prev) => prev.filter((_, i) => i !== index))
+                setDraft((prev) => ({
+                  ...prev,
+                  hotlines: prev.hotlines.filter((_, i) => i !== index),
+                }))
               }
               aria-label="Hapus hotline"
             >
@@ -314,10 +353,13 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           variant="light"
           color="gray"
           onClick={() =>
-            setHotlines((prev) => [
+            setDraft((prev) => ({
               ...prev,
-              { label: "", number: "", href: "tel:" },
-            ])
+              hotlines: [
+                ...prev.hotlines,
+                { label: "", number: "", href: "tel:" },
+              ],
+            }))
           }
         >
           Tambah hotline
@@ -332,7 +374,10 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           label="Name label"
           value={form.nameLabel}
           onChange={(e) =>
-            setForm((prev) => ({ ...prev, nameLabel: changeValue(e) }))
+            setDraft((prev) => ({
+              ...prev,
+              form: { ...prev.form, nameLabel: changeValue(e) },
+            }))
           }
           size="sm"
         />
@@ -340,9 +385,9 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           label="Name placeholder"
           value={form.namePlaceholder}
           onChange={(e) =>
-            setForm((prev) => ({
+            setDraft((prev) => ({
               ...prev,
-              namePlaceholder: changeValue(e),
+              form: { ...prev.form, namePlaceholder: changeValue(e) },
             }))
           }
           size="sm"
@@ -353,9 +398,9 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           label="Message label"
           value={form.messageLabel}
           onChange={(e) =>
-            setForm((prev) => ({
+            setDraft((prev) => ({
               ...prev,
-              messageLabel: changeValue(e),
+              form: { ...prev.form, messageLabel: changeValue(e) },
             }))
           }
           size="sm"
@@ -364,9 +409,9 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
           label="Message placeholder"
           value={form.messagePlaceholder}
           onChange={(e) =>
-            setForm((prev) => ({
+            setDraft((prev) => ({
               ...prev,
-              messagePlaceholder: changeValue(e),
+              form: { ...prev.form, messagePlaceholder: changeValue(e) },
             }))
           }
           size="sm"
@@ -376,7 +421,10 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
         label="Submit label"
         value={form.submitLabel}
         onChange={(e) =>
-          setForm((prev) => ({ ...prev, submitLabel: changeValue(e) }))
+          setDraft((prev) => ({
+            ...prev,
+            form: { ...prev.form, submitLabel: changeValue(e) },
+          }))
         }
         size="sm"
       />
@@ -385,9 +433,9 @@ export function KontakConfigPanel({ config, saving, onSave }: Props) {
         description="Gunakan {name} dan {message}"
         value={form.whatsappTemplate}
         onChange={(e) =>
-          setForm((prev) => ({
+          setDraft((prev) => ({
             ...prev,
-            whatsappTemplate: changeValue(e),
+            form: { ...prev.form, whatsappTemplate: changeValue(e) },
           }))
         }
         rows={3}

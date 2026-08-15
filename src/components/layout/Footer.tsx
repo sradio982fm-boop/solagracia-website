@@ -11,6 +11,7 @@ import {
   viewportLoose,
 } from "@/lib/motion";
 import { sanitizeHref } from "@/lib/security";
+import { cn } from "@/lib/utils";
 import type { FooterContent } from "@/types/site";
 
 type FooterProps = {
@@ -40,36 +41,49 @@ export function Footer({ content }: FooterProps) {
           className="grid grid-cols-1 gap-[clamp(32px,4vw,56px)] border-b border-[var(--line-soft)] pb-[clamp(40px,6vw,72px)] lg:grid-cols-[1.4fr_1fr_1fr]"
         >
           <motion.div variants={fadeUpSoft} className="flex max-w-[360px] flex-col gap-5">
-            <h2 className="m-0 text-[clamp(2.2rem,4.5vw,3.4rem)] leading-[0.92] font-extrabold tracking-[-0.03em] uppercase">
-              {titleLines.map((line, index) => (
-                <span key={line}>
-                  {line}
-                  {index < titleLines.length - 1 ? <br /> : null}
-                </span>
-              ))}
-            </h2>
-            <p className="m-0 max-w-[20rem] text-[0.9rem] leading-relaxed text-[var(--text-dim)]">
-              {content.brandDescription}
-            </p>
-            <div className="flex flex-wrap items-center gap-0">
-              <motion.a
-                href={sanitizeHref(content.listenHref)}
-                whileHover={hoverLift}
-                whileTap={tapPress}
-                className="inline-flex h-11 items-center gap-2.5 border border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-main)] uppercase no-underline transition-colors hover:bg-white/10"
-              >
-                <PlayIcon />
-                {content.listenLabel}
-              </motion.a>
-              <motion.a
-                href={sanitizeHref(content.contactHref)}
-                whileHover={hoverLift}
-                whileTap={tapPress}
-                className="inline-flex h-11 items-center border border-l-0 border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-dim)] uppercase no-underline transition-colors hover:bg-white/10 hover:text-[var(--text-main)]"
-              >
-                {content.contactLabel}
-              </motion.a>
-            </div>
+            {content.brandTitle.trim() ? (
+              <h2 className="m-0 text-[clamp(2.2rem,4.5vw,3.4rem)] leading-[0.92] font-extrabold tracking-[-0.03em] uppercase">
+                {titleLines.map((line, index) => (
+                  <span key={`${line}-${index}`}>
+                    {line}
+                    {index < titleLines.length - 1 ? <br /> : null}
+                  </span>
+                ))}
+              </h2>
+            ) : null}
+            {content.brandDescription ? (
+              <p className="m-0 max-w-[20rem] text-[0.9rem] leading-relaxed text-[var(--text-dim)]">
+                {content.brandDescription}
+              </p>
+            ) : null}
+            {content.listenLabel || content.contactLabel ? (
+              <div className="flex flex-wrap items-center gap-0">
+                {content.listenLabel ? (
+                  <motion.a
+                    href={sanitizeHref(content.listenHref)}
+                    whileHover={hoverLift}
+                    whileTap={tapPress}
+                    className="inline-flex h-11 items-center gap-2.5 border border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-main)] uppercase no-underline transition-colors hover:bg-white/10"
+                  >
+                    <PlayIcon />
+                    {content.listenLabel}
+                  </motion.a>
+                ) : null}
+                {content.contactLabel ? (
+                  <motion.a
+                    href={sanitizeHref(content.contactHref)}
+                    whileHover={hoverLift}
+                    whileTap={tapPress}
+                    className={cn(
+                      "inline-flex h-11 items-center border border-[var(--line)] px-4 text-[0.72rem] font-semibold tracking-[0.18em] text-[var(--text-dim)] uppercase no-underline transition-colors hover:bg-white/10 hover:text-[var(--text-main)]",
+                      content.listenLabel && "border-l-0",
+                    )}
+                  >
+                    {content.contactLabel}
+                  </motion.a>
+                ) : null}
+              </div>
+            ) : null}
           </motion.div>
 
           <motion.div variants={fadeUpSoft}>

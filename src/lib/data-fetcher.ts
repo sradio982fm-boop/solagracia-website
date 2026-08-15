@@ -6,7 +6,17 @@ import { site as fallbackSite } from "@/data/site";
 import type { SocialRow } from "@/lib/social";
 import { mapFooterFromConfig, mapMarqueeFromConfig } from "@/lib/footer";
 import { mapKontakFromConfig } from "@/lib/kontak";
-import { mapPrivacyFromConfig, type PrivacyContent } from "@/lib/legal";
+import {
+  mapPrivacyFromConfig,
+  PRIVACY_FOOTER_LINK_DEFAULT,
+  PRIVACY_FOOTER_LINK_KEY,
+  type PrivacyContent,
+} from "@/lib/legal";
+import {
+  boolAllowEmpty,
+  parseJsonArrayAllowEmpty,
+  textAllowEmpty,
+} from "@/lib/cms-parse";
 import {
   buildOnAirFromSlots,
   buildProgramFromSlots,
@@ -37,6 +47,7 @@ import {
 } from "@/lib/section-config";
 import type { AdPlaceholder } from "@/types/ads";
 import { penyiarContent as fallbackPenyiar } from "@/data/penyiar";
+import { scheduleContent as fallbackOnAir } from "@/data/schedule";
 import type { PartnerContent } from "@/types/partner";
 import type { KontakContent } from "@/types/kontak";
 import type { PenyiarContent } from "@/types/penyiar";
@@ -73,15 +84,17 @@ function toFrequencyOption(row: {
   audio_url: string | null;
   video_url: string | null;
   poster_url: string | null;
+  show_video?: boolean | null;
   is_default: boolean | null;
 }): FrequencyOption {
   return {
     id: row.id,
-    label: row.label || fallbackMedia.frequency,
-    stationName: row.station_name || fallbackMedia.stationName,
+    label: row.label ?? fallbackMedia.frequency,
+    stationName: row.station_name ?? fallbackMedia.stationName,
     audioSrc: row.audio_url || fallbackMedia.audioSrc,
-    videoSrc: row.video_url || fallbackMedia.videoSrc,
-    videoPoster: row.poster_url || fallbackMedia.videoPoster,
+    videoSrc: row.video_url ?? fallbackMedia.videoSrc,
+    videoPoster: row.poster_url ?? fallbackMedia.videoPoster,
+    showVideo: row.show_video !== false,
     isDefault: Boolean(row.is_default),
   };
 }
@@ -114,6 +127,7 @@ export async function fetchPlayerPayload(
     audioSrc: fallbackMedia.audioSrc,
     videoSrc: fallbackMedia.videoSrc,
     videoPoster: fallbackMedia.videoPoster,
+    showVideo: true,
     isDefault: true,
   };
 
@@ -190,48 +204,18 @@ function withShowTitle(
 
 type RawConfig = Record<string, Record<string, string | null>>;
 
-function text(
-  section: Record<string, string | null> | undefined,
-  key: string,
-  fallback: string,
-): string {
-  const value = section?.[key];
-  return value && value.trim() ? value : fallback;
-}
-
-/** Missing key → fallback; explicit empty/null → "" (do not revive fallback copy). */
-function textAllowEmpty(
-  section: Record<string, string | null> | undefined,
-  key: string,
-  fallback: string,
-): string {
-  if (!section || !(key in section)) return fallback;
-  const value = section[key];
-  if (value === null || value === undefined) return "";
-  return value;
-}
-
-/**
- * Missing / invalid → fallback.
- * Explicit `[]` → [] (admin cleared all CTAs).
- */
 function parseHeroCtas(
   section: Record<string, string | null> | undefined,
   key: string,
 ): HeroCta[] {
-  if (!section || !(key in section)) return fallbackHero.ctas;
-  const raw = section[key];
-  if (raw === null || raw === undefined || raw === "") return [];
-  try {
-    const parsed = JSON.parse(raw) as HeroCta[];
-    if (!Array.isArray(parsed)) return fallbackHero.ctas;
-    return parsed.filter(
-      (cta): cta is HeroCta =>
-        typeof cta?.label === "string" && typeof cta?.href === "string",
-    );
-  } catch {
-    return fallbackHero.ctas;
-  }
+  return parseJsonArrayAllowEmpty<HeroCta>(
+    section,
+    key,
+    fallbackHero.ctas,
+  ).filter(
+    (cta): cta is HeroCta =>
+      typeof cta?.label === "string" && typeof cta?.href === "string",
+  );
 }
 
 const fetchRawSiteConfig = cache(async (): Promise<RawConfig> => {
@@ -259,13 +243,13 @@ export async function fetchSeoContent(): Promise<SeoContent> {
     const config = await fetchRawSiteConfig();
     const seo = config.seo;
     return {
-      siteName: text(seo, "site_name", fallbackSite.name),
-      parentName: text(seo, "parent_name", fallbackSite.parent),
-      title: text(seo, "title", fallbackSite.title),
-      subtitle: text(seo, "subtitle", ""),
-      description: text(seo, "description", fallbackSite.description),
-      ogImageUrl: text(seo, "og_image_url", "/cover-image.png"),
-      faviconUrl: text(seo, "favicon_url", "/favicon.ico"),
+      siteName: textAllowEmpty(seo, "site_name", fallbackSite.name),
+      parentName: textAllowEmpty(seo, "parent_name", fallbackSite.parent),
+      title: textAllowEmpty(seo, "title", fallbackSite.title),
+      subtitle: textAllowEmpty(seo, "subtitle", ""),
+      description: textAllowEmpty(seo, "description", fallbackSite.description),
+      ogImageUrl: textAllowEmpty(seo, "og_image_url", "/cover-image.png"),
+      faviconUrl: textAllowEmpty(seo, "favicon_url", "/favicon.ico"),
     };
   } catch {
     return {
@@ -285,8 +269,8 @@ export async function fetchBrandContent(): Promise<BrandContent> {
     const config = await fetchRawSiteConfig();
     const brand = config.brand;
     return {
-      displayName: text(brand, "display_name", fallbackSite.name),
-      frequencyLabel: text(brand, "frequency_label", "98.2 FM"),
+      displayName: textAllowEmpty(brand, "display_name", fallbackSite.name),
+      frequencyLabel: textAllowEmpty(brand, "frequency_label", "98.2 FM"),
       parentSiteUrl: textAllowEmpty(brand, "parent_site_url", ""),
       parentSiteLabel: textAllowEmpty(brand, "parent_site_label", "S Radio"),
     };
@@ -312,7 +296,7 @@ export async function fetchHeroContent(
     }
 
     return {
-      brand: text(hero, "brand", fallbackHero.brand),
+      brand: textAllowEmpty(hero, "brand", fallbackHero.brand),
       // Explicit empty clears eyebrow — do not revive fallback.
       eyebrow: textAllowEmpty(hero, "eyebrow", fallbackHero.eyebrow),
       support: textAllowEmpty(hero, "support", fallbackHero.support),
@@ -321,10 +305,10 @@ export async function fetchHeroContent(
         "vertical_tagline",
         fallbackHero.verticalTagline,
       ),
-      coverSrc: text(hero, "cover_url", fallbackHero.coverSrc),
+      coverSrc: textAllowEmpty(hero, "cover_url", fallbackHero.coverSrc),
       // Explicit empty alt stays empty (component uses brand as last resort).
       coverAlt: textAllowEmpty(hero, "cover_alt", fallbackHero.coverAlt),
-      logoSrc: text(hero, "logo_url", fallbackHero.logoSrc),
+      logoSrc: textAllowEmpty(hero, "logo_url", fallbackHero.logoSrc),
       ctas: parseHeroCtas(hero, "ctas"),
       mobileCtaLabel: textAllowEmpty(
         hero,
@@ -373,7 +357,14 @@ export async function fetchFooterContent(options?: {
 }): Promise<FooterContent> {
   try {
     const config = await fetchRawSiteConfig();
-    return mapFooterFromConfig(config.footer, options);
+    return mapFooterFromConfig(config.footer, {
+      ...options,
+      showPrivacyLink: boolAllowEmpty(
+        config.legal,
+        PRIVACY_FOOTER_LINK_KEY,
+        PRIVACY_FOOTER_LINK_DEFAULT,
+      ),
+    });
   } catch {
     return mapFooterFromConfig(undefined, options);
   }
@@ -454,18 +445,26 @@ export async function fetchPenyiarContent(header?: {
       return {
         ...fallbackPenyiar,
         hosts: [],
-        ...(header?.eyebrow ? { eyebrow: header.eyebrow } : {}),
-        ...(header?.title ? { title: header.title } : {}),
-        ...(header?.titleAccent ? { titleAccent: header.titleAccent } : {}),
-        ...(header?.description ? { description: header.description } : {}),
+        ...(header
+          ? {
+              eyebrow: header.eyebrow ?? "",
+              title: header.title ?? "",
+              titleAccent: header.titleAccent ?? "",
+              description: header.description ?? "",
+            }
+          : {}),
       };
     }
 
     return {
-      eyebrow: header?.eyebrow || fallbackPenyiar.eyebrow,
-      title: header?.title || fallbackPenyiar.title,
-      titleAccent: header?.titleAccent || fallbackPenyiar.titleAccent,
-      description: header?.description || fallbackPenyiar.description,
+      eyebrow: header ? (header.eyebrow ?? "") : fallbackPenyiar.eyebrow,
+      title: header ? (header.title ?? "") : fallbackPenyiar.title,
+      titleAccent: header
+        ? (header.titleAccent ?? "")
+        : fallbackPenyiar.titleAccent,
+      description: header
+        ? (header.description ?? "")
+        : fallbackPenyiar.description,
       hosts: (data ?? []).map((row) => ({
         id: row.id,
         name: row.name,
@@ -573,9 +572,17 @@ export async function fetchOnAirContent(
     ]);
     const onAir = config.on_air;
     return buildOnAirFromSlots(slots, {
-      label: onAir?.label || undefined,
-      upcomingLabel: onAir?.upcoming_label || undefined,
-      fallbackTitle: onAir?.fallback_title || undefined,
+      label: textAllowEmpty(onAir, "label", fallbackOnAir.label),
+      upcomingLabel: textAllowEmpty(
+        onAir,
+        "upcoming_label",
+        fallbackOnAir.upcomingLabel,
+      ),
+      fallbackTitle: textAllowEmpty(
+        onAir,
+        "fallback_title",
+        fallbackOnAir.fallbackTitle,
+      ),
     });
   } catch {
     return buildOnAirFromSlots([]);
@@ -617,10 +624,10 @@ function applyHeader<T extends {
   if (!header) return content;
   return {
     ...content,
-    ...(header.eyebrow ? { eyebrow: header.eyebrow } : {}),
-    ...(header.title ? { title: header.title } : {}),
-    ...(header.titleAccent ? { titleAccent: header.titleAccent } : {}),
-    ...(header.description ? { description: header.description } : {}),
+    eyebrow: header.eyebrow,
+    title: header.title,
+    titleAccent: header.titleAccent,
+    description: header.description,
   };
 }
 

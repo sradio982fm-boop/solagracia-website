@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 
 type LiquidAuroraProps = {
   className?: string;
 };
+
+function subscribeReducedMotion(onChange: () => void) {
+  const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+  media.addEventListener("change", onChange);
+  return () => media.removeEventListener("change", onChange);
+}
 
 /**
  * Tall chromatic tongues of liquid light — domain-warped aurora with
@@ -14,17 +20,19 @@ type LiquidAuroraProps = {
  */
 export function LiquidAurora({ className }: LiquidAuroraProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const reducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
   const [mode, setMode] = useState<"pending" | "gpu" | "fallback">("pending");
+  const visualMode = reducedMotion ? "fallback" : mode;
 
   useEffect(() => {
+    if (reducedMotion) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduced.matches) {
-      setMode("fallback");
-      return;
-    }
 
     const gl = canvas.getContext("webgl2", {
       antialias: false,
@@ -33,7 +41,7 @@ export function LiquidAurora({ className }: LiquidAuroraProps) {
       preserveDrawingBuffer: true,
     });
     if (!gl) {
-      setMode("fallback");
+      queueMicrotask(() => setMode("fallback"));
       return;
     }
     const ctx: WebGL2RenderingContext = gl;
@@ -311,7 +319,7 @@ void main(){
       window.addEventListener("resize", resize);
       window.addEventListener("pointermove", onPointerMove, { passive: true });
       window.addEventListener("pointerdown", onPointerDown, { passive: true });
-      setMode("gpu");
+      queueMicrotask(() => setMode("gpu"));
 
       const tick = (now: number) => {
         if (disposed) return;
@@ -344,9 +352,9 @@ void main(){
       };
     } catch (err) {
       console.error("[LiquidAurora]", err);
-      setMode("fallback");
+      queueMicrotask(() => setMode("fallback"));
     }
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div
@@ -360,13 +368,13 @@ void main(){
         ref={canvasRef}
         className={cn(
           "absolute inset-0 h-full w-full",
-          mode !== "gpu" && "opacity-0",
+          visualMode !== "gpu" && "opacity-0",
         )}
       />
       <div
         className={cn(
           "absolute inset-0 transition-opacity duration-500",
-          mode === "gpu" ? "opacity-0" : "opacity-100",
+          visualMode === "gpu" ? "opacity-0" : "opacity-100",
           "bg-[radial-gradient(ellipse_at_25%_0%,rgba(196,92,38,0.45),transparent_42%),radial-gradient(ellipse_at_70%_40%,rgba(232,176,74,0.22),transparent_40%),radial-gradient(ellipse_at_40%_90%,rgba(46,107,122,0.18),transparent_45%),linear-gradient(180deg,#0a0a0b_0%,#121014_100%)]",
         )}
       />

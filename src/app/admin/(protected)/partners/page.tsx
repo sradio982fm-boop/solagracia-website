@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   usePartners,
   useCreatePartner,
@@ -47,7 +47,9 @@ import { AdminSurface } from "@/components/admin/AdminSurface";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { TagInput } from "@/components/admin/TagInput";
 import { partnerContent as defaults } from "@/data/partner";
-import { changeValue } from "@/lib/admin/form";
+import { changeChecked, changeValue } from "@/lib/admin/form";
+import { configText } from "@/lib/cms-parse";
+import { useDraftFromSource } from "@/hooks/useDraftFromSource";
 
 type TabId = "history" | "plans";
 
@@ -137,7 +139,30 @@ function configValue(
   key: string,
   fallback: string,
 ): string {
-  return config?.partner?.[key]?.value?.trim() || fallback;
+  return configText(config?.partner, key, fallback);
+}
+
+function partnerConfigDraft(
+  config: SiteConfigMap | undefined,
+): Record<string, string> {
+  if (!config) return {};
+  const next: Record<string, string> = {};
+  for (const field of PARTNER_CONFIG_FIELDS) {
+    next[field.key] = configValue(
+      config,
+      field.key,
+      defaults[
+        field.key === "history_label" ? "historyLabel"
+        : field.key === "plans_label" ? "plansLabel"
+        : field.key === "more_info_label" ? "moreInfoLabel"
+        : field.key === "more_info_href" ? "moreInfoHref"
+        : field.key === "whatsapp_number" ? "whatsappNumber"
+        : field.key === "plan_cta_label" ? "planCtaLabel"
+        : "currencyPrefix"
+      ],
+    );
+  }
+  return next;
 }
 
 export default function PartnersAdminPage() {
@@ -168,35 +193,16 @@ export default function PartnersAdminPage() {
   );
   const [partnerForm, setPartnerForm] = useState<PartnerFormState>(EMPTY_PARTNER);
   const [planForm, setPlanForm] = useState<PlanFormState>(EMPTY_PLAN);
-  const [configDraft, setConfigDraft] = useState<Record<string, string>>({});
+  const [configDraft, setConfigDraft] = useDraftFromSource(
+    siteConfigData?.config,
+    partnerConfigDraft,
+  );
 
   const partners = partnersData?.partners || [];
   const plans = plansData?.plans || [];
   const publishedPlanCount = plansData?.publishedCount ?? 0;
   const maxPublishedPlans = plansData?.maxPublished ?? 3;
   const canAddPublishedPlan = publishedPlanCount < maxPublishedPlans;
-
-  useEffect(() => {
-    const config = siteConfigData?.config;
-    if (!config) return;
-    const next: Record<string, string> = {};
-    for (const field of PARTNER_CONFIG_FIELDS) {
-      next[field.key] = configValue(
-        config,
-        field.key,
-        defaults[
-          field.key === "history_label" ? "historyLabel"
-          : field.key === "plans_label" ? "plansLabel"
-          : field.key === "more_info_label" ? "moreInfoLabel"
-          : field.key === "more_info_href" ? "moreInfoHref"
-          : field.key === "whatsapp_number" ? "whatsappNumber"
-          : field.key === "plan_cta_label" ? "planCtaLabel"
-          : "currencyPrefix"
-        ],
-      );
-    }
-    setConfigDraft(next);
-  }, [siteConfigData]);
 
   function openCreatePartner() {
     setEditingPartner(null);
@@ -272,7 +278,7 @@ export default function PartnersAdminPage() {
       updates: PARTNER_CONFIG_FIELDS.map((field) => ({
         section: "partner",
         key: field.key,
-        value: configDraft[field.key]?.trim() || null,
+        value: configDraft[field.key] ?? "",
         valueType: "text" as const,
       })),
     });
@@ -658,7 +664,7 @@ export default function PartnersAdminPage() {
             onChange={(e) =>
               setPlanForm((prev) => ({
                 ...prev,
-                isFeatured: e.currentTarget.checked,
+                isFeatured: changeChecked(e),
               }))
             }
             color="dark"

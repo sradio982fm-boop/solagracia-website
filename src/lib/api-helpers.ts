@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 
-export function jsonResponse(data: unknown, status = 200) {
-  return NextResponse.json(data, { status });
+export function jsonResponse(
+  data: unknown,
+  status = 200,
+  headers?: HeadersInit,
+) {
+  return NextResponse.json(data, { status, headers });
 }
 
 export function errorResponse(error: string, status: number) {

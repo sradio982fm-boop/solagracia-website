@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Group,
@@ -39,13 +39,15 @@ function HeaderEditor({
   const [title, setTitle] = useState(header.title);
   const [titleAccent, setTitleAccent] = useState(header.titleAccent);
   const [description, setDescription] = useState(header.description);
+  const [headerRef, setHeaderRef] = useState(header);
 
-  useEffect(() => {
+  if (header !== headerRef) {
+    setHeaderRef(header);
     setEyebrow(header.eyebrow);
     setTitle(header.title);
     setTitleAccent(header.titleAccent);
     setDescription(header.description);
-  }, [header]);
+  }
 
   return (
     <AdminSurface p="md">

@@ -40,7 +40,7 @@
   --border: rgba(255, 255, 255, 0.22);
   --overlay: rgba(10, 10, 11, 0.45);
   --rail: 64px;
-  --player-height: 52px;
+  --player-height: 72px;
   /* Clear sticky player + home indicator on every section */
   --section-pad-bottom: calc(
     var(--player-height) + var(--frame-inset-bottom) + 20px
@@ -57,6 +57,12 @@
   --chrome-hover: rgba(255, 255, 255, 0.1);
   --chrome-mark: rgba(255, 255, 255, 0.85);
   --chrome-on-active: #0c0c0e;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --player-height: 80px;
+  }
 }
 
 /* Ink chrome on white sections — high contrast, no white-on-white wash */
@@ -334,30 +340,30 @@ body {
 
 .player-volume::-webkit-slider-thumb {
   appearance: none;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: #fff;
   border: none;
   border-radius: 0;
-  margin-top: -3px;
+  margin-top: -4px;
 }
 
 .player-volume::-webkit-slider-runnable-track {
-  height: 2px;
-  background: rgba(255, 255, 255, 0.22);
+  height: 4px;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .player-volume::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: #fff;
   border: none;
   border-radius: 0;
 }
 
 .player-volume::-moz-range-track {
-  height: 2px;
-  background: rgba(255, 255, 255, 0.22);
+  height: 4px;
+  background: rgba(255, 255, 255, 0.28);
 }
 
 /* Material Icons — self-hosted (admin UI) */

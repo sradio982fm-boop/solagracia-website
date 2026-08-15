@@ -26,7 +26,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminSurface } from "@/components/admin/AdminSurface";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
-import { changeValue } from "@/lib/admin/form";
+import { changeChecked, changeValue } from "@/lib/admin/form";
 
 const PLATFORMS = [
   { value: "instagram", label: "Instagram" },
@@ -189,7 +189,6 @@ export default function SocialAdminPage() {
             onChange={(e) =>
               setForm((p) => ({ ...p, label: changeValue(e) }))
             }
-            required
           />
           <TextInput
             label="URL"
@@ -204,7 +203,7 @@ export default function SocialAdminPage() {
             checked={form.isActive}
             color="dark"
             onChange={(e) =>
-              setForm((p) => ({ ...p, isActive: e.currentTarget.checked }))
+              setForm((p) => ({ ...p, isActive: changeChecked(e) }))
             }
           />
           <Group justify="flex-end">

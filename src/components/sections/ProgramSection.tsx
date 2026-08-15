@@ -41,8 +41,10 @@ export function ProgramSection({ content, initialDay, ad }: ProgramSectionProps)
   const [activeDay, setActiveDay] = useState<WeekdayId>(initialDay);
 
   const shows = content.byDay[activeDay] ?? [];
-  const frequencyLabel = content.frequencyLabel || "98.2 FM";
-  const brandStamp = `Solagracia · ${frequencyLabel}`;
+  const frequencyLabel = content.frequencyLabel ?? "";
+  const brandStamp = frequencyLabel
+    ? `Solagracia · ${frequencyLabel}`
+    : "Solagracia";
 
   return (
     <section
@@ -331,9 +333,11 @@ function RadioSoulAtmosphere({
         }}
       />
 
+      {frequencyLabel ? (
       <p className="absolute right-[4%] bottom-[12%] hidden text-[clamp(3.5rem,10vw,7.5rem)] leading-none font-extrabold tracking-[-0.06em] text-white/[0.04] select-none lg:block">
         {frequencyStamp(frequencyLabel)}
       </p>
+      ) : null}
     </div>
   );
 }

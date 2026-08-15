@@ -135,11 +135,7 @@ export default function HostsAdminPage() {
   }
 
   const isSaving = createHost.isPending || updateHost.isPending;
-  const isFormValid =
-    form.name.trim().length > 0 &&
-    form.roleTitle.trim().length > 0 &&
-    form.tagline.trim().length > 0 &&
-    form.photoUrl.trim().length > 0;
+  const isFormValid = form.name.trim().length > 0;
 
   return (
     <Stack gap="lg">
@@ -274,7 +270,6 @@ export default function HostsAdminPage() {
               label="Peran / Role"
               value={form.roleTitle}
               onChange={(e) => updateField("roleTitle", changeValue(e))}
-              required
               maxLength={FIELD_LIMITS.ROLE_MAX}
             />
           </Group>
@@ -283,7 +278,6 @@ export default function HostsAdminPage() {
             label="Tagline"
             value={form.tagline}
             onChange={(e) => updateField("tagline", changeValue(e))}
-            required
             maxLength={FIELD_LIMITS.TAGLINE_MAX}
           />
 

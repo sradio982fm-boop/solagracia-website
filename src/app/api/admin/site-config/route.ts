@@ -6,6 +6,8 @@ import { jsonResponse, errorResponse } from "@/lib/api-helpers";
 import { isSafeAssetUrl, isSafeNavHref } from "@/lib/security";
 import { revalidatePath } from "next/cache";
 
+export const dynamic = "force-dynamic";
+
 const valueTypeSchema = z.enum(["text", "image", "url", "json"]);
 
 // Any config key that ends with these suffixes is treated as a URL and must
@@ -71,7 +73,11 @@ export async function GET(request: NextRequest) {
 
   if (error) return errorResponse("Failed to fetch site config", 500);
 
-  return jsonResponse({ config: groupSiteConfig(data || []) });
+  return jsonResponse(
+    { config: groupSiteConfig(data || []) },
+    200,
+    { "Cache-Control": "no-store, must-revalidate" },
+  );
 }
 
 /**

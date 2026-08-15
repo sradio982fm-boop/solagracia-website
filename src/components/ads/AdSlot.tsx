@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { AdPromoLoadingShell } from "@/components/ads/AdPromoLoadingShell";
 import { buildIklanPath } from "@/lib/ad-promo";
@@ -11,6 +11,7 @@ import { parseFocalUrl } from "@/lib/focal-point";
 import { easeOut, hoverLift, tapPress } from "@/lib/motion";
 import { isSafeHttpUrl, sanitizeAssetSrc, sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
+import { useIsClient } from "@/hooks/useIsClient";
 import type { AdPlaceholder } from "@/types/ads";
 
 type AdSlotProps = {
@@ -54,11 +55,7 @@ function trackAdClick(id: string) {
 export function AdSlot({ ad, className, compact = false }: AdSlotProps) {
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
-  const [portalReady, setPortalReady] = useState(false);
-
-  useEffect(() => {
-    setPortalReady(true);
-  }, []);
+  const portalReady = useIsClient();
 
   const label = ad.label ?? "Partner";
   const ink = ad.tone === "ink";

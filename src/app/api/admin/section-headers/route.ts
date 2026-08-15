@@ -61,16 +61,16 @@ export async function PUT(request: NextRequest) {
     updated_at: new Date().toISOString(),
   };
   if (parsed.data.eyebrow !== undefined) {
-    payload.eyebrow = parsed.data.eyebrow || null;
+    payload.eyebrow = parsed.data.eyebrow;
   }
   if (parsed.data.title !== undefined) {
-    payload.title = parsed.data.title || null;
+    payload.title = parsed.data.title;
   }
   if (parsed.data.titleAccent !== undefined) {
-    payload.title_accent = parsed.data.titleAccent || null;
+    payload.title_accent = parsed.data.titleAccent;
   }
   if (parsed.data.description !== undefined) {
-    payload.description = parsed.data.description || null;
+    payload.description = parsed.data.description;
   }
 
   if (Object.keys(payload).length === 1) {

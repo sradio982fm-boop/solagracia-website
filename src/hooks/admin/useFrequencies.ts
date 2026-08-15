@@ -12,6 +12,7 @@ export type Frequency = {
   posterUrl: string;
   stationName: string;
   sortOrder: number;
+  showVideo: boolean;
   isDefault: boolean;
   isActive: boolean;
 };

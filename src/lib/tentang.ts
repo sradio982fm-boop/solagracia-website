@@ -5,6 +5,11 @@ import type {
   TentangStat,
 } from "@/types/site";
 import { tentangContent as fallback } from "@/data/tentang";
+import {
+  parseJsonArrayAllowEmpty,
+  parseJsonObjectAllowEmpty,
+  textAllowEmpty,
+} from "@/lib/cms-parse";
 
 /** Admin / CMS shape for Instagram Reel embed. */
 export type CmsInstagramReel = {
@@ -57,38 +62,6 @@ export function hasVisibleReel(reel: InstagramReel | null | undefined): boolean 
   return isInstagramEmbeddableUrl(reel?.href ?? "");
 }
 
-/**
- * Missing key → fallback.
- * Present key with "[]" / empty → [] (respect cleared CMS).
- */
-function parseJsonArrayAllowEmpty<T>(
-  section: Record<string, string | null>,
-  key: string,
-  fallbackValue: T[],
-): T[] {
-  if (!(key in section)) return fallbackValue;
-  const raw = section[key];
-  if (raw === null || raw === undefined || raw === "") return [];
-  try {
-    const parsed = JSON.parse(raw) as T[];
-    return Array.isArray(parsed) ? parsed : fallbackValue;
-  } catch {
-    return fallbackValue;
-  }
-}
-
-function parseJsonObject<T>(
-  raw: string | null | undefined,
-  fallbackValue: T,
-): T {
-  if (!raw) return fallbackValue;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallbackValue;
-  }
-}
-
 export function mapTentangFromConfig(
   section: Record<string, string | null> | undefined,
   frequencyLabel?: string,
@@ -118,35 +91,31 @@ export function mapTentangFromConfig(
     fallback.body,
   ).filter((p) => typeof p === "string" && p.trim());
 
-  // Prefer `instagram_reel`; tolerate legacy `testimonial.href` during transition.
-  const reelRaw =
+  const reelKey =
     "instagram_reel" in section
-      ? parseJsonObject<CmsInstagramReel | InstagramReel>(
-          section.instagram_reel,
-          reelToCms(fallback.reel),
-        )
-      : parseJsonObject<{ href?: string }>(
-          section.testimonial,
-          reelToCms(fallback.reel),
-        );
+      ? "instagram_reel"
+      : "testimonial" in section
+        ? "testimonial"
+        : null;
+  const reelRaw = reelKey
+    ? parseJsonObjectAllowEmpty<CmsInstagramReel>(
+        section,
+        reelKey,
+        reelToCms(fallback.reel),
+      )
+    : reelToCms(fallback.reel);
 
   return {
-    // Present key with "" → respect empty (do not revive fallback copy).
-    headline:
-      "headline" in section
-        ? (section.headline ?? "").trim()
-        : fallback.headline,
-    headlineAccent:
-      "headline_accent" in section
-        ? (section.headline_accent ?? "").trim()
-        : fallback.headlineAccent,
-    body: "body" in section ? body : fallback.body,
-    stats: "stats" in section ? stats : fallback.stats,
-    ctas: "ctas" in section ? (ctas.length ? ctas : []) : fallback.ctas,
-    socialLabel:
-      "social_label" in section
-        ? (section.social_label ?? "").trim()
-        : fallback.socialLabel,
+    headline: textAllowEmpty(section, "headline", fallback.headline),
+    headlineAccent: textAllowEmpty(
+      section,
+      "headline_accent",
+      fallback.headlineAccent,
+    ),
+    body,
+    stats,
+    ctas,
+    socialLabel: textAllowEmpty(section, "social_label", fallback.socialLabel),
     reel: mapCmsReel(reelRaw),
     ...(frequencyLabel ? { frequencyLabel } : {}),
   };

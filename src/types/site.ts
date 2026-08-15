@@ -88,6 +88,8 @@ export type FrequencyOption = {
   audioSrc: string;
   videoSrc: string;
   videoPoster?: string;
+  /** When false, the sticky player hides the Video control. */
+  showVideo: boolean;
   isDefault: boolean;
 };
 

@@ -45,7 +45,7 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { AdSlot as AdSlotPreview } from "@/components/ads/AdSlot";
 import { formatAdPromoRef } from "@/lib/ad-promo";
 import type { AdImageShape, AdSlotTone, AdSlotVariant } from "@/types/ads";
-import { changeValue } from "@/lib/admin/form";
+import { changeChecked, changeValue } from "@/lib/admin/form";
 
 interface AdFormState {
   sectionId: AdCapableSectionId;
@@ -384,7 +384,7 @@ export default function AdsAdminPage() {
                     onChange={(e) =>
                       updateAd.mutate({
                         id: ad.id,
-                        isVisible: e.currentTarget.checked,
+                        isVisible: changeChecked(e),
                       })
                     }
                     aria-label="Tampilkan di situs"
@@ -604,7 +604,7 @@ export default function AdsAdminPage() {
             description="Sembunyikan tanpa menghapus creative"
             checked={form.isVisible}
             onChange={(e) =>
-              updateField("isVisible", e.currentTarget.checked)
+              updateField("isVisible", changeChecked(e))
             }
             color="dark"
           />

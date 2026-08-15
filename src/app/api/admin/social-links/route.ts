@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 
 const createSchema = z.object({
   platform: z.string().min(1).max(50),
-  label: z.string().min(1).max(100),
+  label: z.string().max(100),
   url: httpUrl,
   sortOrder: z.number().int().min(0).optional().default(0),
   isActive: z.boolean().optional().default(true),
@@ -17,7 +17,7 @@ const createSchema = z.object({
 const updateSchema = z.object({
   id: z.string().uuid(),
   platform: z.string().min(1).max(50).optional(),
-  label: z.string().min(1).max(100).optional(),
+  label: z.string().max(100).optional(),
   url: httpUrl.optional(),
   sortOrder: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),

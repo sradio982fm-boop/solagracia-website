@@ -122,6 +122,7 @@ export function PartnerSection({ content }: PartnerSectionProps) {
             ))}
           </motion.div>
 
+          {content.moreInfoLabel.trim() ? (
           <div className="mt-3 flex shrink-0 justify-center">
             <a
               href={sanitizeHref(content.moreInfoHref)}
@@ -130,6 +131,7 @@ export function PartnerSection({ content }: PartnerSectionProps) {
               {content.moreInfoLabel}
             </a>
           </div>
+          ) : null}
         </div>
       </div>
     </section>

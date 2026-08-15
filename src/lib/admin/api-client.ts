@@ -33,6 +33,7 @@ export async function adminFetch<T = unknown>(
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
+    cache: "no-store",
   });
 
   if (!res.ok) {

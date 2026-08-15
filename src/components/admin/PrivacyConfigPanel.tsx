@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button, Group, Stack, Text, Textarea, TextInput } from "@mantine/core";
+import { Button, Group, Stack, Switch, Text, Textarea, TextInput } from "@mantine/core";
 import type { SiteConfigMap } from "@/hooks/admin/useSiteConfig";
-import { FALLBACK_PRIVACY } from "@/lib/legal";
-import { changeValue } from "@/lib/admin/form";
+import {
+  FALLBACK_PRIVACY,
+  PRIVACY_FOOTER_LINK_DEFAULT,
+  PRIVACY_FOOTER_LINK_KEY,
+} from "@/lib/legal";
+import { configBool, configText } from "@/lib/cms-parse";
+import { changeChecked, changeValue } from "@/lib/admin/form";
+import { useDraftFromSource } from "@/hooks/useDraftFromSource";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -19,12 +24,11 @@ type Props = {
   ) => Promise<void>;
 };
 
-function read(config: SiteConfigMap | undefined, key: string): string {
-  return config?.legal?.[key]?.value ?? "";
-}
-
-function parseBody(raw: string): string {
-  if (!raw) return FALLBACK_PRIVACY.body.join("\n\n");
+function parseBody(config: SiteConfigMap | undefined): string {
+  const entry = config?.legal?.privacy_body;
+  if (entry === undefined) return FALLBACK_PRIVACY.body.join("\n\n");
+  const raw = entry.value ?? "";
+  if (!raw) return "";
   try {
     const parsed = JSON.parse(raw) as string[];
     if (Array.isArray(parsed)) return parsed.join("\n\n");
@@ -34,41 +38,75 @@ function parseBody(raw: string): string {
   return raw;
 }
 
-export function PrivacyConfigPanel({ config, saving, onSave }: Props) {
-  const [title, setTitle] = useState(FALLBACK_PRIVACY.title);
-  const [updatedLabel, setUpdatedLabel] = useState(FALLBACK_PRIVACY.updatedLabel);
-  const [body, setBody] = useState(FALLBACK_PRIVACY.body.join("\n\n"));
+type PrivacyDraft = {
+  title: string;
+  updatedLabel: string;
+  body: string;
+  showFooterLink: boolean;
+};
 
-  useEffect(() => {
-    setTitle(read(config, "privacy_title") || FALLBACK_PRIVACY.title);
-    setUpdatedLabel(
-      read(config, "privacy_updated_label") || FALLBACK_PRIVACY.updatedLabel,
-    );
-    setBody(parseBody(read(config, "privacy_body")));
-  }, [config]);
+function draftFromConfig(config: SiteConfigMap | undefined): PrivacyDraft {
+  return {
+    title: configText(config?.legal, "privacy_title", FALLBACK_PRIVACY.title),
+    updatedLabel: configText(
+      config?.legal,
+      "privacy_updated_label",
+      FALLBACK_PRIVACY.updatedLabel,
+    ),
+    body: parseBody(config),
+    showFooterLink: configBool(
+      config?.legal,
+      PRIVACY_FOOTER_LINK_KEY,
+      PRIVACY_FOOTER_LINK_DEFAULT,
+    ),
+  };
+}
+
+export function PrivacyConfigPanel({ config, saving, onSave }: Props) {
+  const [draft, setDraft] = useDraftFromSource(config, draftFromConfig);
+  const { title, updatedLabel, body, showFooterLink } = draft;
 
   return (
     <Stack gap="md">
       <Text size="xs" c="dimmed">
         Konten halaman publik /privasi.
       </Text>
+      <Switch
+        label="Tampilkan tautan Privasi di footer"
+        description="Matikan untuk menyembunyikan tombol Privasi di baris legal footer. Halaman /privasi tetap ada."
+        checked={showFooterLink}
+        onChange={(e) =>
+          setDraft((prev) => ({
+            ...prev,
+            showFooterLink: changeChecked(e),
+          }))
+        }
+        color="dark"
+        size="md"
+      />
       <TextInput
         label="Title"
         value={title}
-        onChange={(e) => setTitle(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, title: changeValue(e) }))
+        }
         size="sm"
       />
       <TextInput
         label="Updated label"
         value={updatedLabel}
-        onChange={(e) => setUpdatedLabel(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, updatedLabel: changeValue(e) }))
+        }
         size="sm"
       />
       <Textarea
         label="Body"
         description="Pisahkan paragraf dengan baris kosong"
         value={body}
-        onChange={(e) => setBody(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, body: changeValue(e) }))
+        }
         rows={10}
         size="sm"
       />
@@ -99,6 +137,12 @@ export function PrivacyConfigPanel({ config, saving, onSave }: Props) {
                 key: "privacy_body",
                 value: JSON.stringify(paragraphs),
                 valueType: "json",
+              },
+              {
+                section: "legal",
+                key: PRIVACY_FOOTER_LINK_KEY,
+                value: showFooterLink ? "true" : "false",
+                valueType: "text",
               },
             ]);
           }}

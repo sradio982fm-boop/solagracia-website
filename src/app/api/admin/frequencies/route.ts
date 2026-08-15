@@ -13,6 +13,7 @@ const createFrequencySchema = z.object({
   posterUrl: optionalAssetUrl.optional(),
   stationName: z.string().max(100).optional(),
   sortOrder: z.number().int().min(0).optional().default(0),
+  showVideo: z.boolean().optional().default(true),
   isDefault: z.boolean().optional().default(false),
   isActive: z.boolean().optional().default(true),
 });
@@ -25,6 +26,7 @@ const updateFrequencySchema = z.object({
   posterUrl: optionalAssetUrl.optional(),
   stationName: z.string().max(100).optional(),
   sortOrder: z.number().int().min(0).optional(),
+  showVideo: z.boolean().optional(),
   isDefault: z.boolean().optional(),
   isActive: z.boolean().optional(),
 });
@@ -38,6 +40,7 @@ function mapFrequency(f: Record<string, unknown>) {
     posterUrl: f.poster_url ?? "",
     stationName: f.station_name ?? "",
     sortOrder: f.sort_order,
+    showVideo: f.show_video !== false,
     isDefault: f.is_default,
     isActive: f.is_active,
     createdAt: f.created_at,
@@ -90,6 +93,7 @@ export async function POST(request: NextRequest) {
       poster_url: parsed.data.posterUrl || null,
       station_name: parsed.data.stationName || null,
       sort_order: parsed.data.sortOrder,
+      show_video: parsed.data.showVideo,
       is_default: parsed.data.isDefault,
       is_active: parsed.data.isActive,
     })
@@ -131,6 +135,7 @@ export async function PUT(request: NextRequest) {
   if (parsed.data.stationName !== undefined)
     updates.station_name = parsed.data.stationName || null;
   if (parsed.data.sortOrder !== undefined) updates.sort_order = parsed.data.sortOrder;
+  if (parsed.data.showVideo !== undefined) updates.show_video = parsed.data.showVideo;
   if (parsed.data.isDefault !== undefined) updates.is_default = parsed.data.isDefault;
   if (parsed.data.isActive !== undefined) updates.is_active = parsed.data.isActive;
 

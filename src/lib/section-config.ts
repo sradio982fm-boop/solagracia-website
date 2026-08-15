@@ -122,10 +122,18 @@ export function buildSectionConfigPayload(
     const fallback = fallbackNavBySection[sectionKey as CoreSectionKey];
 
     return {
-      letter: row.letter?.trim() || fallback?.letter || sectionKey[0].toUpperCase(),
-      label: row.navLabel?.trim() || fallback?.label || sectionKey,
+      letter:
+        row.letter !== null && row.letter !== undefined
+          ? row.letter.trim()
+          : fallback?.letter || sectionKey[0].toUpperCase(),
+      label:
+        row.navLabel !== null && row.navLabel !== undefined
+          ? row.navLabel.trim()
+          : fallback?.label || sectionKey,
       menuLabel:
-        row.menuLabel?.trim() || fallback?.menuLabel || fallback?.label || sectionKey,
+        row.menuLabel !== null && row.menuLabel !== undefined
+          ? row.menuLabel.trim()
+          : fallback?.menuLabel || fallback?.label || sectionKey,
       href: `#${sectionKey}`,
       sectionId: sectionKey,
     };

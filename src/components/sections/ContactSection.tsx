@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { SocialIcon } from "@/components/sections/HeroSocialIcons";
 import { buildKontakWhatsAppHref } from "@/data/kontak";
@@ -16,6 +16,7 @@ import {
 import { sanitizeHref } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { KontakChannel, KontakContent } from "@/types/kontak";
+import { useIsClient } from "@/hooks/useIsClient";
 
 type ContactSectionProps = {
   content: KontakContent;
@@ -27,22 +28,13 @@ const itemVariants = fadeUpSoft;
 
 const VU_HEIGHTS = [38, 62, 44, 78, 52, 70, 40, 86, 48, 66, 42, 74] as const;
 
-/** Avoid SSR/client mismatch from prefers-reduced-motion animations. */
-function useClientReady() {
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    setReady(true);
-  }, []);
-  return ready;
-}
-
 /**
  * #kontak — viewport-locked studio contact desk.
  * Plaster surface, radio call-in atmosphere, no ad slot.
  */
 export function ContactSection({ content }: ContactSectionProps) {
   const addressLines = content.address.split("\n");
-  const vuReady = useClientReady();
+  const vuReady = useIsClient();
 
   return (
     <section
@@ -60,9 +52,11 @@ export function ContactSection({ content }: ContactSectionProps) {
           transition={{ duration: 0.55, ease: easeOut }}
           className="shrink-0"
         >
+          {content.eyebrow ? (
           <p className="m-0 inline-flex w-fit items-center bg-[var(--accent)] px-2.5 py-1 text-[9px] font-bold tracking-[0.2em] text-white uppercase">
             {content.eyebrow}
           </p>
+          ) : null}
           <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
             <h2 className="m-0 text-[clamp(1.9rem,4vw,3.1rem)] leading-[0.98] font-extrabold tracking-[-0.03em]">
               <span className="text-[var(--section-fg)]">{content.title}</span>{" "}
@@ -118,24 +112,26 @@ export function ContactSection({ content }: ContactSectionProps) {
                 {content.operatingHours}
               </p>
 
-              <ul className="mt-3 m-0 flex list-none flex-col gap-2 border-t border-[rgba(12,12,14,0.1)] pt-3 p-0">
-                {content.hotlines.map((line) => (
-                  <li
-                    key={line.label}
-                    className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
-                  >
-                    <span className="text-[9px] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
-                      {line.label}
-                    </span>
-                    <a
-                      href={sanitizeHref(line.href)}
-                      className="text-[0.88rem] font-semibold tracking-[-0.01em] text-[var(--section-fg)] no-underline transition-colors hover:text-[var(--accent)]"
+              {content.hotlines.length > 0 ? (
+                <ul className="mt-3 m-0 flex list-none flex-col gap-2 border-t border-[rgba(12,12,14,0.1)] pt-3 p-0">
+                  {content.hotlines.map((line) => (
+                    <li
+                      key={line.label}
+                      className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5"
                     >
-                      {line.number}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+                      <span className="text-[9px] font-semibold tracking-[0.16em] text-[var(--section-muted)] uppercase">
+                        {line.label}
+                      </span>
+                      <a
+                        href={sanitizeHref(line.href)}
+                        className="text-[0.88rem] font-semibold tracking-[-0.01em] text-[var(--section-fg)] no-underline transition-colors hover:text-[var(--accent)]"
+                      >
+                        {line.number}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
               <div className="mt-auto flex items-center justify-between gap-3 border-t border-[rgba(12,12,14,0.1)] pt-3">
                 <a

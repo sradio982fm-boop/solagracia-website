@@ -19,6 +19,7 @@ type PlayerMode = "audio" | "video-mini" | "video-max";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 const DEFAULT_VOLUME = 0.8;
+const PLAYER_BRAND_TITLE = "SOLAGRACIA DIGITAL RADIO";
 
 /**
  * Sticky radio bar — audio by default; arrow expands a docked video popup
@@ -47,18 +48,18 @@ export function StickyMediaPlayer({
 
   const stationName = selected?.stationName || content.stationName;
   const showTitle = content.showTitle;
-  const frequency = selected?.label || content.frequency;
   const audioSrc = sanitizeHttpHref(
     selected?.audioSrc || content.audioSrc,
     "",
   );
-  const videoSrc = sanitizeHttpHref(
-    selected?.videoSrc || content.videoSrc,
-    "",
-  );
+  const showVideo = selected?.showVideo ?? true;
+  const videoSrc = showVideo
+    ? sanitizeHttpHref(selected?.videoSrc || content.videoSrc, "")
+    : "";
   const videoPoster = sanitizeAssetSrc(
     parseFocalUrl(selected?.videoPoster || content.videoPoster).cleanUrl,
   );
+  const videoAvailable = showVideo && Boolean(videoSrc);
   const canSwitch = frequencies.length > 1;
 
   const [mode, setMode] = useState<PlayerMode>("audio");
@@ -68,8 +69,8 @@ export function StickyMediaPlayer({
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
 
-  const videoOpen = mode !== "audio";
-  const videoMaximized = mode === "video-max";
+  const videoOpen = videoAvailable && mode !== "audio";
+  const videoMaximized = videoOpen && mode === "video-max";
 
   const { start: startVideo, stop: stopVideo } = useHlsPlayer(videoRef, {
     url: videoSrc,
@@ -183,6 +184,7 @@ export function StickyMediaPlayer({
   };
 
   const toggleVideoShelf = () => {
+    if (!videoAvailable) return;
     if (mode === "audio") {
       openVideo();
       return;
@@ -223,19 +225,19 @@ export function StickyMediaPlayer({
       <audio ref={audioRef} src={audioSrc || undefined} preload="none" />
 
       <div className="pointer-events-none fixed right-3 bottom-[calc(var(--frame-inset-bottom)+8px)] left-3 z-[45] flex justify-center md:right-[calc(var(--frame-inset)+8.5rem)] md:left-[calc(var(--frame-inset)+var(--rail)+12px)]">
-        <div className="pointer-events-auto relative w-full max-w-3xl">
+        <div className="pointer-events-auto relative w-full max-w-4xl">
           {/*
             Single video instance — docks on the bar (mini) or expands (max).
             Keeping one <video> avoids remount glitches on minimize/maximize.
           */}
           <AnimatePresence>
-            {videoOpen ? (
+            {videoOpen && videoAvailable ? (
               <motion.div
                 key="video-shell"
                 className={cn(
                   videoMaximized
                     ? "fixed inset-[var(--frame-inset)] z-[46] flex items-center justify-center p-4 md:p-8"
-                    : "absolute right-0 bottom-full z-10 mb-2.5 w-[min(22rem,100%)] origin-bottom-right overflow-hidden md:w-[min(26rem,46vw)]",
+                    : "absolute right-0 bottom-full z-10 mb-3 w-[min(30rem,100%)] origin-bottom-right overflow-hidden md:w-[min(42rem,100%)]",
                 )}
                 initial={{ opacity: 0, y: videoMaximized ? 0 : 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -322,32 +324,32 @@ export function StickyMediaPlayer({
                       </button>
                     </div>
                   ) : (
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/92 via-black/55 to-transparent px-3 pt-10 pb-3">
-                      <p className="mb-2.5 truncate text-[13px] leading-tight font-semibold tracking-tight text-white">
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/92 via-black/55 to-transparent px-4 pt-12 pb-4">
+                      <p className="mb-3 truncate text-[15px] leading-tight font-semibold tracking-tight text-white md:text-[16px]">
                         {showTitle}
                       </p>
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center justify-between gap-3">
                         <button
                           type="button"
                           onClick={() => void toggleVideoPlayback()}
-                          className="flex h-8 items-center gap-1.5 border border-white/25 bg-black/55 px-2.5 text-white transition-colors hover:bg-white/15"
+                          className="flex h-10 items-center gap-2 border border-white/25 bg-black/55 px-3 text-white transition-colors hover:bg-white/15"
                           aria-label={
                             videoPlaying ? "Jeda video" : "Putar video"
                           }
                         >
                           {videoPlaying ? <PauseIcon /> : <PlayIcon />}
-                          <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
+                          <span className="text-[10px] font-semibold tracking-[0.12em] uppercase">
                             {videoPlaying ? "Jeda" : "Putar"}
                           </span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setMode("video-max")}
-                          className="flex h-8 items-center gap-1.5 border border-white/30 bg-white/10 px-2.5 text-white transition-colors hover:bg-white/20"
+                          className="flex h-12 items-center gap-2.5 border border-white/35 bg-white/15 px-4 text-white transition-colors hover:bg-white/25"
                           aria-label="Perbesar video"
                         >
                           <MaximizeIcon />
-                          <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
+                          <span className="text-[12px] font-bold tracking-[0.14em] uppercase">
                             Perbesar
                           </span>
                         </button>
@@ -359,13 +361,13 @@ export function StickyMediaPlayer({
             ) : null}
           </AnimatePresence>
 
-          <div className="relative z-10 flex h-[var(--player-height)] items-stretch border border-[var(--frame-line)] bg-black/85 backdrop-blur-md">
+          <div className="relative z-10 flex h-[var(--player-height)] items-stretch border-2 border-[var(--frame-line)] bg-black/92 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md">
             <button
               type="button"
               onClick={() => void toggleAudio()}
               disabled={videoOpen}
               className={cn(
-                "flex h-full w-12 shrink-0 items-center justify-center border-r border-[var(--frame-line)] transition-colors",
+                "flex h-full w-14 shrink-0 items-center justify-center border-r-2 border-[var(--frame-line)] transition-colors md:w-16",
                 videoOpen
                   ? "cursor-not-allowed text-white/30"
                   : "text-white hover:bg-white/10",
@@ -375,25 +377,23 @@ export function StickyMediaPlayer({
               {audioPlaying && !videoOpen ? <PauseIcon /> : <PlayIcon />}
             </button>
 
-            <div className="flex min-w-0 flex-1 items-center gap-2.5 px-3 md:gap-3 md:px-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3 px-3.5 md:gap-4 md:px-5">
               <span
                 className={cn(
-                  "shrink-0 px-1.5 py-0.5 text-[9px] font-bold tracking-[0.18em] uppercase",
+                  "shrink-0 px-2 py-1 text-[10px] font-bold tracking-[0.18em] uppercase md:text-[11px]",
                   audioPlaying && !videoOpen
                     ? "bg-[var(--accent)] text-white"
-                    : "border border-[var(--frame-line)] text-white/55",
+                    : "border border-[var(--frame-line)] text-white/70",
                 )}
               >
                 On Air
               </span>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[12px] font-semibold tracking-tight md:text-[13px]">
-                  {stationName}
-                  <span className="text-white/40"> · </span>
-                  {frequency}
+                <p className="truncate text-[13px] font-extrabold tracking-[0.08em] text-white uppercase md:text-[15px]">
+                  {PLAYER_BRAND_TITLE}
                 </p>
-                <p className="truncate text-[11px] text-white/55">
+                <p className="truncate text-[12px] text-white/65 md:text-[13px]">
                   {videoOpen
                     ? "Mode video — audio dijeda"
                     : audioError
@@ -431,16 +431,16 @@ export function StickyMediaPlayer({
 
               {audioPlaying && !videoOpen ? <Equalizer /> : null}
 
-              <div className="hidden items-center gap-2 sm:flex">
+              <div className="hidden items-center gap-2.5 sm:flex">
                 <button
                   type="button"
                   onClick={toggleMute}
-                  className="flex h-8 w-8 items-center justify-center text-white/70 transition-colors hover:text-white"
+                  className="flex h-10 w-10 items-center justify-center text-white/80 transition-colors hover:text-white"
                   aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
                 >
                   {muted || volume === 0 ? <MuteIcon /> : <VolumeIcon />}
                 </button>
-                <label className="flex w-20 items-center md:w-24">
+                <label className="flex w-24 items-center md:w-28">
                   <span className="sr-only">Volume</span>
                   <input
                     type="range"
@@ -451,7 +451,7 @@ export function StickyMediaPlayer({
                     onChange={(event) =>
                       onVolumeChange(Number(event.target.value))
                     }
-                    className="player-volume h-1 w-full cursor-pointer appearance-none bg-white/20 accent-[var(--accent)]"
+                    className="player-volume h-1.5 w-full cursor-pointer appearance-none bg-white/25 accent-[var(--accent)]"
                   />
                 </label>
               </div>
@@ -459,27 +459,31 @@ export function StickyMediaPlayer({
               <button
                 type="button"
                 onClick={toggleMute}
-                className="flex h-8 w-8 items-center justify-center text-white/70 transition-colors hover:text-white sm:hidden"
+                className="flex h-10 w-10 items-center justify-center text-white/80 transition-colors hover:text-white sm:hidden"
                 aria-label={muted || volume === 0 ? "Unmute" : "Mute"}
               >
                 {muted || volume === 0 ? <MuteIcon /> : <VolumeIcon />}
               </button>
             </div>
 
-            <button
-              type="button"
-              onClick={toggleVideoShelf}
-              className="flex h-full shrink-0 flex-col items-center justify-center gap-0.5 border-l border-[var(--frame-line)] px-2.5 text-white/80 transition-colors hover:bg-white/10 hover:text-white md:min-w-[4.75rem] md:flex-row md:gap-1.5 md:px-3"
-              aria-label={
-                videoOpen ? "Tutup video, kembali ke audio" : "Buka video studio"
-              }
-              aria-pressed={videoOpen}
-            >
-              <ChevronIcon direction={videoOpen ? "down" : "up"} />
-              <span className="text-[9px] font-semibold tracking-[0.12em] uppercase">
-                {videoOpen ? "Tutup" : "Video"}
-              </span>
-            </button>
+            {videoAvailable ? (
+              <button
+                type="button"
+                onClick={toggleVideoShelf}
+                className="flex h-full shrink-0 flex-col items-center justify-center gap-1 border-l-2 border-[var(--frame-line)] px-3.5 text-white transition-colors hover:bg-white/10 md:min-w-[5.5rem] md:flex-row md:gap-2 md:px-4"
+                aria-label={
+                  videoOpen
+                    ? "Tutup video, kembali ke audio"
+                    : "Buka video studio"
+                }
+                aria-pressed={videoOpen}
+              >
+                <ChevronIcon direction={videoOpen ? "down" : "up"} />
+                <span className="text-[10px] font-bold tracking-[0.14em] uppercase md:text-[11px]">
+                  {videoOpen ? "Tutup" : "Video"}
+                </span>
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -489,13 +493,13 @@ export function StickyMediaPlayer({
 
 function Equalizer() {
   return (
-    <span className="hidden items-end gap-[2px] lg:flex" aria-hidden>
+    <span className="hidden items-end gap-[3px] lg:flex" aria-hidden>
       {[0, 1, 2, 3].map((i) => (
         <span
           key={i}
-          className="w-[2px] origin-bottom bg-[var(--accent)]"
+          className="w-[3px] origin-bottom bg-[var(--accent)]"
           style={{
-            height: 10 + (i % 3) * 4,
+            height: 14 + (i % 3) * 5,
             animation: `player-eq 0.8s ${i * 0.12}s ease-in-out infinite alternate`,
           }}
         />
@@ -506,7 +510,7 @@ function Equalizer() {
 
 function PlayIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M8 5.5v13l11-6.5L8 5.5Z" />
     </svg>
   );
@@ -514,7 +518,7 @@ function PlayIcon() {
 
 function PauseIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M7 5h3.5v14H7V5Zm6.5 0H17v14h-3.5V5Z" />
     </svg>
   );
@@ -523,8 +527,8 @@ function PauseIcon() {
 function ChevronIcon({ direction }: { direction: "up" | "down" }) {
   return (
     <svg
-      width="14"
-      height="14"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden
@@ -555,11 +559,11 @@ function CloseIcon() {
 
 function MaximizeIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
         d="M9 4H4v5M15 4h5v5M4 15v5h5M20 15v5h-5"
         stroke="currentColor"
-        strokeWidth="1.7"
+        strokeWidth="1.8"
         strokeLinecap="square"
       />
     </svg>

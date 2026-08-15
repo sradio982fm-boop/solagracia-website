@@ -13,8 +13,8 @@ const createHostSchema = z.object({
   name: z.string().min(1).max(100),
   photoUrl: optionalAssetUrl.optional(),
   photoAlt: z.string().max(200).optional().or(z.literal("")),
-  roleTitle: z.string().min(1).max(100),
-  tagline: z.string().min(1).max(200),
+  roleTitle: z.string().max(100).optional().or(z.literal("")),
+  tagline: z.string().max(200).optional().or(z.literal("")),
   tags: z.array(z.string().max(30)).max(5).optional().default([]),
   displayNumber: z.string().max(20).optional().or(z.literal("")),
   href: optionalWebHref.optional(),
@@ -28,8 +28,8 @@ const updateHostSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   photoUrl: optionalAssetUrl.optional(),
   photoAlt: z.string().max(200).optional().or(z.literal("")),
-  roleTitle: z.string().min(1).max(100).optional(),
-  tagline: z.string().min(1).max(200).optional(),
+  roleTitle: z.string().max(100).optional().or(z.literal("")),
+  tagline: z.string().max(200).optional().or(z.literal("")),
   tags: z.array(z.string().max(30)).max(5).optional(),
   displayNumber: z.string().max(20).optional().or(z.literal("")),
   href: optionalWebHref.optional(),
@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
       slug,
       photo_url: parsed.data.photoUrl || null,
       photo_alt: parsed.data.photoAlt || null,
-      role_title: parsed.data.roleTitle,
-      tagline: parsed.data.tagline,
+      role_title: parsed.data.roleTitle || null,
+      tagline: parsed.data.tagline || null,
       tags: parsed.data.tags,
       display_number: parsed.data.displayNumber || null,
       href: parsed.data.href || null,
@@ -140,9 +140,11 @@ export async function PUT(request: NextRequest) {
     updates.photo_alt = parsed.data.photoAlt || null;
   }
   if (parsed.data.roleTitle !== undefined) {
-    updates.role_title = parsed.data.roleTitle;
+    updates.role_title = parsed.data.roleTitle || null;
   }
-  if (parsed.data.tagline !== undefined) updates.tagline = parsed.data.tagline;
+  if (parsed.data.tagline !== undefined) {
+    updates.tagline = parsed.data.tagline || null;
+  }
   if (parsed.data.tags !== undefined) updates.tags = parsed.data.tags;
   if (parsed.data.displayNumber !== undefined) {
     updates.display_number = parsed.data.displayNumber || null;

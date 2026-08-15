@@ -81,9 +81,9 @@ export function buildProgramFromSlots(
   }
 
   return {
-    eyebrow: header?.eyebrow || fallbackProgram.eyebrow,
-    title: header?.title || fallbackProgram.title,
-    description: header?.description || fallbackProgram.description,
+    eyebrow: header?.eyebrow ?? fallbackProgram.eyebrow,
+    title: header?.title ?? fallbackProgram.title,
+    description: header?.description ?? fallbackProgram.description,
     frequencyLabel: header?.frequencyLabel,
     days: fallbackProgram.days,
     byDay,
@@ -109,9 +109,9 @@ export function buildOnAirFromSlots(
     .filter((s): s is ScheduleShow => Boolean(s));
 
   return {
-    label: labels?.label || fallbackOnAir.label,
-    upcomingLabel: labels?.upcomingLabel || fallbackOnAir.upcomingLabel,
-    fallbackTitle: labels?.fallbackTitle || fallbackOnAir.fallbackTitle,
+    label: labels?.label ?? fallbackOnAir.label,
+    upcomingLabel: labels?.upcomingLabel ?? fallbackOnAir.upcomingLabel,
+    fallbackTitle: labels?.fallbackTitle ?? fallbackOnAir.fallbackTitle,
     // Empty day = empty list (do not inject mock schedule shows)
     shows,
   };

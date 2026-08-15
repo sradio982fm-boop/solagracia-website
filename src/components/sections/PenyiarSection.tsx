@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { SmartImage } from "@/components/SmartImage";
@@ -37,12 +37,15 @@ export function PenyiarSection({ content, ad }: PenyiarSectionProps) {
   const hosts = content.hosts;
   const pageCount = Math.max(1, Math.ceil(hosts.length / PAGE_SIZE));
   const [page, setPage] = useState(0);
+  const safePage = Math.min(page, pageCount - 1);
+  if (safePage !== page) {
+    setPage(safePage);
+  }
 
-  useEffect(() => {
-    setPage((current) => Math.min(current, pageCount - 1));
-  }, [pageCount]);
-
-  const pageHosts = hosts.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const pageHosts = hosts.slice(
+    safePage * PAGE_SIZE,
+    safePage * PAGE_SIZE + PAGE_SIZE,
+  );
   const canPage = hosts.length > PAGE_SIZE;
 
   return (
@@ -97,7 +100,7 @@ export function PenyiarSection({ content, ad }: PenyiarSectionProps) {
               {canPage ? (
                 <span className="text-[var(--section-fg)]">
                   {" "}
-                  · {page + 1}/{pageCount}
+                  · {safePage + 1}/{pageCount}
                 </span>
               ) : null}
             </p>
@@ -106,14 +109,14 @@ export function PenyiarSection({ content, ad }: PenyiarSectionProps) {
               <div className="mt-3 hidden items-center gap-2 sm:flex">
                 <PagerButton
                   label="Sebelumnya"
-                  disabled={page === 0}
+                  disabled={safePage === 0}
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                 >
                   <ChevronIcon dir="prev" />
                 </PagerButton>
                 <PagerButton
                   label="Berikutnya"
-                  disabled={page >= pageCount - 1}
+                  disabled={safePage >= pageCount - 1}
                   onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
                 >
                   <ChevronIcon dir="next" />
@@ -124,11 +127,11 @@ export function PenyiarSection({ content, ad }: PenyiarSectionProps) {
                       key={index}
                       type="button"
                       aria-label={`Halaman ${index + 1}`}
-                      aria-current={index === page ? "page" : undefined}
+                      aria-current={index === safePage ? "page" : undefined}
                       onClick={() => setPage(index)}
                       className={cn(
                         "h-1.5 transition-all",
-                        index === page
+                        index === safePage
                           ? "w-5 bg-[var(--accent)]"
                           : "w-1.5 bg-[rgba(12,12,14,0.22)] hover:bg-[rgba(12,12,14,0.4)]",
                       )}
@@ -166,7 +169,7 @@ export function PenyiarSection({ content, ad }: PenyiarSectionProps) {
             <div className="relative hidden min-h-0 flex-1 sm:block">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={page}
+                  key={safePage}
                   variants={gridVariants}
                   initial="hidden"
                   animate="show"

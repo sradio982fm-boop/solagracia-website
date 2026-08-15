@@ -133,6 +133,7 @@ export function HeroSection({
             alt={safeCoverAlt}
             fill
             priority
+            loading="eager"
             sizes="100vw"
             className="object-cover object-center md:[object-position:var(--hero-cover-focus)]"
             style={

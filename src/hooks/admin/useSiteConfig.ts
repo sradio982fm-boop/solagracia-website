@@ -26,13 +26,6 @@ export type SectionHeader = {
 type SiteConfigResponse = { config: SiteConfigMap };
 type SectionHeadersResponse = { headers: SectionHeader[] };
 
-export function useSiteConfig() {
-  return useQuery({
-    queryKey: ["admin", "site-config"],
-    queryFn: () => adminFetch<SiteConfigResponse>("/admin/site-config"),
-  });
-}
-
 export type SiteConfigUpdate = {
   section: string;
   key: string;
@@ -40,12 +33,46 @@ export type SiteConfigUpdate = {
   valueType?: SiteConfigValueType;
 };
 
+function applySiteConfigUpdates(
+  config: SiteConfigMap,
+  updates: SiteConfigUpdate[],
+): SiteConfigMap {
+  const next: SiteConfigMap = { ...config };
+  for (const update of updates) {
+    next[update.section] = {
+      ...(next[update.section] ?? {}),
+      [update.key]: {
+        value: update.value,
+        valueType: update.valueType ?? "text",
+      },
+    };
+  }
+  return next;
+}
+
+export function useSiteConfig() {
+  return useQuery({
+    queryKey: ["admin", "site-config"],
+    queryFn: () => adminFetch<SiteConfigResponse>("/admin/site-config"),
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+}
+
 export function useUpdateSiteConfig() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: SiteConfigUpdate | { updates: SiteConfigUpdate[] }) =>
       adminFetch("/admin/site-config", { method: "PUT", body }),
-    onSuccess: () => {
+    onSuccess: (_res, body) => {
+      const updates =
+        "updates" in body && Array.isArray(body.updates)
+          ? body.updates
+          : [body as SiteConfigUpdate];
+      qc.setQueryData<SiteConfigResponse>(["admin", "site-config"], (prev) => {
+        if (!prev?.config) return prev;
+        return { config: applySiteConfigUpdates(prev.config, updates) };
+      });
       void qc.invalidateQueries({ queryKey: ["admin", "site-config"] });
       toast.success("Konfigurasi situs diperbarui");
     },

@@ -7,7 +7,7 @@ export default function SitePrivacyPage() {
   return (
     <SiteConfigPageShell
       title="Kebijakan Privasi"
-      description="Konten halaman kebijakan privasi."
+      description="Konten halaman kebijakan privasi dan tautan footer."
     >
       {({ config, saving, save }) => (
         <PrivacyConfigPanel config={config} saving={saving} onSave={save} />

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   ActionIcon,
   Button,
@@ -12,9 +11,11 @@ import {
 } from "@mantine/core";
 import { footerContent as fallback } from "@/data/footer";
 import { marqueeItems as fallbackMarquee } from "@/data/marquee";
+import { configJsonArray, configText } from "@/lib/cms-parse";
 import type { SiteConfigMap } from "@/hooks/admin/useSiteConfig";
 import type { FooterLink } from "@/types/site";
 import { changeValue } from "@/lib/admin/form";
+import { useDraftFromSource } from "@/hooks/useDraftFromSource";
 
 type Props = {
   config: SiteConfigMap | undefined;
@@ -29,92 +30,106 @@ type Props = {
   ) => Promise<void>;
 };
 
-function read(
+function field(
   config: SiteConfigMap | undefined,
   section: string,
   key: string,
+  fallbackValue: string,
 ): string {
-  return config?.[section]?.[key]?.value ?? "";
+  return configText(config?.[section], key, fallbackValue);
 }
 
-function parseLegal(raw: string): FooterLink[] {
-  if (!raw) return fallback.legalLinks;
-  try {
-    const parsed = JSON.parse(raw) as FooterLink[];
-    return Array.isArray(parsed) && parsed.length
-      ? parsed
-      : fallback.legalLinks;
-  } catch {
-    return fallback.legalLinks;
-  }
+function parseLegal(config: SiteConfigMap | undefined): FooterLink[] {
+  return configJsonArray<FooterLink>(
+    config?.footer,
+    "legal_links",
+    fallback.legalLinks,
+  );
 }
 
-function parseMarquee(raw: string): string {
-  if (!raw) return fallbackMarquee.join("\n");
+function parseMarquee(config: SiteConfigMap | undefined): string {
+  const entry = config?.marquee?.items;
+  if (entry === undefined) return fallbackMarquee.join("\n");
+  const raw = entry.value ?? "";
+  if (!raw) return "";
   try {
     const parsed = JSON.parse(raw) as string[];
     if (Array.isArray(parsed)) return parsed.join("\n");
   } catch {
-    /* plain */
+    /* plain text */
   }
   return raw;
 }
 
-export function FooterConfigPanel({ config, saving, onSave }: Props) {
-  const [brandTitle, setBrandTitle] = useState(fallback.brandTitle);
-  const [brandDescription, setBrandDescription] = useState(
-    fallback.brandDescription,
-  );
-  const [copyrightText, setCopyrightText] = useState(fallback.copyrightText);
-  const [listenLabel, setListenLabel] = useState(fallback.listenLabel);
-  const [listenHref, setListenHref] = useState(fallback.listenHref);
-  const [contactLabel, setContactLabel] = useState(fallback.contactLabel);
-  const [contactHref, setContactHref] = useState(fallback.contactHref);
-  const [columnIkuti, setColumnIkuti] = useState(fallback.columnIkuti);
-  const [columnJelajahi, setColumnJelajahi] = useState(fallback.columnJelajahi);
-  const [wordmark, setWordmark] = useState(fallback.wordmark);
-  const [wordmarkSub, setWordmarkSub] = useState(fallback.wordmarkSub);
-  const [legalLinks, setLegalLinks] = useState<FooterLink[]>(
-    fallback.legalLinks,
-  );
-  const [marquee, setMarquee] = useState(fallbackMarquee.join("\n"));
+type FooterDraft = {
+  brandTitle: string;
+  brandDescription: string;
+  copyrightText: string;
+  listenLabel: string;
+  listenHref: string;
+  contactLabel: string;
+  contactHref: string;
+  columnIkuti: string;
+  columnJelajahi: string;
+  wordmark: string;
+  wordmarkSub: string;
+  legalLinks: FooterLink[];
+  marquee: string;
+};
 
-  useEffect(() => {
-    setBrandTitle(
-      (read(config, "footer", "brand_title") || fallback.brandTitle).replace(
-        /\\n/g,
-        "\n",
-      ),
-    );
-    setBrandDescription(
-      read(config, "footer", "brand_description") || fallback.brandDescription,
-    );
-    setCopyrightText(
-      read(config, "footer", "copyright_text") || fallback.copyrightText,
-    );
-    setListenLabel(
-      read(config, "footer", "listen_label") || fallback.listenLabel,
-    );
-    setListenHref(read(config, "footer", "listen_href") || fallback.listenHref);
-    setContactLabel(
-      read(config, "footer", "contact_label") || fallback.contactLabel,
-    );
-    setContactHref(
-      read(config, "footer", "contact_href") || fallback.contactHref,
-    );
-    setColumnIkuti(
-      read(config, "footer", "column_ikuti") || fallback.columnIkuti,
-    );
-    setColumnJelajahi(
-      read(config, "footer", "column_jelajahi") || fallback.columnJelajahi,
-    );
-    setWordmark(read(config, "footer", "wordmark") || fallback.wordmark);
-    setWordmarkSub(
-      read(config, "footer", "wordmark_sub") || fallback.wordmarkSub,
-    );
-    setLegalLinks(parseLegal(read(config, "footer", "legal_links")));
-    setMarquee(parseMarquee(read(config, "marquee", "items")));
-  }, [config]);
+function draftFromConfig(config: SiteConfigMap | undefined): FooterDraft {
+  return {
+    brandTitle: field(config, "footer", "brand_title", fallback.brandTitle).replace(
+      /\\n/g,
+      "\n",
+    ),
+    brandDescription: field(
+      config,
+      "footer",
+      "brand_description",
+      fallback.brandDescription,
+    ),
+    copyrightText: field(
+      config,
+      "footer",
+      "copyright_text",
+      fallback.copyrightText,
+    ),
+    listenLabel: field(config, "footer", "listen_label", fallback.listenLabel),
+    listenHref: field(config, "footer", "listen_href", fallback.listenHref),
+    contactLabel: field(config, "footer", "contact_label", fallback.contactLabel),
+    contactHref: field(config, "footer", "contact_href", fallback.contactHref),
+    columnIkuti: field(config, "footer", "column_ikuti", fallback.columnIkuti),
+    columnJelajahi: field(
+      config,
+      "footer",
+      "column_jelajahi",
+      fallback.columnJelajahi,
+    ),
+    wordmark: field(config, "footer", "wordmark", fallback.wordmark),
+    wordmarkSub: field(config, "footer", "wordmark_sub", fallback.wordmarkSub),
+    legalLinks: parseLegal(config),
+    marquee: parseMarquee(config),
+  };
+}
+
+export function FooterConfigPanel({ config, saving, onSave }: Props) {
+  const [draft, setDraft] = useDraftFromSource(config, draftFromConfig);
+  const {
+    brandTitle,
+    brandDescription,
+    copyrightText,
+    listenLabel,
+    listenHref,
+    contactLabel,
+    contactHref,
+    columnIkuti,
+    columnJelajahi,
+    wordmark,
+    wordmarkSub,
+    legalLinks,
+    marquee,
+  } = draft;
 
   return (
     <Stack gap="md">
@@ -122,14 +137,18 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         label="Brand title"
         description="Gunakan baris baru untuk pecah baris"
         value={brandTitle}
-        onChange={(e) => setBrandTitle(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, brandTitle: changeValue(e) }))
+        }
         rows={3}
         size="sm"
       />
       <Textarea
         label="Brand description"
         value={brandDescription}
-        onChange={(e) => setBrandDescription(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, brandDescription: changeValue(e) }))
+        }
         rows={3}
         size="sm"
       />
@@ -137,20 +156,26 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         label="Copyright"
         description="Gunakan {year} untuk tahun dinamis"
         value={copyrightText}
-        onChange={(e) => setCopyrightText(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, copyrightText: changeValue(e) }))
+        }
         size="sm"
       />
       <Group grow>
         <TextInput
           label="Listen label"
           value={listenLabel}
-          onChange={(e) => setListenLabel(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, listenLabel: changeValue(e) }))
+          }
           size="sm"
         />
         <TextInput
           label="Listen href"
           value={listenHref}
-          onChange={(e) => setListenHref(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, listenHref: changeValue(e) }))
+          }
           size="sm"
         />
       </Group>
@@ -158,13 +183,17 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         <TextInput
           label="Contact label"
           value={contactLabel}
-          onChange={(e) => setContactLabel(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, contactLabel: changeValue(e) }))
+          }
           size="sm"
         />
         <TextInput
           label="Contact href"
           value={contactHref}
-          onChange={(e) => setContactHref(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, contactHref: changeValue(e) }))
+          }
           size="sm"
         />
       </Group>
@@ -172,13 +201,17 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         <TextInput
           label="Column Ikuti"
           value={columnIkuti}
-          onChange={(e) => setColumnIkuti(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, columnIkuti: changeValue(e) }))
+          }
           size="sm"
         />
         <TextInput
           label="Column Jelajahi"
           value={columnJelajahi}
-          onChange={(e) => setColumnJelajahi(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, columnJelajahi: changeValue(e) }))
+          }
           size="sm"
         />
       </Group>
@@ -186,13 +219,17 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         <TextInput
           label="Wordmark"
           value={wordmark}
-          onChange={(e) => setWordmark(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, wordmark: changeValue(e) }))
+          }
           size="sm"
         />
         <TextInput
           label="Wordmark sub"
           value={wordmarkSub}
-          onChange={(e) => setWordmarkSub(changeValue(e))}
+          onChange={(e) =>
+            setDraft((prev) => ({ ...prev, wordmarkSub: changeValue(e) }))
+          }
           size="sm"
         />
       </Group>
@@ -207,13 +244,14 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
               label={index === 0 ? "Label" : undefined}
               value={link.label}
               onChange={(e) =>
-                setLegalLinks((prev) =>
-                  prev.map((l, i) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  legalLinks: prev.legalLinks.map((l, i) =>
                     i === index
                       ? { ...l, label: changeValue(e) }
                       : l,
                   ),
-                )
+                }))
               }
               size="sm"
             />
@@ -221,13 +259,14 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
               label={index === 0 ? "Href" : undefined}
               value={link.href}
               onChange={(e) =>
-                setLegalLinks((prev) =>
-                  prev.map((l, i) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  legalLinks: prev.legalLinks.map((l, i) =>
                     i === index
                       ? { ...l, href: changeValue(e) }
                       : l,
                   ),
-                )
+                }))
               }
               size="sm"
             />
@@ -235,7 +274,10 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
               variant="subtle"
               color="gray"
               onClick={() =>
-                setLegalLinks((prev) => prev.filter((_, i) => i !== index))
+                setDraft((prev) => ({
+                  ...prev,
+                  legalLinks: prev.legalLinks.filter((_, i) => i !== index),
+                }))
               }
               aria-label="Hapus legal link"
             >
@@ -248,7 +290,10 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
           variant="light"
           color="gray"
           onClick={() =>
-            setLegalLinks((prev) => [...prev, { label: "", href: "#" }])
+            setDraft((prev) => ({
+              ...prev,
+              legalLinks: [...prev.legalLinks, { label: "", href: "#" }],
+            }))
           }
         >
           Tambah legal link
@@ -259,7 +304,9 @@ export function FooterConfigPanel({ config, saving, onSave }: Props) {
         label="Radio marquee items"
         description="Satu item per baris"
         value={marquee}
-        onChange={(e) => setMarquee(changeValue(e))}
+        onChange={(e) =>
+          setDraft((prev) => ({ ...prev, marquee: changeValue(e) }))
+        }
         rows={8}
         size="sm"
       />

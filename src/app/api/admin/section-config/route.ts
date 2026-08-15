@@ -17,9 +17,9 @@ const surfaceSchema = z.enum(["dark", "smoke", "white"]);
 const updateItemSchema = z.object({
   section: sectionKeySchema,
   isVisible: z.boolean().optional(),
-  letter: z.string().min(1).max(1).optional(),
-  navLabel: z.string().min(1).max(50).optional(),
-  menuLabel: z.string().min(1).max(80).optional(),
+  letter: z.string().max(1).optional(),
+  navLabel: z.string().max(50).optional(),
+  menuLabel: z.string().max(80).optional(),
   surface: surfaceSchema.optional(),
   sortOrder: z.number().int().min(0).max(20).optional(),
 });

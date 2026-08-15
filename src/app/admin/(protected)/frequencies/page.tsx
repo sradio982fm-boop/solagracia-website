@@ -26,7 +26,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminSurface } from "@/components/admin/AdminSurface";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
-import { changeValue } from "@/lib/admin/form";
+import { changeChecked, changeValue } from "@/lib/admin/form";
 
 interface FrequencyFormState {
   label: string;
@@ -34,6 +34,7 @@ interface FrequencyFormState {
   audioUrl: string;
   posterUrl: string;
   stationName: string;
+  showVideo: boolean;
   isDefault: boolean;
   isActive: boolean;
 }
@@ -44,6 +45,7 @@ const EMPTY_FORM: FrequencyFormState = {
   audioUrl: "",
   posterUrl: "",
   stationName: "Solagracia",
+  showVideo: true,
   isDefault: false,
   isActive: true,
 };
@@ -75,6 +77,7 @@ export default function FrequenciesPage() {
       audioUrl: f.audioUrl,
       posterUrl: f.posterUrl,
       stationName: f.stationName,
+      showVideo: f.showVideo !== false,
       isDefault: f.isDefault,
       isActive: f.isActive,
     });
@@ -140,6 +143,11 @@ export default function FrequenciesPage() {
                     {!f.isActive && (
                       <Badge color="gray" variant="outline">
                         Nonaktif
+                      </Badge>
+                    )}
+                    {f.showVideo === false && (
+                      <Badge color="gray" variant="outline">
+                        Video off
                       </Badge>
                     )}
                   </Group>
@@ -212,30 +220,43 @@ export default function FrequenciesPage() {
             }
             required
           />
-          <TextInput
-            label="Video URL (HLS/MP4)"
-            value={form.videoUrl}
+          <Switch
+            label="Tampilkan Video"
+            description="Tombol Video di player situs. URL stream tetap tersimpan jika dimatikan."
+            checked={form.showVideo}
             onChange={(e) =>
-              setForm((p) => ({ ...p, videoUrl: changeValue(e) }))
+              setForm((p) => ({ ...p, showVideo: changeChecked(e) }))
             }
+            color="dark"
           />
-          <div>
-            <Text size="sm" fw={500} mb={6}>
-              Poster
-            </Text>
-            <ImageUpload
-              value={form.posterUrl}
-              onChange={(url) => setForm((p) => ({ ...p, posterUrl: url }))}
-              bucket="site"
-              subpath="posters"
-              aspectRatio="video"
-            />
-          </div>
+          {form.showVideo ? (
+            <>
+              <TextInput
+                label="Video URL (HLS/MP4)"
+                value={form.videoUrl}
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, videoUrl: changeValue(e) }))
+                }
+              />
+              <div>
+                <Text size="sm" fw={500} mb={6}>
+                  Poster
+                </Text>
+                <ImageUpload
+                  value={form.posterUrl}
+                  onChange={(url) => setForm((p) => ({ ...p, posterUrl: url }))}
+                  bucket="site"
+                  subpath="posters"
+                  aspectRatio="video"
+                />
+              </div>
+            </>
+          ) : null}
           <Switch
             label="Default"
             checked={form.isDefault}
             onChange={(e) =>
-              setForm((p) => ({ ...p, isDefault: e.currentTarget.checked }))
+              setForm((p) => ({ ...p, isDefault: changeChecked(e) }))
             }
             color="dark"
           />
@@ -243,7 +264,7 @@ export default function FrequenciesPage() {
             label="Aktif"
             checked={form.isActive}
             onChange={(e) =>
-              setForm((p) => ({ ...p, isActive: e.currentTarget.checked }))
+              setForm((p) => ({ ...p, isActive: changeChecked(e) }))
             }
             color="dark"
           />

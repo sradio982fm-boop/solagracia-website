@@ -45,7 +45,7 @@ function frequencyStamp(label: string): string {
 export function TentangSection({ content, ad }: TentangSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const { reel } = content;
-  const frequencyLabel = content.frequencyLabel || "98.2 FM";
+  const frequencyLabel = content.frequencyLabel ?? "";
   const showReel = hasVisibleReel(reel);
 
   useGSAP(
@@ -113,20 +113,9 @@ export function TentangSection({ content, ad }: TentangSectionProps) {
             whileInView="show"
             viewport={viewport}
           >
-            <motion.p
-              variants={itemVariants}
-              className="m-0 flex items-center gap-3 text-[0.68rem] font-semibold tracking-[0.22em] text-[var(--section-muted)] uppercase"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inset-0 animate-ping rounded-full bg-[var(--accent)] opacity-40" />
-                <span className="relative h-2 w-2 rounded-full bg-[var(--accent)]" />
-              </span>
-              Studio · {frequencyLabel}
-            </motion.p>
-
             <motion.h2
               variants={itemVariants}
-              className="mt-5 m-0 max-w-[18ch] text-[clamp(2.35rem,5vw,4rem)] leading-[1.0] font-extrabold tracking-[-0.035em] text-[var(--section-fg)]"
+              className="m-0 max-w-[18ch] text-[clamp(2.35rem,5vw,4rem)] leading-[1.0] font-extrabold tracking-[-0.035em] text-[var(--section-fg)]"
             >
               <span>{content.headline}</span>{" "}
               <span className="font-semibold tracking-[-0.03em] text-[var(--section-muted)]">
@@ -353,9 +342,11 @@ function StudioAtmosphere({ frequencyLabel }: { frequencyLabel: string }) {
       />
 
       {/* Frequency watermark */}
+      {frequencyLabel ? (
       <p className="absolute top-[12%] right-[6%] hidden text-[clamp(4rem,12vw,9rem)] leading-none font-extrabold tracking-[-0.06em] text-[rgba(12,12,14,0.05)] select-none md:block">
         {frequencyStamp(frequencyLabel)}
       </p>
+      ) : null}
 
       {/* Level meters — lower right, studio desk cue */}
       <div className="absolute right-[8%] bottom-[18%] hidden h-14 items-end gap-[3px] opacity-40 md:flex">

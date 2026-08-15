@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Button,
   Group,
@@ -23,6 +23,7 @@ import {
   useSectionConfig,
   useUpdateSectionConfig,
 } from "@/hooks/admin/useSectionConfig";
+import { changeChecked } from "@/lib/admin/form";
 
 const SECTION_LABELS: Record<string, string> = {
   home: "Home (Hero)",
@@ -73,27 +74,28 @@ export function SectionOrderManager() {
   const [metaDirty, setMetaDirty] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
+  const [dataRef, setDataRef] = useState(data);
 
-  useEffect(() => {
-    if (!data?.sections) return;
+  if (data !== dataRef) {
+    setDataRef(data);
+    if (data?.sections) {
+      setOrder(buildOrderedKeys(data.sections));
+      setOrderDirty(false);
 
-    const nextOrder = buildOrderedKeys(data.sections);
-    setOrder(nextOrder);
-    setOrderDirty(false);
-
-    const nextDrafts: Record<string, EditableSection> = {};
-    for (const row of data.sections) {
-      nextDrafts[row.section] = {
-        section: row.section as PublicSectionKey,
-        letter: row.letter ?? "",
-        navLabel: row.navLabel ?? "",
-        menuLabel: row.menuLabel ?? "",
-        surface: row.surface ?? "white",
-      };
+      const nextDrafts: Record<string, EditableSection> = {};
+      for (const row of data.sections) {
+        nextDrafts[row.section] = {
+          section: row.section as PublicSectionKey,
+          letter: row.letter ?? "",
+          navLabel: row.navLabel ?? "",
+          menuLabel: row.menuLabel ?? "",
+          surface: row.surface ?? "white",
+        };
+      }
+      setDrafts(nextDrafts);
+      setMetaDirty(false);
     }
-    setDrafts(nextDrafts);
-    setMetaDirty(false);
-  }, [data]);
+  }
 
   const duplicateLetters = useMemo(() => {
     const visibleLetters = order
@@ -257,7 +259,7 @@ export function SectionOrderManager() {
                       onChange={(event) =>
                         updateSection.mutate({
                           section,
-                          isVisible: event.currentTarget.checked,
+                          isVisible: changeChecked(event),
                         })
                       }
                     />
