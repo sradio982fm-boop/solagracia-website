@@ -62,36 +62,42 @@ export function HeroSection({
       ? sanitizeHref(parentSiteUrl)
       : "";
   // Label default only when outbound CTA is shown.
-  const parentLabel = parentSiteLabel?.trim() || "S Radio";
+  const parentLabel = parentSiteLabel?.trim() || "S Radio 98.2FM Streaming";
   // Portrait mobile crop ≠ desktop 16:9 framing — keep phone centered;
   // honor CMS focus from md up where the admin preview matches.
   const coverPositionDesktop = `${coverFocus.x}% ${coverFocus.y}%`;
 
   const ctaRow = (mobile: boolean) => (
     <motion.div
-      className={cn("flex flex-wrap items-center", mobile ? "mt-5" : "mt-7")}
+      className={cn(
+        "flex flex-col",
+        mobile ? "mt-5 gap-3" : "mt-7 gap-3",
+      )}
       variants={heroCtaStagger}
       initial="hidden"
       animate="show"
     >
-      <motion.div variants={heroCtaItem}>
-        <HeroSocialIcons links={socialLinks} joined />
-      </motion.div>
-      {ctas.map((cta) => (
-        <motion.a
-          key={cta.label}
-          href={sanitizeHref(cta.href)}
-          variants={heroCtaItem}
-          whileHover={hoverLift}
-          whileTap={tapPress}
-          className={cn(
-            "inline-flex h-11 items-center justify-center border border-l-0 border-[var(--frame-line)] px-4 font-semibold",
-            mobile ? "text-sm" : "text-[13px]",
-          )}
-        >
-          <span>{cta.label}</span>
-        </motion.a>
-      ))}
+      <div className="flex flex-wrap items-center">
+        <motion.div variants={heroCtaItem}>
+          <HeroSocialIcons links={socialLinks} joined />
+        </motion.div>
+        {ctas.map((cta) => (
+          <motion.a
+            key={cta.label}
+            href={sanitizeHref(cta.href)}
+            variants={heroCtaItem}
+            whileHover={hoverLift}
+            whileTap={tapPress}
+            className={cn(
+              "inline-flex h-11 items-center justify-center border border-l-0 border-[var(--frame-line)] px-4 font-semibold transition-colors hover:bg-white/10",
+              mobile ? "text-sm" : "text-[13px]",
+            )}
+          >
+            <span>{cta.label}</span>
+          </motion.a>
+        ))}
+      </div>
+
       {parentHref ? (
         <motion.a
           href={parentHref}
@@ -102,11 +108,11 @@ export function HeroSection({
           whileTap={tapPress}
           aria-label={`${parentLabel} (buka situs induk)`}
           className={cn(
-            "inline-flex h-11 items-center justify-center gap-2 border border-l-0 border-[var(--frame-line)] px-4 font-semibold",
-            mobile ? "text-sm" : "gap-2.5 text-[13px]",
+            "inline-flex h-11 w-full items-center justify-center gap-2.5 border border-white bg-white px-4 font-semibold text-[var(--bg-void)] transition-colors hover:bg-[var(--text-main)]",
+            mobile ? "min-h-11 text-sm" : "text-[13px]",
           )}
         >
-          <span aria-hidden className="inline-flex shrink-0">
+          <span aria-hidden className="inline-flex shrink-0 text-[var(--bg-void)]/70">
             <ExternalLinkIcon />
           </span>
           <span>{parentLabel}</span>

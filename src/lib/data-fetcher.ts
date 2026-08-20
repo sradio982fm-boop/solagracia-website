@@ -272,14 +272,14 @@ export async function fetchBrandContent(): Promise<BrandContent> {
       displayName: textAllowEmpty(brand, "display_name", fallbackSite.name),
       frequencyLabel: textAllowEmpty(brand, "frequency_label", "98.2 FM"),
       parentSiteUrl: textAllowEmpty(brand, "parent_site_url", ""),
-      parentSiteLabel: textAllowEmpty(brand, "parent_site_label", "S Radio"),
+      parentSiteLabel: textAllowEmpty(brand, "parent_site_label", "S Radio 98.2FM Streaming"),
     };
   } catch {
     return {
       displayName: fallbackSite.name,
       frequencyLabel: "98.2 FM",
       parentSiteUrl: "",
-      parentSiteLabel: "S Radio",
+      parentSiteLabel: "S Radio 98.2FM Streaming",
     };
   }
 }

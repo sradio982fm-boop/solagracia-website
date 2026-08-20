@@ -36,7 +36,7 @@ export function Footer({
     parentSiteUrl && isSafeHttpUrl(parentSiteUrl)
       ? sanitizeHref(parentSiteUrl)
       : "";
-  const parentLabel = parentSiteLabel?.trim() || "S Radio";
+  const parentLabel = parentSiteLabel?.trim() || "S Radio 98.2FM Streaming";
 
   return (
     <footer

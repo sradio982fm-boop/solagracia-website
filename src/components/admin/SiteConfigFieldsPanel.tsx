@@ -76,7 +76,7 @@ export const BRAND_FIELDS: SiteFieldDef[] = [
   {
     key: "parent_site_label",
     label: "S Radio button label",
-    description: 'Default: "S Radio"',
+    description: 'Default: "S Radio 98.2FM Streaming"',
   },
 ];
 
