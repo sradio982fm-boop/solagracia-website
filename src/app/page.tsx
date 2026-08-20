@@ -125,7 +125,11 @@ export default async function HomePage() {
       />
       <FrequencyTuningLazy />
       <main className="w-full max-w-full overflow-x-hidden">{sectionBlocks}</main>
-      <Footer content={footer} />
+      <Footer
+        content={footer}
+        parentSiteUrl={brand.parentSiteUrl}
+        parentSiteLabel={brand.parentSiteLabel}
+      />
     </>
   );
 }

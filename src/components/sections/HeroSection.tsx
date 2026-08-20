@@ -85,13 +85,10 @@ export function HeroSection({
           whileHover={hoverLift}
           whileTap={tapPress}
           className={cn(
-            "inline-flex h-11 items-center justify-center gap-2 border border-l-0 border-[var(--frame-line)] px-4 font-semibold",
-            mobile ? "text-sm" : "gap-2.5 text-[13px]",
+            "inline-flex h-11 items-center justify-center border border-l-0 border-[var(--frame-line)] px-4 font-semibold",
+            mobile ? "text-sm" : "text-[13px]",
           )}
         >
-          <span aria-hidden className={mobile ? undefined : "tracking-[0.15em]"}>
-            {">>"}
-          </span>
           <span>{cta.label}</span>
         </motion.a>
       ))}
@@ -103,12 +100,15 @@ export function HeroSection({
           variants={heroCtaItem}
           whileHover={hoverLift}
           whileTap={tapPress}
+          aria-label={`${parentLabel} (buka situs induk)`}
           className={cn(
             "inline-flex h-11 items-center justify-center gap-2 border border-l-0 border-[var(--frame-line)] px-4 font-semibold",
             mobile ? "text-sm" : "gap-2.5 text-[13px]",
           )}
         >
-          <span aria-hidden>{">>"}</span>
+          <span aria-hidden className="inline-flex shrink-0">
+            <ExternalLinkIcon />
+          </span>
           <span>{parentLabel}</span>
         </motion.a>
       ) : null}
@@ -240,5 +240,33 @@ export function HeroSection({
         </div>
       </section>
     </>
+  );
+}
+
+/** Outbound parent-site mark (square + exit arrow). */
+function ExternalLinkIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M14 5h5v5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+      <path
+        d="M19 5 11 13"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="square"
+      />
+      <path
+        d="M19 13.5V18a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4.5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
   );
 }

@@ -10,22 +10,33 @@ import {
   tapPress,
   viewportLoose,
 } from "@/lib/motion";
-import { sanitizeHref } from "@/lib/security";
+import { sanitizeHref, isSafeHttpUrl } from "@/lib/security";
 import { cn } from "@/lib/utils";
 import type { FooterContent } from "@/types/site";
 
 type FooterProps = {
   content: FooterContent;
+  parentSiteUrl?: string;
+  parentSiteLabel?: string;
 };
 
 /**
  * Site footer — brand + socials + nav.
  * Address / hotlines / hours live in #kontak.
  */
-export function Footer({ content }: FooterProps) {
+export function Footer({
+  content,
+  parentSiteUrl,
+  parentSiteLabel,
+}: FooterProps) {
   const year = new Date().getFullYear();
   const copyright = content.copyrightText.replace("{year}", String(year));
   const titleLines = content.brandTitle.split("\n");
+  const parentHref =
+    parentSiteUrl && isSafeHttpUrl(parentSiteUrl)
+      ? sanitizeHref(parentSiteUrl)
+      : "";
+  const parentLabel = parentSiteLabel?.trim() || "S Radio";
 
   return (
     <footer
@@ -107,6 +118,16 @@ export function Footer({ content }: FooterProps) {
                   <FooterTextLink href={link.href}>{link.label}</FooterTextLink>
                 </li>
               ))}
+              {parentHref ? (
+                <li>
+                  <FooterTextLink href={parentHref} external>
+                    <span aria-hidden className="inline-flex shrink-0">
+                      <ExternalLinkIcon />
+                    </span>
+                    {parentLabel}
+                  </FooterTextLink>
+                </li>
+              ) : null}
             </ul>
           </motion.div>
         </motion.div>
@@ -186,6 +207,34 @@ function PlayIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M8 5.5v13l11-6.5L8 5.5Z" />
+    </svg>
+  );
+}
+
+/** Outbound parent-site mark (square + exit arrow). */
+function ExternalLinkIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M14 5h5v5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+      <path
+        d="M19 5 11 13"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="square"
+      />
+      <path
+        d="M19 13.5V18a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4.5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
     </svg>
   );
 }
