@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { PWARegister } from "@/components/PWARegister";
 
 export function AnalyticsRoot({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -9,8 +11,14 @@ export function AnalyticsRoot({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {isAdmin ? null : <PWARegister />}
       {children}
-      {isAdmin ? null : <AnalyticsTracker />}
+      {isAdmin ? null : (
+        <>
+          <AnalyticsTracker />
+          <PWAInstallPrompt />
+        </>
+      )}
     </>
   );
 }

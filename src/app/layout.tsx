@@ -52,9 +52,30 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: seo.description,
     applicationName: seo.siteName,
+    manifest: "/manifest.json",
     icons: {
-      icon: [{ url: seo.faviconUrl || "/favicon.ico", sizes: "any" }],
+      icon: [
+        { url: seo.faviconUrl || "/favicon.ico", sizes: "any" },
+        {
+          url: "/android-icon-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+      ],
+      apple: [
+        {
+          url: "/apple-icon-180x180.png",
+          sizes: "180x180",
+          type: "image/png",
+        },
+      ],
     },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: seo.siteName || "Solagracia",
+    },
+    formatDetection: { telephone: false },
     openGraph: {
       title: seo.title,
       description: seo.description,
